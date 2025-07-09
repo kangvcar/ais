@@ -3,185 +3,113 @@ description:
 globs: 
 alwaysApply: true
 ---
-好的，这是一个非常棒的项目想法！`ais` 结合了系统工具、Shell 和 AI，潜力巨大。我很乐意以符合 Python 最佳实践的方式，为你分析其设计并制定一个详细的开发 TODO 列表。
+### **`ais`: 终端 AI 助手 - 详细设计与开发计划 **
 
-在开始设计之前，我需要向您确认一些关键信息，这将帮助我更好地为你规划：
+本文档旨在为 `ais` 项目提供一份精确、可执行的蓝图，并完全采纳你的最新指示。
 
-### 关键问题
+#### **第一部分：项目设计与架构**
 
-1.  **Shell 兼容性**: `PROMPT_COMMAND` 是 `bash` 的一个特性，`zsh` 使用 `precmd` 和 `preexec` 钩子。我们初期应该优先支持哪种 Shell？`bash` 和 `zsh` 是最常见的选择，专注于这两者可以覆盖大多数用户。
-2.  **配置管理**: 用户如何配置他们的 AI 服务（API Key, Endpoint, 模型名称等）？一个位于用户主目录下的配置文件（例如 `~/.config/ais/config.toml`）是现代 CLI 应用的最佳实践。你同意这种方式吗？
-3.  **数据存储**: 命令历史和用户使用情况分析需要持久化存储。使用一个轻量级的本地数据库如 `SQLite` 是否合适？它能很好地与 Python 集成，并且是单个文件，易于管理。
-4.  **错误捕获的具体实现**: 捕获 `stderr` 的方式有很多种，通常需要在 Shell 侧进行重定向。一个常见的做法是让 Shell 钩子将上一个命令的 `exit_code`、`stdout` 和 `stderr` 写入临时文件，然后由 Python 程序读取。这个方案是否符合你的预期？这比实时流式捕获要简单得多，也更可靠。
+**1. 项目管理工具：UV**
 
-请先回答以上问题，你的回答将直接影响接下来的架构设计和 TODO 列表。
+我们将使用 `uv` 作为项目唯一的依赖管理和虚拟环境工具。`uv` 由 `ruff` 的作者开发，以其极高的性能著称，是管理现代 Python 项目的绝佳选择。所有相关命令都将围绕 `uv` 展开。
 
------
+**2. 核心组件详解**
 
+* **`cli.py` (CLI 入口)**
+    * **技术栈**: **Typer**
+    * **职责**:
+        1.  定义所有命令入口：`ais` 的默认问答，以及 `fix`, `config`, `report` 子命令。
+        2.  处理 `ais <问题>` 形式的直接查询：通过 Typer 的回调机制实现，当没有调用任何子命令时，将所有位置参数拼接为一句完整的自然语言问题。
+        3.  **流式输出处理**: 从 `ai_providers` 模块获取一个流式响应的迭代器。循环遍历此迭代器，将收到的每一个数据块（token）**立即**打印到终端，实现文字的实时显示。
+        4.  协调其他模块完成特定任务，是整个应用的“总指挥”。
 
-*(您已回复，并同意了以下选择：优先支持 `bash` 和 `zsh`，使用 `~/.config/ais/config.toml` 进行配置，采用 `SQLite` 存储数据，并通过临时文件传递命令执行结果。)*
+* **`shell_integration` (Shell 集成)**
+    * **技术栈**: **Bash Script**
+    * **职责**: 提供 `scripts/ais_shell_setup.sh` 脚本，用于实现与 Bash 的深度集成。
+    * **具体实现**:
+        1.  **错误捕获**: 使用 `trap 'error_code=$?; history -s "ais-err-marker";' ERR`。当命令出错时，`trap` 会被触发，记录退出码，并通过 `history -s` 将一个特殊标记写入历史记录，便于 `ais fix` 定位到出错的命令。
+        2.  **错误提示**: `PROMPT_COMMAND` 钩子会检查上一条命令的退出码。如果非零（且不是由 `Ctrl+C` 导致），则在显示新的提示符之前，打印 `💡 Command failed. Run 'ais fix' (or press Ctrl+A) for an AI suggestion.`
+        3.  **快捷键绑定**: 使用 `bind -x '"\C-a": "ais fix"'` 命令，将 `Ctrl+A` 快捷键直接映射到执行 `ais fix` 命令。
 
------
+* **`ai_providers.py` (AI 服务)**
+    * **技术栈**: **Groq Python SDK**
+    * **职责**:
+        1.  定义一个统一的接口（例如一个 `get_streaming_suggestion` 函数）。
+        2.  实现与 Groq API 的通信逻辑，**必须启用流式模式**（即在 API 调用时设置 `stream=True`）。
+        3.  函数将返回一个可供 `cli.py` 消费的流式响应迭代器。
+        4.  初期版本将**内置一个可用的 Groq API 密钥**，实现用户的零配置启动。
 
-好的，感谢您的确认。基于这些选择，我们来设计一个清晰、可扩展且符合 Python 最佳实践的架构，并制定一份详细的开发路线图。
+* **`interaction.py` (高级交互)**
+    * **技术栈**: **`prompt_toolkit`**
+    * **职责**:
+        1.  实现最高集成度的**行内编辑功能**。
+        2.  提供一个函数 `prompt_for_action(suggested_command)`，它会接收 AI 建议的命令，然后向用户展示选项。
+        3.  当用户选择“编辑(Modify)”时，此模块会使用 `prompt_toolkit` 在当前光标位置创建一个可交互的编辑行，用户修改完毕按回车后，返回最终的命令字符串。
 
-### `ais` 程序设计与架构分析
+* **`database.py` (数据持久化)**
+    * **技术栈**: **SQLite** (通过 `sqlite3` 标准库) + **SQLModel**
+    * **职责**:
+        1.  **数据记录将默认开启**。
+        2.  定义 `CommandLog` 数据模型，该模型将明确包含以下字段：`timestamp`, `username`, `original_command`, `stderr_output`, `ai_suggestion`, `user_action` (执行/编辑/取消), `final_command`。
+        3.  **完整存储信息**：我们将**完整存储用户的命令原文、错误输出、AI建议以及用户的最终选择**到 `~/.local/share/ais/history.db` 的本地数据库中。
 
-为了保持项目简洁清晰，我们将采用模块化的设计，将不同的功能分离开来。
+---
 
-#### 项目结构
+#### **第二部分：分阶段开发 TODO 列表**
 
-```
-ais/
-├── ais/                  # 主要的 Python 包
-│   ├── __init__.py
-│   ├── main.py           # Typer 应用入口
-│   ├── shell_integration.py # 处理来自 Shell 钩子的数据
-│   ├── context.py        # 收集上下文信息 (Git, CWD, etc.)
-│   ├── ai_services.py    # AI 服务抽象层和具体实现
-│   ├── prompter.py       # 构建发送给 AI 的 prompt
-│   ├── renderer.py       # 渲染 Markdown 输出
-│   ├── interactive.py    # 处理“执行/编辑/取消”交互
-│   ├── db.py             # 数据库交互 (SQLite)
-│   └── models.py         # 数据模型 (例如：UserStats, CommandHistory)
-├── scripts/              # 辅助脚本
-│   └── hook.sh           # Shell 钩子脚本 (bash/zsh)
-├── tests/                # 测试目录
-│   └── ...
-├── pyproject.toml        # 项目元数据和依赖管理 (最佳实践)
-├── README.md
-└── .gitignore
-```
+这是一个更细化的、可操作的开发步骤清单。
 
-#### 核心组件分析
+**▶️ Phase 0: 项目初始化与环境配置 (使用 UV)**
 
-1.  **CLI 入口 (`main.py`)**:
+* [ ] 1. 创建项目根目录 `ais/` 并初始化 Git 仓库。
+* [ ] 2. 创建 Python 虚拟环境: `uv venv`
+* [ ] 3. 激活虚拟环境: `source .venv/bin/activate`
+* [ ] 4. 在 `pyproject.toml` 的 `[project]` 表中定义项目名称、版本等，并在 `dependencies` 数组中加入: `"typer[all]"`、`"rich"`、`"groq"`、`"prompt-toolkit"`、`"sqlmodel"`。
+* [ ] 5. 安装依赖: `uv pip install -r requirements.txt` (如果使用 `uv lock` 生成了 `requirements.txt`) 或直接 `uv pip install typer[all] rich groq prompt-toolkit sqlmodel`。
+* [ ] 6. 创建 `src/ais/`、`scripts/` 和 `tests/` 目录结构。
 
-      * 使用 `Typer` 创建主命令 `ais`。
-      * 定义子命令，如 `ais <question...>` 用于直接提问，`ais stats` 用于查看用户统计，`ais config` 用于管理配置。
-      * `Typer` 能自动生成帮助信息，非常友好。
+**▶️ Phase 1: MVP - 核心流式 AI 对话**
 
-2.  **Shell 钩子 (`scripts/hook.sh`)**:
+*此阶段目标：让 `ais <问题>` 可以工作，并实现流式输出。*
 
-      * 这是连接 Shell 和 Python 的桥梁。它不是 Python 代码，但至关重要。
-      * **职责**:
-          * 在每个命令执行后被触发 (`PROMPT_COMMAND` 或 `precmd`)。
-          * 获取上一个命令的退出码 (`$?`)。
-          * **关键**: 只有当退出码非零，且不是由 `Ctrl+C` (通常是退出码 130) 引起时，才继续。
-          * 将 `stderr` 和 `stdout` 重定向到临时文件。
-          * 调用 Python 核心分析逻辑，例如 `python -m ais.shell_integration --exit-code $?`。
+* [ ] 1. **(ai_providers.py)**: 创建 `GroqProvider` 类或函数。实现一个 `get_streaming_response(prompt: str)` 方法，该方法调用 `groq.chat.completions.create` 时**必须设置 `stream=True`**，并返回 API 响应的流对象。
+* [ ] 2. **(cli.py)**: 使用 Typer 创建 `main` 函数和默认回调。
+* [ ] 3. **(cli.py)**: 在回调函数中，调用 `get_streaming_response` 获取流。
+* [ ] 4. **(cli.py)**: 循环遍历流对象 (`for chunk in stream:`), 从 `chunk.choices[0].delta.content` 中提取文本，并使用 `print(text, end="", flush=True)` **立即输出到终端**，以实现打字机效果。
+* [ ] 5. **(测试)**: 运行 `uv run ais "用python写一个快速排序"`，验证文字是否逐字流式显示。
 
-3.  **Shell 集成模块 (`shell_integration.py`)**:
+**▶️ Phase 2: Shell 集成与上下文感知**
 
-      * 这是由钩子调用的 Python 脚本。
-      * **职责**:
-          * 解析从命令行参数传入的退出码和临时文件中的 `stderr`。
-          * 调用 `context.py` 收集完整的上下文。
-          * 调用 `prompter.py` 生成最终的 prompt。
-          * 调用 `ai_services.py` 获取 AI 的分析和建议。
-          * 调用 `renderer.py` 显示结果。
-          * 调用 `interactive.py` 启动交互式修复流程。
+*此阶段目标：让 `ais fix` 能够被触发并获取到正确的错误上下文。*
 
-4.  **AI 服务抽象层 (`ai_services.py`)**:
+* [ ] 1. **(scripts/ais_shell_setup.sh)**: 严格按照设计部分的描述，编写 Bash 脚本，实现 `trap ERR`, `PROMPT_COMMAND` 和 `bind` 快捷键。
+* [ ] 2. **(context.py)**: 实现 `get_error_context()` 函数。
+    * 该函数通过 `history` 命令和我们埋下的 `ais-err-marker` 标记，来准确找到并提取出错的命令原文。
+    * (需要 shell 脚本辅助) `trap` 错误时，将 stderr 重定向到一个固定路径的临时文件，例如 `/tmp/ais_last_error.log`。`get_error_context()` 函数则从该文件读取 stderr 内容。
+    * 调用 `os.getcwd()`, `os.listdir()`, `subprocess.run(['git', 'status'])` 等收集其他上下文信息。
+* [ ] 3. **(cli.py)**: 实现 `ais fix` 子命令。
+    * 调用 `context.py.get_error_context()`。
+    * 将所有上下文信息格式化成一个高质量的 Prompt。
+    * 将此 Prompt 发送给 `ai_providers` 模块，并以**流式**方式打印 AI 的分析和建议。
 
-      * 使用**策略模式 (Strategy Pattern)**。定义一个基础的 `AIService` 抽象类，包含 `get_completion(prompt: str) -> str` 方法。
-      * 为 OpenAI, Ollama 等分别创建具体的实现类，如 `OpenAIService`, `OllamaService`。
-      * 程序根据配置文件动态选择使用哪个服务。这使得添加新的 AI 服务变得非常容易。
+**▶️ Phase 3: 高级交互与数据持久化**
 
-5.  **交互模块 (`interactive.py`)**:
+*此阶段目标：实现 "执行/编辑/取消" 的闭环，并记录所有交互。*
 
-      * 使用 `questionary` 或 `InquirerPy` 库。
-      * 接收 AI 生成的建议命令。
-      * 向用户提供 "执行" (Execute), "编辑" (Edit), "取消" (Cancel) 的选项。
-      * **执行**: 使用 `subprocess.run()` 直接运行命令。
-      * **编辑**: 获取系统默认编辑器 (`$EDITOR`)，将命令写入临时文件，然后用编辑器打开。用户保存退出后，再选择是否执行。
-      * **取消**: 直接退出交互。
+* [ ] 1. **(database.py)**: 使用 SQLModel 定义 `CommandLog` 表模型，并编写 `create_db_and_tables()` 和 `add_log_entry()` 函数。
+* [ ] 2. **(interaction.py)**: 使用 `prompt_toolkit` 实现 `prompt_for_action(suggested_command)` 函数，提供行内编辑功能。
+* [ ] 3. **(cli.py)**: 修改 `ais fix` 命令的末端逻辑。在 AI 流式输出其建议后，调用 `prompt_for_action`。
+* [ ] 4. **(cli.py/database.py)**:
+    * 在 `ais fix` 开始时就记录部分日志（原始命令、错误）。
+    * 根据 `prompt_for_action` 的返回值（执行、编辑后的命令、取消），补全日志条目并存入数据库。
+    * 如果用户选择执行，则使用 `subprocess.run` 来执行最终的命令。
 
-6.  **数据与统计 (`db.py`, `models.py`)**:
+**▶️ Phase 4: 用户功能与最终打磨**
 
-      * 使用 Python 内置的 `sqlite3`。
-      * 为了代码清晰和类型安全，推荐使用 `SQLModel` (来自 `Typer` 和 `FastAPI` 的作者)。它结合了 `Pydantic` 和 `SQLAlchemy`，非常适合这个项目。
-      * `models.py` 定义数据表结构，如 `CommandHistory` (记录命令、是否成功、AI建议等) 和 `UserStats`。
-      * `db.py` 提供简单的函数来创建数据库连接、增删改查数据。
+*此阶段目标：完成辅助功能，并提升产品完整度。*
 
-7.  **渲染模块 (`renderer.py`)**:
-
-      * 使用 `rich` 库。它内置了强大的 Markdown 和语法高亮渲染功能。
-      * `rich.markdown.Markdown` 类可以直接渲染 AI 返回的 Markdown 字符串，非常方便。
-
-### 开发 TODO 列表 (由简到繁)
-
-这是一个分阶段的开发计划，可以让你逐步构建 `ais`。
-
-#### **Phase 0: 项目初始化与基础架构**
-
-  * [ ] 1. **环境设置**:
-      * 创建 Git 仓库。
-      * 使用 `Poetry` 或 `pip`/`venv` 初始化 Python 项目。
-      * 创建如上所述的目录结构。
-      * 配置 `pyproject.toml`，添加 `typer`, `rich`, `questionary`, `pytomlpp` (或 `tomli`), `sqlmodel` 等核心依赖。
-  * [ ] 2. **基础 CLI 入口**:
-      * 在 `ais/main.py` 中，用 `Typer` 创建一个简单的 "Hello World" CLI 应用。
-      * 在 `pyproject.toml` 中配置 `[project.scripts]`，使 `pip install .` 后能生成 `ais` 命令。
-
-#### **Phase 1: 核心 AI 对话功能 (`ais <question>`)**
-
-  * [ ] 3. **配置管理**:
-      * 实现一个简单的函数，用于在 `~/.config/ais/config.toml` 不存在时创建它，并写入默认模板 (包含 API Key, model, endpoint 等字段)。
-      * 实现加载配置的功能。
-  * [ ] 4. **AI 服务抽象**:
-      * 在 `ais/ai_services.py` 中定义 `AIService` 抽象基类。
-      * 首先实现 `OpenAIService`，从配置文件中读取 API Key 和 endpoint。
-  * [ ] 5. **直接对话逻辑**:
-      * 在 `main.py` 中实现 `ais <question...>` 功能。
-      * 它应该：收集用户输入 -\> 调用 AI 服务 -\> 获取结果。
-  * [ ] 6. **Markdown 渲染**:
-      * 在 `ais/renderer.py` 中创建一个函数，接收文本并使用 `rich.markdown.Markdown` 打印到终端。
-      * 将上一步获取的 AI 结果通过此函数渲染。
-
-#### **Phase 2: Shell 集成与自动错误分析**
-
-  * [ ] 7. **Shell 钩子脚本**:
-      * 在 `scripts/hook.sh` 中编写 `bash` 和 `zsh` 的钩子函数。
-      * 这个脚本需要能捕获退出码 `$?` 和 `stderr`，并将它们写入一个可预测的临时文件路径 (例如 `/tmp/ais_last_command.log`)。
-      * 如果退出码为 `0` 或 `130` (`Ctrl+C`)，则不执行任何操作。
-      * 否则，调用 `ais _internal_analyze` (一个隐藏的 Typer 命令)。
-  * [ ] 8. **上下文收集**:
-      * 在 `ais/context.py` 中编写函数，用于获取：
-          * 当前工作目录 (`os.getcwd()`)
-          * Git 状态（分支、未提交文件等，可使用 `git` 命令的 `subprocess` 调用）
-          * 操作系统信息 (`platform.system()`)
-          * 最近的命令历史 (可以从 shell history 文件读取一小部分)。
-  * [ ] 9. **Prompt 构建**:
-      * 在 `ais/prompter.py` 中创建一个函数，它接收错误信息 (`stderr`) 和 `context.py` 收集的上下文，然后生成一个高质量、结构化的 prompt，发送给 AI。
-  * [ ] 10. **实现 `_internal_analyze` 命令**:
-      * 在 `main.py` 中添加一个隐藏的 Typer 命令 (例如，`_internal_analyze`)，它由 Shell 钩子调用。
-      * 这个命令负责编排整个自动分析流程：读取临时文件 -\> 收集上下文 -\> 构建 prompt -\> 调用 AI -\> 渲染结果。
-
-#### **Phase 3: 交互式修复与用户统计**
-
-  * [ ] 11. **交互式命令执行**:
-      * 在 `ais/interactive.py` 中，使用 `questionary` 实现 "Execute", "Edit", "Cancel" 流程。
-      * 当 AI 的回复中包含可执行的命令代码块时，触发此交互流程。
-  * [ ] 12. **数据库设置**:
-      * 在 `ais/models.py` 中用 `SQLModel` 定义 `CommandHistory` 表。
-      * 在 `ais/db.py` 中编写初始化数据库和插入记录的函数。
-  * [ ] 13. **用户使用情况统计**:
-      * 在每次 AI 调用（无论是直接提问还是错误分析）后，将相关信息（用户名、时间戳、命令、是否成功、AI建议等）存入 SQLite 数据库。
-  * [ ] 14. **实现 `ais stats` 命令**:
-      * 在 `main.py` 中创建 `stats` 子命令。
-      * 该命令从数据库中读取当前用户的历史记录，进行简单的分析（例如，最常出错的命令、AI 使用频率等），并以表格形式（`rich.table.Table`）展示给用户。
-
-#### **Phase 4: 完善与打包**
-
-  * [ ] 15. **添加更多 AI 服务**:
-      * 在 `ai_services.py` 中实现 `OllamaService` 和一个通用的 `OpenAICompatibleService`。
-  * [ ] 16. **编写安装说明**:
-      * 在 `README.md` 中详细说明用户如何安装 `ais`，以及如何在他们的 `.bashrc` 或 `.zshrc` 中添加钩子脚本。
-  * [ ] 17. **编写测试**:
-      * 为核心功能（如上下文收集、Prompt 构建、AI 服务调用等）编写单元测试。
-  * [ ] 18. **打包发布**:
-      * 确保 `pyproject.toml` 配置正确，项目可以被 `pip` 打包和安装。
-
-
-这个 TODO 列表将引导你从一个最小可行产品（MVP）开始，逐步添加功能，最终实现一个完整而强大的终端助手。祝你开发顺利！
+* [ ] 1. **(config.py)**: 实现 `TOML` 格式配置文件的读取与写入。
+* [ ] 2. **(cli.py)**: 实现 `ais config` 子命令，允许用户未来设置自己的 API 密钥或切换 AI Provider。
+* [ ] 3. **(cli.py)**: 实现 `ais report` 子命令，从 SQLite 数据库查询数据并使用 `rich.table.Table` 美观地展示用户的使用分析。
+* [ ] 4. **(渲染增强)**: 改进流式输出的最终效果。在流式输出文本的同时，将所有文本拼接成一个完整的字符串。当流结束后，使用 `rich.markdown.Markdown` 将这个完整字符串**重新渲染一次**，以获得最佳的代码高亮和格式化效果。
+* [ ] 5. **(文档与打包)**: 编写详细的 `README.md`，包括 `uv` 安装步骤和 `source` shell 脚本的说明。配置 `pyproject.toml` 以支持通过 `uv pip install .` 进行本地安装。
