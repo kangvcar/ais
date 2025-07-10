@@ -167,7 +167,7 @@
       * **流式渲染**: `explanation` 字段使用 `rich.markdown.Markdown` 进行流式渲染。
       * **增强交互菜单**: 使用 `questionary` 库生成，包含风险级别显示：
         ```
-        🤖 AI Analysis Complete
+        🤖 AI 错误分析
         
         [错误分析内容以流式方式显示]
         
