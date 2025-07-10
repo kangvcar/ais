@@ -10,24 +10,38 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
 authors = [
-    {name = "AIS Team"},
+    {name = "AIS Team", email = "ais@example.com"},
 ]
+maintainers = [
+    {name = "AIS Team", email = "ais@example.com"},
+]
+keywords = ["ai", "terminal", "assistant", "cli", "error-analysis", "shell", "automation"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
     "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "Intended Audience :: End Users/Desktop",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Shells",
+    "Topic :: System :: System Shells",
+    "Topic :: Terminals",
+    "Topic :: Utilities",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
     "click>=8.0.0",
-    "rich>=13.0.0",
+    "rich>=13.0.0", 
     "questionary>=2.0.0",
-    "httpx>=0.24.0",
+    "httpx[socks]>=0.24.0",
     "toml>=0.10.2",
     "sqlmodel>=0.0.14",
 ]
@@ -40,4 +54,54 @@ packages = ["ais"]
 
 [project.urls]
 Homepage = "https://github.com/ais-cli/ais"
+Repository = "https://github.com/ais-cli/ais"
+Documentation = "https://github.com/ais-cli/ais#readme"
 Issues = "https://github.com/ais-cli/ais/issues"
+Changelog = "https://github.com/ais-cli/ais/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0", 
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
+]
+
+[tool.hatch.version]
+path = "ais/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["ais"]
+include = [
+    "ais/**/*.py",
+    "shell/integration.sh",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "ais/",
+    "shell/",
+    "README.md",
+    "LICENSE",
+    "pyproject.toml",
+    "install.sh",
+    "uninstall.sh",
+]
+
+[tool.black]
+line-length = 100
+target-version = ['py38']
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
