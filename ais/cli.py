@@ -11,7 +11,7 @@ console = Console()
 
 
 @click.group()
-@click.version_option()
+@click.version_option(version="0.1.0", prog_name="ais")
 def main():
     """AIS - AI-powered terminal assistant."""
     pass
@@ -438,6 +438,108 @@ def learn_command(topic):
             
     except Exception as e:
         console.print(f"[red]学习功能出错: {e}[/red]")
+
+
+@main.command("setup-shell")
+def setup_shell():
+    """设置 shell 集成。"""
+    import os
+    
+    console.print("[bold blue]🔧 设置 Shell 集成[/bold blue]")
+    
+    # 检测 shell 类型
+    shell = os.environ.get('SHELL', '/bin/bash')
+    shell_name = os.path.basename(shell)
+    
+    # 获取集成脚本路径
+    script_path = os.path.join(os.path.dirname(__file__), '..', 'shell', 'integration.sh')
+    script_path = os.path.abspath(script_path)
+    
+    console.print(f"检测到的 Shell: {shell_name}")
+    console.print(f"集成脚本路径: {script_path}")
+    
+    if not os.path.exists(script_path):
+        console.print("[red]❌ 集成脚本不存在[/red]")
+        return
+    
+    # 检测配置文件
+    config_files = {
+        'bash': ['~/.bashrc', '~/.bash_profile'],
+        'zsh': ['~/.zshrc'],
+    }
+    
+    target_files = config_files.get(shell_name, ['~/.bashrc'])
+    
+    console.print(f"\n[bold yellow]📝 请手动添加以下内容到您的 shell 配置文件中:[/bold yellow]")
+    
+    for config_file in target_files:
+        expanded_path = os.path.expanduser(config_file)
+        if os.path.exists(expanded_path):
+            console.print(f"\n编辑文件: [bold]{config_file}[/bold]")
+            break
+    else:
+        console.print(f"\n编辑文件: [bold]{target_files[0]}[/bold]")
+    
+    console.print(f"""
+[dim]# START AIS INTEGRATION[/dim]
+[green]if [ -f "{script_path}" ]; then
+    source "{script_path}"
+fi[/green]
+[dim]# END AIS INTEGRATION[/dim]
+
+然后运行: [bold]source ~/.bashrc[/bold] 或重启终端
+
+💡 或者临时测试: [bold]source {script_path}[/bold]
+""")
+
+
+@main.command("test-integration")
+def test_integration():
+    """测试 shell 集成是否工作。"""
+    console.print("[bold blue]🧪 测试 Shell 集成[/bold blue]")
+    
+    try:
+        # 模拟一个错误命令的分析
+        console.print("模拟命令错误: mdkirr /test")
+        
+        from .context import collect_context
+        from .ai import analyze_error
+        from .database import save_command_log
+        import os
+        
+        # 模拟上下文收集
+        context = collect_context("mdkirr /test", 127, "mdkirr: command not found")
+        config = get_config()
+        
+        console.print("✅ 上下文收集: 成功")
+        
+        # 测试 AI 分析
+        analysis = analyze_error("mdkirr /test", 127, "mdkirr: command not found", context, config)
+        
+        console.print("✅ AI 分析: 成功")
+        
+        # 测试数据库保存
+        username = os.getenv('USER', 'test')
+        log_id = save_command_log(
+            username=username,
+            command="mdkirr /test",
+            exit_code=127,
+            stderr="mdkirr: command not found",
+            context=context,
+            ai_explanation=analysis.get('explanation', ''),
+            ai_suggestions=analysis.get('suggestions', [])
+        )
+        
+        console.print(f"✅ 数据库保存: 成功 (ID: {log_id})")
+        
+        console.print("\n[bold green]🎉 所有组件都工作正常！[/bold green]")
+        console.print("如果您遇到自动分析不工作的问题，请:")
+        console.print("1. 运行 'ais setup-shell' 设置 shell 集成")
+        console.print("2. 确保您在交互式终端中")
+        console.print("3. 重新加载 shell 配置")
+        
+    except Exception as e:
+        console.print(f"[red]❌ 测试失败: {e}[/red]")
 
 
 if __name__ == "__main__":
