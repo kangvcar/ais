@@ -39,22 +39,14 @@ _ais_precmd() {
     if [ $_ais_last_exit_code -ne 0 ] && [ $_ais_last_exit_code -ne 130 ]; then
         # 检查功能是否开启
         if _ais_check_auto_analysis; then
-            # 异步调用分析，避免阻塞用户操作
-            # 使用 nohup 确保即使 shell 关闭也能完成
-            (
-                # 捕获 stderr，有些命令的错误信息在 stderr 中
-                local stderr_output=""
-                
-                # 简单获取上一个命令的 stderr（这里简化处理）
-                # 实际实现中可能需要更复杂的机制来捕获 stderr
-                
-                # 调用 ais analyze 进行分析
-                ais analyze \
-                    --exit-code "$_ais_last_exit_code" \
-                    --command "$_ais_last_command" \
-                    --stderr "$stderr_output" \
-                    2>/dev/null
-            ) &
+            # 同步调用分析，立即显示结果和交互菜单
+            echo  # 添加空行分隔
+            
+            # 调用 ais analyze 进行分析
+            ais analyze \
+                --exit-code "$_ais_last_exit_code" \
+                --command "$_ais_last_command" \
+                --stderr ""
         fi
     fi
 }
