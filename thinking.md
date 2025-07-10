@@ -93,7 +93,7 @@
             # 检查功能是否开启
             if grep -q "auto_analysis = true" ~/.config/ais/config.toml 2>/dev/null; then
               # 异步调用分析，避免阻塞用户操作
-              ais _analyze --exit-code $_ais_last_exit_code --command "$_ais_last_command" &
+              ais analyze --exit-code $_ais_last_exit_code --command "$_ais_last_command" &
             fi
           fi
         }
@@ -114,7 +114,7 @@
           * 集成脚本会检查配置文件状态来决定是否启用分析。
 
 2.  **智能上下文收集** - 优化版本:
-    `ais _analyze` 命令被触发后，采用分级收集策略：
+    `ais analyze` 命令被触发后，采用分级收集策略：
 
       * **核心级别** (总是收集):
           * 错误命令和退出码

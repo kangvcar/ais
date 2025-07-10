@@ -165,5 +165,60 @@ def list_provider():
         console.print(f"[red]列出提供商失败: {e}[/red]")
 
 
+@main.command("_analyze")
+@click.option('--exit-code', type=int, required=True, help='命令退出码')
+@click.option('--command', required=True, help='失败的命令')
+@click.option('--stderr', default='', help='错误输出')
+def analyze_error(exit_code, command, stderr):
+    """分析命令错误（内部命令）。"""
+    try:
+        from .context import collect_context
+        from .ai import analyze_error
+        from .database import save_command_log
+        import os
+        
+        # 收集上下文信息
+        context = collect_context(command, exit_code, stderr)
+        
+        # 获取配置
+        config = get_config()
+        
+        # 使用 AI 分析错误
+        analysis = analyze_error(command, exit_code, stderr, context, config)
+        
+        # 保存到数据库
+        username = os.getenv('USER', 'unknown')
+        save_command_log(
+            username=username,
+            command=command,
+            exit_code=exit_code,
+            stderr=stderr,
+            context=context,
+            ai_explanation=analysis.get('explanation', ''),
+            ai_suggestions=analysis.get('suggestions', [])
+        )
+        
+        # 显示分析结果
+        if analysis.get('explanation'):
+            console.print("\n[bold blue]🤖 AI 错误分析:[/bold blue]")
+            console.print(Markdown(analysis['explanation']))
+        
+        suggestions = analysis.get('suggestions', [])
+        if suggestions:
+            console.print("\n[bold green]💡 建议的解决方案:[/bold green]")
+            for i, suggestion in enumerate(suggestions, 1):
+                risk_color = {
+                    'safe': 'green',
+                    'moderate': 'yellow', 
+                    'dangerous': 'red'
+                }.get(suggestion.get('risk_level', 'safe'), 'green')
+                
+                console.print(f"{i}. [{risk_color}]{suggestion.get('description', '')}[/{risk_color}]")
+                console.print(f"   命令: [bold]{suggestion.get('command', '')}[/bold]")
+        
+    except Exception as e:
+        console.print(f"[red]分析失败: {e}[/red]")
+
+
 if __name__ == "__main__":
     main()
