@@ -73,7 +73,51 @@ def save_config(config: Dict[str, Any]) -> None:
 
 
 def set_config(key: str, value: Any) -> None:
-    """Set a configuration value."""
+    """设置配置项。"""
     config = get_config()
     config[key] = value
+    save_config(config)
+
+
+def add_provider(name: str, base_url: str, model_name: str, api_key: str = None) -> None:
+    """添加新的 AI 服务商。"""
+    config = get_config()
+    
+    if 'providers' not in config:
+        config['providers'] = {}
+    
+    provider = {
+        'base_url': base_url,
+        'model_name': model_name,
+    }
+    
+    if api_key:
+        provider['api_key'] = api_key
+    
+    config['providers'][name] = provider
+    save_config(config)
+
+
+def remove_provider(name: str) -> None:
+    """删除 AI 服务商。"""
+    config = get_config()
+    
+    if name not in config.get('providers', {}):
+        raise ValueError(f"提供商 '{name}' 不存在")
+    
+    if name == config.get('default_provider'):
+        raise ValueError("不能删除当前使用的默认提供商")
+    
+    del config['providers'][name]
+    save_config(config)
+
+
+def use_provider(name: str) -> None:
+    """切换默认 AI 服务商。"""
+    config = get_config()
+    
+    if name not in config.get('providers', {}):
+        raise ValueError(f"提供商 '{name}' 不存在")
+    
+    config['default_provider'] = name
     save_config(config)
