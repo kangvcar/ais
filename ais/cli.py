@@ -183,6 +183,19 @@ def analyze_error(exit_code, command, stderr):
         # 获取配置
         config = get_config()
         
+        # 检查是否有相似的历史错误
+        from .database import get_similar_commands
+        similar_logs = get_similar_commands(command, 3)
+        
+        if similar_logs:
+            console.print("\n[bold yellow]🔍 发现相似的历史错误[/bold yellow]")
+            for i, log in enumerate(similar_logs, 1):
+                time_str = log.timestamp.strftime("%m-%d %H:%M")
+                status = "已解决" if log.ai_explanation else "未分析"
+                console.print(f"  {i}. {log.original_command} ({time_str}) - {status}")
+            
+            console.print("[dim]💡 你可以使用 'ais history-detail <索引>' 查看之前的分析[/dim]")
+        
         # 使用 AI 分析错误
         analysis = analyze_error(command, exit_code, stderr, context, config)
         
@@ -212,6 +225,219 @@ def analyze_error(exit_code, command, stderr):
         
     except Exception as e:
         console.print(f"[red]分析失败: {e}[/red]")
+
+
+@main.command("history")
+@click.option('--limit', '-n', default=10, help='显示的历史记录数量')
+@click.option('--failed-only', is_flag=True, help='只显示失败的命令')
+@click.option('--command-filter', help='按命令名称过滤')
+def show_history(limit, failed_only, command_filter):
+    """显示命令历史记录。"""
+    try:
+        from .database import get_recent_logs, get_similar_commands
+        from rich.table import Table
+        from rich.text import Text
+        import json
+        
+        console.print(f"\n[bold blue]📚 最近的命令历史[/bold blue]")
+        
+        # 获取历史记录
+        if command_filter:
+            logs = get_similar_commands(command_filter, limit)
+        else:
+            logs = get_recent_logs(limit)
+        
+        if failed_only:
+            logs = [log for log in logs if log.exit_code != 0]
+        
+        if not logs:
+            console.print("[yellow]没有找到符合条件的历史记录[/yellow]")
+            return
+        
+        # 创建表格
+        table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("时间", style="dim", width=16)
+        table.add_column("命令", style="bold", min_width=20)
+        table.add_column("状态", justify="center", width=8)
+        table.add_column("分析", width=20)
+        
+        for log in logs:
+            # 格式化时间
+            time_str = log.timestamp.strftime("%m-%d %H:%M")
+            
+            # 状态显示
+            if log.exit_code == 0:
+                status = Text("✅ 成功", style="green")
+            else:
+                status = Text(f"❌ {log.exit_code}", style="red")
+            
+            # 命令显示（截断长命令）
+            cmd_display = log.original_command
+            if len(cmd_display) > 30:
+                cmd_display = cmd_display[:27] + "..."
+            
+            # 是否有 AI 分析
+            has_analysis = "🤖 已分析" if log.ai_explanation else ""
+            
+            table.add_row(time_str, cmd_display, status, has_analysis)
+        
+        console.print(table)
+        
+        # 提示用户可以查看详情
+        console.print(f"\n[dim]💡 使用 'ais history-detail <索引>' 查看详细分析[/dim]")
+        
+    except Exception as e:
+        console.print(f"[red]获取历史记录失败: {e}[/red]")
+
+
+@main.command("history-detail")
+@click.argument('index', type=int)
+def show_history_detail(index):
+    """显示历史命令的详细分析。"""
+    try:
+        from .database import get_recent_logs
+        import json
+        
+        logs = get_recent_logs(50)  # 获取更多记录用于索引
+        
+        if index < 1 or index > len(logs):
+            console.print(f"[red]索引超出范围。请使用 1-{len(logs)} 之间的数字[/red]")
+            return
+        
+        log = logs[index - 1]
+        
+        console.print(f"\n[bold blue]📖 命令详细信息[/bold blue]")
+        console.print("=" * 60)
+        
+        # 基本信息
+        console.print(f"[bold]时间:[/bold] {log.timestamp}")
+        console.print(f"[bold]用户:[/bold] {log.username}")
+        console.print(f"[bold]命令:[/bold] {log.original_command}")
+        console.print(f"[bold]退出码:[/bold] {log.exit_code}")
+        
+        if log.stderr_output:
+            console.print(f"[bold]错误输出:[/bold] {log.stderr_output}")
+        
+        # 上下文信息
+        if log.context_json:
+            try:
+                context = json.loads(log.context_json)
+                console.print(f"\n[bold cyan]📋 执行上下文:[/bold cyan]")
+                console.print(f"工作目录: {context.get('cwd', 'N/A')}")
+                if context.get('git_branch'):
+                    console.print(f"Git 分支: {context.get('git_branch')}")
+            except:
+                pass
+        
+        # AI 分析
+        if log.ai_explanation:
+            console.print(f"\n[bold green]🤖 AI 分析:[/bold green]")
+            console.print(Markdown(log.ai_explanation))
+        
+        # AI 建议
+        if log.ai_suggestions_json:
+            try:
+                suggestions = json.loads(log.ai_suggestions_json)
+                console.print(f"\n[bold yellow]💡 AI 建议:[/bold yellow]")
+                for i, suggestion in enumerate(suggestions, 1):
+                    risk_icon = '✅' if suggestion.get('risk_level') == 'safe' else '⚠️'
+                    console.print(f"{i}. {suggestion.get('command', 'N/A')} {risk_icon}")
+                    console.print(f"   {suggestion.get('description', '')}")
+            except:
+                pass
+        
+        console.print("=" * 60)
+        
+    except Exception as e:
+        console.print(f"[red]获取详细信息失败: {e}[/red]")
+
+
+@main.command("suggest")
+@click.argument('task')
+def suggest_command(task):
+    """根据任务描述建议命令。"""
+    try:
+        from .ai import ask_ai
+        
+        config = get_config()
+        
+        suggestion_prompt = f"""
+        用户想要完成这个任务："{task}"
+        
+        请提供：
+        1. 推荐的命令（按安全性排序）
+        2. 每个命令的详细解释
+        3. 使用注意事项和风险提示
+        4. 相关的学习资源或延伸知识
+        
+        请用中文回答，使用 Markdown 格式。重点关注安全性和最佳实践。
+        """
+        
+        response = ask_ai(suggestion_prompt, config)
+        
+        if response:
+            console.print(f"\n[bold blue]💡 任务建议: {task}[/bold blue]")
+            console.print()
+            console.print(Markdown(response))
+        else:
+            console.print("[red]无法获取建议，请检查网络连接[/red]")
+            
+    except Exception as e:
+        console.print(f"[red]建议功能出错: {e}[/red]")
+
+
+@main.command("learn")
+@click.argument('topic', required=False)
+def learn_command(topic):
+    """学习命令行知识。"""
+    try:
+        from .ai import ask_ai
+        
+        if not topic:
+            # 显示学习主题
+            console.print("[bold blue]📚 可学习的主题:[/bold blue]")
+            topics = [
+                "git - Git 版本控制基础",
+                "ssh - 远程连接和密钥管理", 
+                "docker - 容器化技术基础",
+                "vim - 文本编辑器使用",
+                "grep - 文本搜索和正则表达式",
+                "find - 文件查找技巧",
+                "permissions - Linux 权限管理",
+                "process - 进程管理",
+                "network - 网络工具和诊断"
+            ]
+            
+            for i, topic in enumerate(topics, 1):
+                console.print(f"  {i}. {topic}")
+            
+            console.print(f"\n[dim]使用 'ais learn <主题>' 开始学习，例如: ais learn git[/dim]")
+            return
+        
+        # 生成学习内容
+        config = get_config()
+        
+        learning_prompt = f"""
+        用户想学习关于 "{topic}" 的命令行知识。请提供：
+        1. 这个主题的简要介绍和重要性
+        2. 5-10 个最常用的命令和示例
+        3. 每个命令的简单解释和使用场景
+        4. 实践建议和学习路径
+        
+        请用中文回答，使用 Markdown 格式，让内容易于理解和实践。
+        """
+        
+        response = ask_ai(learning_prompt, config)
+        
+        if response:
+            console.print(f"\n[bold blue]📖 {topic.upper()} 学习指南[/bold blue]")
+            console.print()
+            console.print(Markdown(response))
+        else:
+            console.print("[red]无法获取学习内容，请检查网络连接[/red]")
+            
+    except Exception as e:
+        console.print(f"[red]学习功能出错: {e}[/red]")
 
 
 if __name__ == "__main__":
