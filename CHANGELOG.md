@@ -61,5 +61,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 配置说明和示例
 - 安全和隐私说明
 
-[Unreleased]: https://github.com/ais-cli/ais/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/ais-cli/ais/releases/tag/v0.1.0
+[Unreleased]: https://github.com/kangvcar/ais/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/kangvcar/ais/releases/tag/v0.1.0

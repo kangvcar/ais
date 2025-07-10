@@ -3,7 +3,7 @@
 # AIS - AI-powered terminal assistant
 # 卸载脚本
 # 
-# 使用方法: curl -sSL https://raw.githubusercontent.com/your-repo/ais/main/uninstall.sh | bash
+# 使用方法: curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/uninstall.sh | bash
 
 set -e  # 遇到错误立即退出
 
@@ -295,7 +295,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --help          显示此帮助信息"
             echo
             echo "快速卸载:"
-            echo "  curl -sSL https://raw.githubusercontent.com/your-repo/ais/main/uninstall.sh | bash"
+            echo "  curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/uninstall.sh | bash"
             exit 0
             ;;
         *)

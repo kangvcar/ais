@@ -2,16 +2,16 @@
 # AIS - AI-powered terminal assistant
 # 一键安装脚本
 # 
-# 快速安装: curl -sSL https://raw.githubusercontent.com/your-repo/ais/main/install.sh | bash
-# 从源码安装: curl -sSL https://raw.githubusercontent.com/your-repo/ais/main/install.sh | bash -s -- --from-source
+# 快速安装: curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/install.sh | bash
+# 从源码安装: curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/install.sh | bash -s -- --from-source
 # 
-# GitHub: https://github.com/your-repo/ais
+# GitHub: https://github.com/kangvcar/ais
 
 set -e  # 遇到错误立即退出
 
 # 版本信息
 AIS_VERSION="latest"
-GITHUB_REPO="your-repo/ais"
+GITHUB_REPO="kangvcar/ais"
 
 # 颜色定义
 RED='\033[0;31m'
@@ -350,10 +350,10 @@ while [[ $# -gt 0 ]]; do
             echo "  --help          显示此帮助信息"
             echo
             echo "快速安装:"
-            echo "  curl -sSL https://raw.githubusercontent.com/$GITHUB_REPO/main/install.sh | bash"
+            echo "  curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/install.sh | bash"
             echo
             echo "从源码安装:"
-            echo "  curl -sSL https://raw.githubusercontent.com/$GITHUB_REPO/main/install.sh | bash -s -- --from-source"
+            echo "  curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/install.sh | bash -s -- --from-source"
             exit 0
             ;;
         *)

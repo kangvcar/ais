@@ -19,13 +19,13 @@
 ### 一键安装（推荐）
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/your-repo/ais/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/install.sh | bash
 ```
 
 ### 从源码安装
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/your-repo/ais/main/install.sh | bash -s -- --from-source
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/install.sh | bash -s -- --from-source
 ```
 
 ### 手动安装
@@ -37,7 +37,7 @@ curl -sSL https://raw.githubusercontent.com/your-repo/ais/main/install.sh | bash
 pipx install ais-cli
 
 # 或从源码安装
-git clone https://github.com/your-repo/ais.git
+git clone https://github.com/kangvcar/ais.git
 cd ais
 pipx install -e .
 ```
@@ -171,7 +171,7 @@ echo $PATH | grep -q ".local/bin" || echo "PATH 配置有问题"
 export PATH="$HOME/.local/bin:$PATH"
 
 # 或重新安装
-curl -sSL https://raw.githubusercontent.com/your-repo/ais/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/install.sh | bash
 ```
 
 ### 自动分析不工作
@@ -213,7 +213,7 @@ brew install python@3.8
 
 ```bash
 # 下载并运行卸载脚本
-curl -sSL https://raw.githubusercontent.com/your-repo/ais/main/uninstall.sh | bash
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/uninstall.sh | bash
 
 # 或手动卸载
 pipx uninstall ais-cli
@@ -227,7 +227,7 @@ pipx uninstall ais-cli
 ### 开发环境设置
 
 ```bash
-git clone https://github.com/your-repo/ais.git
+git clone https://github.com/kangvcar/ais.git
 cd ais
 python3 -m venv venv
 source venv/bin/activate

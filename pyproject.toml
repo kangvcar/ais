@@ -53,11 +53,11 @@ ais = "ais.cli:main"
 packages = ["ais"]
 
 [project.urls]
-Homepage = "https://github.com/ais-cli/ais"
-Repository = "https://github.com/ais-cli/ais"
-Documentation = "https://github.com/ais-cli/ais#readme"
-Issues = "https://github.com/ais-cli/ais/issues"
-Changelog = "https://github.com/ais-cli/ais/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/kangvcar/ais"
+Repository = "https://github.com/kangvcar/ais"
+Documentation = "https://github.com/kangvcar/ais#readme"
+Issues = "https://github.com/kangvcar/ais/issues"
+Changelog = "https://github.com/kangvcar/ais/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
