@@ -140,5 +140,30 @@ def use_provider(name):
         console.print(f"[red]切换提供商失败: {e}[/red]")
 
 
+@main.command("list-provider")
+def list_provider():
+    """列出所有可用的 AI 服务商。"""
+    try:
+        config = get_config()
+        providers = config.get('providers', {})
+        
+        if not providers:
+            console.print("[yellow]没有配置任何 AI 服务商[/yellow]")
+            return
+            
+        console.print("[green]可用的 AI 服务商:[/green]")
+        for name, provider in providers.items():
+            # 显示当前使用的提供商
+            current = "✓" if name == config.get('default_provider') else " "
+            model = provider.get('model_name', 'N/A')
+            url = provider.get('base_url', 'N/A')
+            has_key = "🔑" if provider.get('api_key') else "  "
+            
+            console.print(f"{current} {name}: {model} ({url}) {has_key}")
+            
+    except Exception as e:
+        console.print(f"[red]列出提供商失败: {e}[/red]")
+
+
 if __name__ == "__main__":
     main()
