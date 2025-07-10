@@ -1,8 +1,3 @@
----
-description: 
-globs: 
-alwaysApply: true
----
 
 ### **`ais`: 智能终端助手 - 最终技术设计规格书**
 
