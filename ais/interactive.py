@@ -143,33 +143,34 @@ def show_interactive_menu(suggestions: List[Dict[str, Any]], console: Console) -
             description = suggestion.get('description', '无描述')
             risk_level = suggestion.get('risk_level', 'safe')
             
-            # 风险等级图标
-            risk_icons = {
-                'safe': '🟢',
-                'moderate': '🟡', 
-                'dangerous': '🔴'
-            }
+            # 风险等级图标 - 按用户要求的格式
+            risk_icon = '✅' if risk_level == 'safe' else '⚠️'
             
-            choice_text = f"{risk_icons.get(risk_level, '🟢')} {i}. {description[:50]}..."
+            # 格式化选项文本：编号. 命令名称    风险图标 (描述)
+            choice_text = f"{i}. {command:<25} {risk_icon} ({description})"
             choices.append({
                 'name': choice_text,
                 'value': f'execute_{i-1}'
             })
         
-        # 添加其他选项
+        # 添加分割线
+        separator_line = '-' * 75
+        choices.append(questionary.Separator(separator_line))
+        
+        # 添加固定选项 - 继续编号
+        next_num = len(suggestions) + 1
         choices.extend([
-            questionary.Separator(),
-            {'name': '📖 查看命令详情...', 'value': 'details'},
-            {'name': '✏️  编辑命令...', 'value': 'edit'},
-            {'name': '💬 询问后续问题', 'value': 'question'},
-            {'name': '🚪 退出', 'value': 'exit'}
+            {'name': f'{next_num}. Edit a command...', 'value': 'edit'},
+            {'name': f'{next_num + 1}. Ask follow-up question', 'value': 'question'},
+            {'name': f'{next_num + 2}. Exit', 'value': 'exit'}
         ])
         
         # 显示菜单
         action = questionary.select(
-            "请选择一个操作:",
+            "Select an action:",
             choices=choices,
-            instruction="(使用方向键选择，回车确认)"
+            instruction="",
+            use_shortcuts=True
         ).ask()
         
         if not action or action == 'exit':
@@ -253,21 +254,28 @@ def show_interactive_menu(suggestions: List[Dict[str, Any]], console: Console) -
 
 def show_simple_menu(suggestions: List[Dict[str, Any]], console: Console) -> None:
     """简化版菜单（当 questionary 不可用时）。"""
-    console.print("\n[bold cyan]💡 可用的解决方案:[/bold cyan]")
+    console.print()
+    console.print("? Select an action:")
     
     for i, suggestion in enumerate(suggestions, 1):
+        command = suggestion.get('command', 'N/A')
+        description = suggestion.get('description', '无描述')
         risk_level = suggestion.get('risk_level', 'safe')
-        risk_colors = {'safe': 'green', 'moderate': 'yellow', 'dangerous': 'red'}
-        risk_texts = {
-            'safe': '🟢 安全',
-            'moderate': '🟡 谨慎',
-            'dangerous': '🔴 危险'
-        }
         
-        console.print(f"\n{i}. [{risk_colors[risk_level]}]{risk_texts[risk_level]}[/{risk_colors[risk_level]}] {suggestion.get('description', '')}")
-        console.print(f"   命令: [bold]{suggestion.get('command', '')}[/bold]")
+        # 风险等级图标 - 按用户要求的格式
+        risk_icon = '✅' if risk_level == 'safe' else '⚠️'
+        
+        # 为第一个选项添加箭头指示符
+        prefix = "  ▸ " if i == 1 else "    "
+        console.print(f"{prefix}{i}. {command:<25} {risk_icon} ({description})")
         
         if suggestion.get('explanation'):
-            console.print(f"   说明: {suggestion['explanation']}")
+            console.print(f"       [dim]说明: {suggestion['explanation']}[/dim]")
     
-    console.print(f"\n[dim]提示: 你可以手动复制并执行上述命令，或者安装 questionary 库以获得更好的交互体验。[/dim]")
+    console.print("    " + "-" * 75)
+    next_num = len(suggestions) + 1
+    console.print(f"    {next_num}. Edit a command...")
+    console.print(f"    {next_num + 1}. Ask follow-up question")
+    console.print(f"    {next_num + 2}. Exit")
+    
+    console.print(f"\n[dim]提示: 你可以手动复制并执行上述命令，或者在交互式终端中获得更好的体验。[/dim]")

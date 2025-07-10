@@ -200,13 +200,12 @@ def analyze_error(exit_code, command, stderr):
         
         # 显示分析结果
         if analysis.get('explanation'):
-            console.print("\n[bold blue]🤖 AI 错误分析:[/bold blue]")
+            console.print("\n[bold blue]🤖 AI 错误分析[/bold blue]")
+            console.print()
             console.print(Markdown(analysis['explanation']))
         
         suggestions = analysis.get('suggestions', [])
         if suggestions:
-            console.print("\n[bold green]💡 建议的解决方案:[/bold green]")
-            
             # 显示交互式菜单
             from .interactive import show_interactive_menu
             show_interactive_menu(suggestions, console)
