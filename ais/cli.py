@@ -165,12 +165,12 @@ def list_provider():
         console.print(f"[red]列出提供商失败: {e}[/red]")
 
 
-@main.command("_analyze")
+@main.command("analyze")
 @click.option('--exit-code', type=int, required=True, help='命令退出码')
 @click.option('--command', required=True, help='失败的命令')
 @click.option('--stderr', default='', help='错误输出')
 def analyze_error(exit_code, command, stderr):
-    """分析命令错误（内部命令）。"""
+    """分析命令错误。"""
     try:
         from .context import collect_context
         from .ai import analyze_error

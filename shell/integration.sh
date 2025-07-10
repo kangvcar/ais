@@ -48,8 +48,8 @@ _ais_precmd() {
                 # 简单获取上一个命令的 stderr（这里简化处理）
                 # 实际实现中可能需要更复杂的机制来捕获 stderr
                 
-                # 调用 ais _analyze 进行分析
-                ais _analyze \
+                # 调用 ais analyze 进行分析
+                ais analyze \
                     --exit-code "$_ais_last_exit_code" \
                     --command "$_ais_last_command" \
                     --stderr "$stderr_output" \
@@ -90,7 +90,7 @@ fi
 # 提供手动分析功能的便捷函数
 ais_analyze_last() {
     if [ -n "$_ais_last_command" ] && [ $_ais_last_exit_code -ne 0 ]; then
-        ais _analyze \
+        ais analyze \
             --exit-code "$_ais_last_exit_code" \
             --command "$_ais_last_command"
     else
