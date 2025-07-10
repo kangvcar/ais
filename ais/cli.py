@@ -206,15 +206,10 @@ def analyze_error(exit_code, command, stderr):
         suggestions = analysis.get('suggestions', [])
         if suggestions:
             console.print("\n[bold green]💡 建议的解决方案:[/bold green]")
-            for i, suggestion in enumerate(suggestions, 1):
-                risk_color = {
-                    'safe': 'green',
-                    'moderate': 'yellow', 
-                    'dangerous': 'red'
-                }.get(suggestion.get('risk_level', 'safe'), 'green')
-                
-                console.print(f"{i}. [{risk_color}]{suggestion.get('description', '')}[/{risk_color}]")
-                console.print(f"   命令: [bold]{suggestion.get('command', '')}[/bold]")
+            
+            # 显示交互式菜单
+            from .interactive import show_interactive_menu
+            show_interactive_menu(suggestions, console)
         
     except Exception as e:
         console.print(f"[red]分析失败: {e}[/red]")
