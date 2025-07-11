@@ -34,9 +34,7 @@ def filter_sensitive_data(text: str) -> str:
 
     filtered_text = text
     for pattern in patterns:
-        filtered_text = re.sub(
-            pattern, lambda m: m.group().split()[0] + " ***", filtered_text
-        )
+        filtered_text = re.sub(pattern, lambda m: m.group().split()[0] + " ***", filtered_text)
 
     return filtered_text
 
@@ -56,9 +54,7 @@ def run_safe_command(command: str, timeout: int = 5) -> Optional[str]:
         return None
 
 
-def collect_core_context(
-    command: str, exit_code: int, stderr: str, cwd: str
-) -> Dict[str, Any]:
+def collect_core_context(command: str, exit_code: int, stderr: str, cwd: str) -> Dict[str, Any]:
     """收集核心级别的上下文信息。"""
     return {
         "command": command,
@@ -118,9 +114,7 @@ def collect_detailed_context(config: Dict[str, Any]) -> Dict[str, Any]:
         env_vars = {
             key: value[:100]
             for key, value in os.environ.items()
-            if not any(
-                sensitive in key.lower() for sensitive in sensitive_keys
-            )
+            if not any(sensitive in key.lower() for sensitive in sensitive_keys)
         }
         context["environment"] = env_vars
     except Exception:

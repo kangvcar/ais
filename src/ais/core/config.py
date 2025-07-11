@@ -84,9 +84,7 @@ def _validate_provider_exists(config: Dict[str, Any], name: str) -> None:
         raise ValueError(f"提供商 '{name}' 不存在")
 
 
-def add_provider(
-    name: str, base_url: str, model_name: str, api_key: str = None
-) -> None:
+def add_provider(name: str, base_url: str, model_name: str, api_key: str = None) -> None:
     """添加新的 AI 服务商。"""
     config = get_config()
 
