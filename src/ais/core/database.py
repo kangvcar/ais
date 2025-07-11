@@ -10,7 +10,7 @@ from sqlmodel import SQLModel, Field, create_engine, Session, select
 
 class CommandLog(SQLModel, table=True):
     """命令执行日志模型。"""
-    
+
     id: Optional[int] = Field(default=None, primary_key=True)
     timestamp: datetime = Field(default_factory=datetime.now)
     username: str
@@ -48,11 +48,11 @@ def save_command_log(
     stderr: str = None,
     context: Dict[str, Any] = None,
     ai_explanation: str = None,
-    ai_suggestions: List[Dict[str, Any]] = None
+    ai_suggestions: List[Dict[str, Any]] = None,
 ) -> int:
     """保存命令日志到数据库。"""
     init_database()
-    
+
     log = CommandLog(
         username=username,
         original_command=command,
@@ -60,9 +60,9 @@ def save_command_log(
         stderr_output=stderr,
         context_json=json.dumps(context) if context else None,
         ai_explanation=ai_explanation,
-        ai_suggestions_json=json.dumps(ai_suggestions) if ai_suggestions else None
+        ai_suggestions_json=json.dumps(ai_suggestions) if ai_suggestions else None,
     )
-    
+
     engine = get_engine()
     with Session(engine) as session:
         session.add(log)
@@ -96,13 +96,16 @@ def get_log_by_id(log_id: int) -> Optional[CommandLog]:
 def get_similar_commands(command: str, limit: int = 5) -> List[CommandLog]:
     """获取相似的命令日志。"""
     keywords = command.split()[:3]  # 取前3个词
-    
-    statement = select(CommandLog).where(
-        CommandLog.exit_code != 0  # 只查询失败的命令
-    ).order_by(CommandLog.timestamp.desc()).limit(limit * 3)
-    
+
+    statement = (
+        select(CommandLog)
+        .where(CommandLog.exit_code != 0)  # 只查询失败的命令
+        .order_by(CommandLog.timestamp.desc())
+        .limit(limit * 3)
+    )
+
     all_logs = _execute_query(statement)
-    
+
     # 简单的相似性过滤
     similar_logs = []
     for log in all_logs:
@@ -111,5 +114,5 @@ def get_similar_commands(command: str, limit: int = 5) -> List[CommandLog]:
             similar_logs.append(log)
             if len(similar_logs) >= limit:
                 break
-    
+
     return similar_logs

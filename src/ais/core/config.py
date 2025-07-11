@@ -36,19 +36,19 @@ def get_default_config() -> Dict[str, Any]:
             "max_context_length": 4000,
             "async_analysis": True,
             "cache_analysis": True,
-        }
+        },
     }
 
 
 def get_config() -> Dict[str, Any]:
     """Get the current configuration."""
     config_path = get_config_path()
-    
+
     try:
         if config_path.exists():
             with open(config_path, "r") as f:
                 config = toml.load(f)
-            
+
             # Merge with defaults
             default_config = get_default_config()
             for key, value in default_config.items():
@@ -57,7 +57,7 @@ def get_config() -> Dict[str, Any]:
             return config
     except Exception:
         pass
-    
+
     # Fallback to default and save
     config = get_default_config()
     save_config(config)
@@ -67,7 +67,7 @@ def get_config() -> Dict[str, Any]:
 def save_config(config: Dict[str, Any]) -> None:
     """Save configuration to file."""
     config_path = get_config_path()
-    
+
     with open(config_path, "w") as f:
         toml.dump(config, f)
 
@@ -81,22 +81,22 @@ def set_config(key: str, value: Any) -> None:
 
 def _validate_provider_exists(config: Dict[str, Any], name: str) -> None:
     """验证提供商是否存在。"""
-    if name not in config.get('providers', {}):
+    if name not in config.get("providers", {}):
         raise ValueError(f"提供商 '{name}' 不存在")
 
 
 def add_provider(name: str, base_url: str, model_name: str, api_key: str = None) -> None:
     """添加新的 AI 服务商。"""
     config = get_config()
-    
-    if 'providers' not in config:
-        config['providers'] = {}
-    
-    provider = {'base_url': base_url, 'model_name': model_name}
+
+    if "providers" not in config:
+        config["providers"] = {}
+
+    provider = {"base_url": base_url, "model_name": model_name}
     if api_key:
-        provider['api_key'] = api_key
-    
-    config['providers'][name] = provider
+        provider["api_key"] = api_key
+
+    config["providers"][name] = provider
     save_config(config)
 
 
@@ -104,11 +104,11 @@ def remove_provider(name: str) -> None:
     """删除 AI 服务商。"""
     config = get_config()
     _validate_provider_exists(config, name)
-    
-    if name == config.get('default_provider'):
+
+    if name == config.get("default_provider"):
         raise ValueError("不能删除当前使用的默认提供商")
-    
-    del config['providers'][name]
+
+    del config["providers"][name]
     save_config(config)
 
 
@@ -116,5 +116,5 @@ def use_provider(name: str) -> None:
     """切换默认 AI 服务商。"""
     config = get_config()
     _validate_provider_exists(config, name)
-    config['default_provider'] = name
+    config["default_provider"] = name
     save_config(config)
