@@ -107,9 +107,9 @@ function Install-FromPyPI {
     
     try {
         if ($GlobalInstall) {
-            & $PythonCommand -m pip install --upgrade ais-cli
+            & $PythonCommand -m pip install --upgrade ais
         } else {
-            & $PythonCommand -m pip install --user --upgrade ais-cli
+            & $PythonCommand -m pip install --user --upgrade ais
         }
         
         if ($LASTEXITCODE -ne 0) {

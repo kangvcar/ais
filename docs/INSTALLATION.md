@@ -16,10 +16,10 @@
 
 ```bash
 # 使用 pip 安装
-pip install ais-cli
+pip install ais
 
 # 或使用 pipx（推荐，避免依赖冲突）
-pipx install ais-cli
+pipx install ais
 ```
 
 **优点**：
@@ -197,7 +197,7 @@ nonexistent_command
 python --version
 
 # 确保使用正确的 Python
-python3 -m pip install ais-cli
+python3 -m pip install ais
 ```
 
 ### 权限问题
@@ -207,7 +207,7 @@ python3 -m pip install ais-cli
 **解决方案**:
 ```bash
 # Linux/macOS
-sudo pip install ais-cli
+sudo pip install ais
 # 或
 pip install --user ais-cli
 
@@ -244,7 +244,7 @@ pip install --proxy http://proxy.example.com:8080 ais-cli
 
 ```bash
 # PyPI 安装的卸载
-pip uninstall ais-cli
+pip uninstall ais
 
 # Homebrew 安装的卸载
 brew uninstall ais
@@ -259,7 +259,7 @@ curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/uninstall.
 
 ```bash
 # PyPI 更新
-pip install --upgrade ais-cli
+pip install --upgrade ais
 
 # Homebrew 更新
 brew upgrade ais

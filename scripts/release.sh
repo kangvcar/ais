@@ -103,7 +103,7 @@ upload_to_testpypi() {
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         python3 -m twine upload --repository testpypi dist/*
         print_success "已上传到 TestPyPI"
-        print_info "测试安装: pip install --index-url https://test.pypi.org/simple/ ais-cli"
+        print_info "测试安装: pip install --index-url https://test.pypi.org/simple/ ais"
     else
         print_info "跳过 TestPyPI 上传"
     fi
@@ -117,7 +117,7 @@ upload_to_pypi() {
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         python3 -m twine upload dist/*
         print_success "已发布到 PyPI"
-        print_info "安装命令: pip install ais-cli"
+        print_info "安装命令: pip install ais"
     else
         print_info "跳过 PyPI 发布"
     fi

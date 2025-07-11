@@ -152,7 +152,7 @@ install_ais() {
     else
         print_info "从 PyPI 安装 AIS..."
         # 注意: 这里需要实际发布到PyPI后才能工作
-        pipx install ais-cli || {
+        pipx install ais || {
             print_warning "PyPI 安装失败，尝试从源码安装..."
             INSTALL_METHOD="source"
             install_ais
@@ -170,7 +170,7 @@ main() {
     echo
     
     # 检测安装方式
-    if [ -f "pyproject.toml" ] && grep -q "ais-cli" pyproject.toml 2>/dev/null; then
+    if [ -f "pyproject.toml" ] && grep -q "ais" pyproject.toml 2>/dev/null; then
         INSTALL_METHOD="local"
         print_info "检测到开发环境，将从当前目录安装"
     elif [[ "$1" == "--from-source" ]]; then
