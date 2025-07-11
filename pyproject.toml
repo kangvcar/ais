@@ -49,8 +49,7 @@ dependencies = [
 [project.scripts]
 ais = "ais.cli:main"
 
-[tool.hatch.build.targets.wheel]
-packages = ["ais"]
+
 
 [project.urls]
 Homepage = "https://github.com/kangvcar/ais"
