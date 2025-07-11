@@ -136,6 +136,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [publish-pypi, build]
     if: always() && needs.publish-pypi.result == 'success'
+    permissions:
+      contents: write
+      pull-requests: write
     
     steps:
     - name: Checkout
@@ -146,8 +149,22 @@ jobs:
         VERSION=${{ needs.build.outputs.version }}
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        git tag -a "v${VERSION}" -m "Release v${VERSION}" || echo "Tag may already exist"
-        git push origin "v${VERSION}" || echo "Tag may already exist on remote"
+        
+        # Check if tag already exists locally
+        if git rev-parse "v${VERSION}" >/dev/null 2>&1; then
+          echo "Tag v${VERSION} already exists locally"
+        else
+          git tag -a "v${VERSION}" -m "Release v${VERSION}"
+          echo "Created tag v${VERSION}"
+        fi
+        
+        # Check if tag already exists on remote
+        if git ls-remote --tags origin | grep -q "refs/tags/v${VERSION}$"; then
+          echo "Tag v${VERSION} already exists on remote"
+        else
+          git push origin "v${VERSION}"
+          echo "Pushed tag v${VERSION} to remote"
+        fi
     
     - name: Generate SHA256 for Homebrew
       id: sha256
@@ -189,6 +206,7 @@ jobs:
           This PR is automatically created by the release workflow.
         branch: homebrew-update-v${{ needs.build.outputs.version }}
         base: main
+        delete-branch: true
 
   create-github-release:
     runs-on: ubuntu-latest
