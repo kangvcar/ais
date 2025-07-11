@@ -3,7 +3,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.8+-blue.svg" alt="Python Version">
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
-  <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20macOS-lightgrey.svg" alt="Platform">
+  <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey.svg" alt="Platform">
 </p>
 
 **AIS (AI-powered terminal assistant)** 是一个智能终端助手，通过 AI 技术帮助用户：
@@ -16,30 +16,49 @@
 
 ## 🚀 快速安装
 
-### 一键安装（推荐）
+### 方法1: PyPI 安装（推荐）
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/install.sh | bash
-```
+# 使用 pip 安装
+pip install ais-cli
 
-### 从源码安装
-
-```bash
-curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/install.sh | bash -s -- --from-source
-```
-
-### 手动安装
-
-如果你已经有 Python 3.8+ 和 pipx：
-
-```bash
-# 从 PyPI 安装（即将支持）
+# 或使用 pipx (推荐)
 pipx install ais-cli
+```
 
-# 或从源码安装
+### 方法2: Homebrew 安装（macOS/Linux）
+
+```bash
+# 添加到 Homebrew 后即可使用
+brew install ais
+```
+
+### 方法3: Windows PowerShell 安装
+
+```powershell
+# 管理员模式运行 PowerShell
+iwr -useb https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.ps1 | iex
+```
+
+### 方法4: 一键安装脚本
+
+```bash
+# Linux/macOS 快速安装
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
+
+# 从源码安装
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --from-source
+```
+
+### 方法5: 手动安装
+
+```bash
+# 克隆仓库
 git clone https://github.com/kangvcar/ais.git
 cd ais
-pipx install -e .
+
+# 安装依赖并构建
+pip install -e .
 ```
 
 ## 🏁 开始使用

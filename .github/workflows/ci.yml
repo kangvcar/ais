@@ -13,7 +13,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
     
     steps:
@@ -63,13 +63,13 @@ jobs:
         pip install -e .
     
     - name: Run black
-      run: black --check ais/
+      run: black --check src/ais/
     
     - name: Run flake8
-      run: flake8 ais/
+      run: flake8 src/ais/
     
     - name: Run mypy
-      run: mypy ais/ || echo "MyPy check completed with warnings"
+      run: mypy src/ais/ || echo "MyPy check completed with warnings"
 
   build:
     runs-on: ubuntu-latest
