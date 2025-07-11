@@ -65,6 +65,18 @@ def collect_core_context(command: str, exit_code: int, stderr: str, cwd: str) ->
     }
 
 
+def _collect_git_info() -> Dict[str, str]:
+    """收集Git信息。"""
+    git_info = {}
+    git_status = run_safe_command("git status --porcelain 2>/dev/null")
+    if git_status:
+        git_info["git_status"] = git_status
+        git_branch = run_safe_command("git branch --show-current 2>/dev/null")
+        if git_branch:
+            git_info["git_branch"] = git_branch
+    return git_info
+
+
 def collect_standard_context(config: Dict[str, Any]) -> Dict[str, Any]:
     """收集标准级别的上下文信息。"""
     context = {}
@@ -81,14 +93,8 @@ def collect_standard_context(config: Dict[str, Any]) -> Dict[str, Any]:
     except Exception:
         pass
     
-    # Git 状态（如果是 Git 仓库）
-    git_status = run_safe_command("git status --porcelain 2>/dev/null")
-    if git_status:
-        context["git_status"] = git_status
-        
-        git_branch = run_safe_command("git branch --show-current 2>/dev/null")
-        if git_branch:
-            context["git_branch"] = git_branch
+    # Git 信息
+    context.update(_collect_git_info())
     
     return context
 
@@ -104,10 +110,11 @@ def collect_detailed_context(config: Dict[str, Any]) -> Dict[str, Any]:
     
     # 环境变量（过滤敏感信息）
     try:
-        env_vars = {}
-        for key, value in os.environ.items():
-            if not any(sensitive in key.lower() for sensitive in ['password', 'secret', 'key', 'token']):
-                env_vars[key] = value[:100]  # 限制长度
+        sensitive_keys = ['password', 'secret', 'key', 'token']
+        env_vars = {
+            key: value[:100] for key, value in os.environ.items()
+            if not any(sensitive in key.lower() for sensitive in sensitive_keys)
+        }
         context["environment"] = env_vars
     except Exception:
         pass

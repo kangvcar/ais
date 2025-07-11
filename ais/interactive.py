@@ -56,35 +56,32 @@ def confirm_dangerous_command(command: str) -> bool:
 
 def show_command_details(suggestion: Dict[str, Any], console: Console) -> None:
     """显示命令的详细信息。"""
-    console.print("\n" + "="*60)
+    separator = "="*60
+    console.print(f"\n{separator}")
     console.print("[bold blue]📖 命令详细说明[/bold blue]")
-    console.print("="*60)
+    console.print(separator)
     
     # 显示命令
     console.print(f"[bold green]命令:[/bold green] [bold]{suggestion.get('command', 'N/A')}[/bold]")
     
     # 显示风险等级
     risk_level = suggestion.get('risk_level', 'safe')
-    risk_colors = {'safe': 'green', 'moderate': 'yellow', 'dangerous': 'red'}
-    risk_texts = {
-        'safe': '🟢 安全操作',
-        'moderate': '🟡 需要谨慎',
-        'dangerous': '🔴 危险操作'
+    risk_info = {
+        'safe': ('green', '🟢 安全操作'),
+        'moderate': ('yellow', '🟡 需要谨慎'),
+        'dangerous': ('red', '🔴 危险操作')
     }
     
-    console.print(f"[bold]风险等级:[/bold] [{risk_colors[risk_level]}]{risk_texts[risk_level]}[/{risk_colors[risk_level]}]")
+    color, text = risk_info[risk_level]
+    console.print(f"[bold]风险等级:[/bold] [{color}]{text}[/{color}]")
     
-    # 显示说明
-    if suggestion.get('description'):
-        console.print(f"\n[bold cyan]💡 解决方案说明:[/bold cyan]")
-        console.print(suggestion['description'])
+    # 显示说明和解释
+    for field, title in [('description', '💡 解决方案说明'), ('explanation', '🔧 技术原理')]:
+        if suggestion.get(field):
+            console.print(f"\n[bold cyan]{title}:[/bold cyan]")
+            console.print(suggestion[field])
     
-    # 显示技术解释
-    if suggestion.get('explanation'):
-        console.print(f"\n[bold magenta]🔧 技术原理:[/bold magenta]")
-        console.print(suggestion['explanation'])
-    
-    console.print("="*60)
+    console.print(separator)
 
 
 def ask_follow_up_question(console: Console) -> None:
@@ -262,20 +259,27 @@ def show_simple_menu(suggestions: List[Dict[str, Any]], console: Console) -> Non
         description = suggestion.get('description', '无描述')
         risk_level = suggestion.get('risk_level', 'safe')
         
-        # 风险等级图标 - 按用户要求的格式
+        # 风险等级图标
         risk_icon = '✅' if risk_level == 'safe' else '⚠️'
-        
-        # 为第一个选项添加箭头指示符
         prefix = "  ▸ " if i == 1 else "    "
+        
         console.print(f"{prefix}{i}. {command:<25} {risk_icon} ({description})")
         
         if suggestion.get('explanation'):
             console.print(f"       [dim]说明: {suggestion['explanation']}[/dim]")
     
-    console.print("    " + "-" * 75)
+    # 添加固定选项
+    separator = "    " + "-" * 75
+    console.print(separator)
+    
     next_num = len(suggestions) + 1
-    console.print(f"    {next_num}. Edit a command...")
-    console.print(f"    {next_num + 1}. Ask follow-up question")
-    console.print(f"    {next_num + 2}. Exit")
+    fixed_options = [
+        f"{next_num}. Edit a command...",
+        f"{next_num + 1}. Ask follow-up question", 
+        f"{next_num + 2}. Exit"
+    ]
+    
+    for option in fixed_options:
+        console.print(f"    {option}")
     
     console.print(f"\n[dim]提示: 你可以手动复制并执行上述命令，或者在交互式终端中获得更好的体验。[/dim]")

@@ -2,11 +2,11 @@
 
 import json
 import httpx
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 
-def ask_ai(question: str, config: Dict[str, Any]) -> Optional[str]:
-    """Ask AI a question and return the response."""
+def _make_api_request(messages: List[Dict[str, str]], config: Dict[str, Any], temperature: float = 0.7, max_tokens: int = 1000) -> Optional[str]:
+    """统一的AI API请求函数。"""
     provider_name = config.get("default_provider", "default_free")
     provider = config.get("providers", {}).get(provider_name)
     
@@ -20,36 +20,26 @@ def ask_ai(question: str, config: Dict[str, Any]) -> Optional[str]:
     if not all([base_url, model_name]):
         raise ValueError("Incomplete provider configuration")
     
-    headers = {
-        "Content-Type": "application/json",
-    }
-    
+    headers = {"Content-Type": "application/json"}
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
     
     payload = {
         "model": model_name,
-        "messages": [
-            {
-                "role": "user",
-                "content": question
-            }
-        ],
-        "temperature": 0.7,
-        "max_tokens": 1000,
+        "messages": messages,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
     }
     
     try:
         with httpx.Client(timeout=30.0) as client:
             response = client.post(base_url, json=payload, headers=headers)
             response.raise_for_status()
-            
             data = response.json()
             
             if "choices" in data and len(data["choices"]) > 0:
                 return data["choices"][0]["message"]["content"]
-            else:
-                return None
+            return None
                 
     except httpx.RequestError as e:
         raise ConnectionError(f"Failed to connect to AI service: {e}")
@@ -59,15 +49,14 @@ def ask_ai(question: str, config: Dict[str, Any]) -> Optional[str]:
         raise RuntimeError(f"Unexpected error: {e}")
 
 
+def ask_ai(question: str, config: Dict[str, Any]) -> Optional[str]:
+    """Ask AI a question and return the response."""
+    messages = [{"role": "user", "content": question}]
+    return _make_api_request(messages, config)
+
+
 def analyze_error(command: str, exit_code: int, stderr: str, context: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
     """Analyze a command error using AI."""
-    provider_name = config.get("default_provider", "default_free")
-    provider = config.get("providers", {}).get(provider_name)
-    
-    if not provider:
-        raise ValueError(f"Provider '{provider_name}' not found in configuration")
-    
-    # Build the system prompt
     system_prompt = """你是一个专业的 Linux/macOS 命令行专家和导师。你的目标是帮助用户理解和解决终端问题，同时教会他们相关的知识。
 
 请分析失败的命令并提供教学性的帮助。你必须用中文回复，并且严格按照以下 JSON 格式：
@@ -97,7 +86,6 @@ def analyze_error(command: str, exit_code: int, stderr: str, context: Dict[str, 
 5. 如果可能，提供相关的学习资源或进阶技巧
 """
     
-    # Build the user prompt with context
     user_prompt = f"""Command failed: `{command}`
 Exit code: {exit_code}
 Error output: {stderr}
@@ -107,60 +95,27 @@ Context information:
 
 Please analyze this error and provide helpful suggestions."""
     
-    base_url = provider.get("base_url")
-    model_name = provider.get("model_name")
-    api_key = provider.get("api_key")
-    
-    headers = {
-        "Content-Type": "application/json",
-    }
-    
-    if api_key:
-        headers["Authorization"] = f"Bearer {api_key}"
-    
-    payload = {
-        "model": model_name,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ],
-        "temperature": 0.3,
-        "max_tokens": 2000,
-    }
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt}
+    ]
     
     try:
-        with httpx.Client(timeout=30.0) as client:
-            response = client.post(base_url, json=payload, headers=headers)
-            response.raise_for_status()
-            
-            data = response.json()
-            
-            if "choices" in data and len(data["choices"]) > 0:
-                content = data["choices"][0]["message"]["content"]
-                
-                # Try to parse JSON response
-                try:
-                    return json.loads(content)
-                except json.JSONDecodeError:
-                    # Fallback: try to extract from markdown code block
-                    import re
-                    json_match = re.search(r'```json\s*(\{.*?\})\s*```', content, re.DOTALL)
-                    if json_match:
-                        return json.loads(json_match.group(1))
-                    else:
-                        # Final fallback
-                        return {
-                            "explanation": content,
-                            "suggestions": []
-                        }
+        content = _make_api_request(messages, config, temperature=0.3, max_tokens=2000)
+        if not content:
+            return {"explanation": "No response from AI service", "suggestions": []}
+        
+        # Try to parse JSON response
+        try:
+            return json.loads(content)
+        except json.JSONDecodeError:
+            # Fallback: try to extract from markdown code block
+            import re
+            json_match = re.search(r'```json\s*(\{.*?\})\s*```', content, re.DOTALL)
+            if json_match:
+                return json.loads(json_match.group(1))
             else:
-                return {
-                    "explanation": "No response from AI service",
-                    "suggestions": []
-                }
+                return {"explanation": content, "suggestions": []}
                 
     except Exception as e:
-        return {
-            "explanation": f"Error communicating with AI service: {e}",
-            "suggestions": []
-        }
+        return {"explanation": f"Error communicating with AI service: {e}", "suggestions": []}

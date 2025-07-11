@@ -43,14 +43,21 @@ fi
 # END AIS INTEGRATION
 EOF
 
-echo "5. 测试新配置..."
-bash -c "source ~/.bashrc && declare -f _ais_precmd >/dev/null && echo '✅ shell 集成已加载' || echo '❌ shell 集成未加载'"
+echo "5. 加载集成到当前会话..."
+source ~/.bashrc
+
+echo "6. 测试集成是否生效..."
+if declare -f _ais_precmd >/dev/null 2>&1; then
+    echo "✅ shell 集成已加载到当前会话"
+else
+    echo "❌ shell 集成未能加载，请重新打开终端"
+fi
 
 echo
 echo "✅ 全局安装完成！"
 echo
-echo "现在在任何新终端中都可以使用 ais 命令了。"
-echo "请测试："
-echo "  1. 打开新终端"
-echo "  2. 执行: mkdirr /tmp/test"
-echo "  3. 应该会看到自动分析结果"
+echo "Shell 集成已在当前会话中激活，可以直接测试："
+echo "  执行: mkdirr /tmp/test"
+echo "  应该会看到自动分析结果"
+echo
+echo "注意：其他终端需要重新打开才能使用 AIS 集成功能"

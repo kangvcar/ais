@@ -17,6 +17,11 @@ def main():
     pass
 
 
+def _handle_error(error_msg: str) -> None:
+    """统一的错误处理函数。"""
+    console.print(f"[red]错误: {error_msg}[/red]")
+
+
 @main.command()
 @click.argument("question", required=True)
 def ask(question):
@@ -30,7 +35,7 @@ def ask(question):
         else:
             console.print("[red]Failed to get AI response[/red]")
     except Exception as e:
-        console.print(f"[red]Error: {e}[/red]")
+        _handle_error(str(e))
 
 
 @main.command()
@@ -81,24 +86,36 @@ def config(set_key, get_key, list_providers):
         console.print(f"[red]配置错误: {e}[/red]")
 
 
+def _toggle_auto_analysis(enabled: bool) -> None:
+    """开启/关闭自动分析的通用函数。"""
+    try:
+        set_config("auto_analysis", enabled)
+        status = "已开启" if enabled else "已关闭"
+        color = "green" if enabled else "yellow"
+        console.print(f"[{color}]✓ 自动错误分析{status}[/{color}]")
+    except Exception as e:
+        _handle_error(str(e))
+
+
 @main.command()
 def on():
     """开启自动错误分析。"""
-    try:
-        set_config("auto_analysis", True)
-        console.print("[green]✓ 自动错误分析已开启[/green]")
-    except Exception as e:
-        console.print(f"[red]错误: {e}[/red]")
+    _toggle_auto_analysis(True)
 
 
 @main.command()
 def off():
     """关闭自动错误分析。"""
+    _toggle_auto_analysis(False)
+
+
+def _handle_provider_operation(operation, name, success_msg, error_prefix, *args):
+    """处理提供商操作的通用函数。"""
     try:
-        set_config("auto_analysis", False)
-        console.print("[yellow]✓ 自动错误分析已关闭[/yellow]")
+        operation(name, *args)
+        console.print(f"[green]✓ {success_msg}: {name}[/green]")
     except Exception as e:
-        console.print(f"[red]错误: {e}[/red]")
+        console.print(f"[red]{error_prefix}失败: {e}[/red]")
 
 
 @main.command("add-provider")
@@ -106,38 +123,26 @@ def off():
 @click.option('--url', required=True, help='API 基础 URL')
 @click.option('--model', required=True, help='模型名称')
 @click.option('--key', help='API 密钥 (可选)')
-def add_provider(name, url, model, key):
+def add_provider_cmd(name, url, model, key):
     """添加新的 AI 服务商。"""
-    try:
-        from .config import add_provider as add_provider_config
-        add_provider_config(name, url, model, key)
-        console.print(f"[green]✓ 已添加提供商: {name}[/green]")
-    except Exception as e:
-        console.print(f"[red]添加提供商失败: {e}[/red]")
+    from .config import add_provider
+    _handle_provider_operation(add_provider, name, "已添加提供商", "添加提供商", url, model, key)
 
 
 @main.command("remove-provider")
 @click.argument('name')
-def remove_provider(name):
+def remove_provider_cmd(name):
     """删除 AI 服务商。"""
-    try:
-        from .config import remove_provider as remove_provider_config
-        remove_provider_config(name)
-        console.print(f"[green]✓ 已删除提供商: {name}[/green]")
-    except Exception as e:
-        console.print(f"[red]删除提供商失败: {e}[/red]")
+    from .config import remove_provider
+    _handle_provider_operation(remove_provider, name, "已删除提供商", "删除提供商")
 
 
 @main.command("use-provider")
 @click.argument('name')
-def use_provider(name):
+def use_provider_cmd(name):
     """切换默认 AI 服务商。"""
-    try:
-        from .config import use_provider as use_provider_config
-        use_provider_config(name)
-        console.print(f"[green]✓ 已切换到提供商: {name}[/green]")
-    except Exception as e:
-        console.print(f"[red]切换提供商失败: {e}[/red]")
+    from .config import use_provider
+    _handle_provider_operation(use_provider, name, "已切换到提供商", "切换提供商")
 
 
 @main.command("list-provider")

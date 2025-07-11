@@ -71,20 +71,23 @@ def save_command_log(
         return log.id
 
 
-def get_recent_logs(limit: int = 10) -> List[CommandLog]:
-    """获取最近的命令日志。"""
+def _execute_query(statement) -> List[CommandLog]:
+    """执行数据库查询的通用函数。"""
     init_database()
-    
     engine = get_engine()
     with Session(engine) as session:
-        statement = select(CommandLog).order_by(CommandLog.timestamp.desc()).limit(limit)
         return session.exec(statement).all()
+
+
+def get_recent_logs(limit: int = 10) -> List[CommandLog]:
+    """获取最近的命令日志。"""
+    statement = select(CommandLog).order_by(CommandLog.timestamp.desc()).limit(limit)
+    return _execute_query(statement)
 
 
 def get_log_by_id(log_id: int) -> Optional[CommandLog]:
     """根据 ID 获取日志。"""
     init_database()
-    
     engine = get_engine()
     with Session(engine) as session:
         return session.get(CommandLog, log_id)
@@ -92,26 +95,21 @@ def get_log_by_id(log_id: int) -> Optional[CommandLog]:
 
 def get_similar_commands(command: str, limit: int = 5) -> List[CommandLog]:
     """获取相似的命令日志。"""
-    init_database()
+    keywords = command.split()[:3]  # 取前3个词
     
-    engine = get_engine()
-    with Session(engine) as session:
-        # 简单的相似性匹配：包含相同关键词
-        keywords = command.split()[:3]  # 取前3个词
-        
-        statement = select(CommandLog).where(
-            CommandLog.exit_code != 0  # 只查询失败的命令
-        ).order_by(CommandLog.timestamp.desc()).limit(limit * 3)
-        
-        all_logs = session.exec(statement).all()
-        
-        # 简单的相似性过滤
-        similar_logs = []
-        for log in all_logs:
-            log_words = log.original_command.split()
-            if any(keyword in log_words for keyword in keywords):
-                similar_logs.append(log)
-                if len(similar_logs) >= limit:
-                    break
-        
-        return similar_logs
+    statement = select(CommandLog).where(
+        CommandLog.exit_code != 0  # 只查询失败的命令
+    ).order_by(CommandLog.timestamp.desc()).limit(limit * 3)
+    
+    all_logs = _execute_query(statement)
+    
+    # 简单的相似性过滤
+    similar_logs = []
+    for log in all_logs:
+        log_words = log.original_command.split()
+        if any(keyword in log_words for keyword in keywords):
+            similar_logs.append(log)
+            if len(similar_logs) >= limit:
+                break
+    
+    return similar_logs
