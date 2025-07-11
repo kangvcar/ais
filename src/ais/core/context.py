@@ -34,7 +34,9 @@ def filter_sensitive_data(text: str) -> str:
 
     filtered_text = text
     for pattern in patterns:
-        filtered_text = re.sub(pattern, lambda m: m.group().split()[0] + " ***", filtered_text)
+        filtered_text = re.sub(
+            pattern, lambda m: m.group().split()[0] + " ***", filtered_text
+        )
 
     return filtered_text
 
@@ -43,14 +45,20 @@ def run_safe_command(command: str, timeout: int = 5) -> Optional[str]:
     """安全地运行命令并返回输出。"""
     try:
         result = subprocess.run(
-            command, shell=True, capture_output=True, text=True, timeout=timeout
+            command,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
         )
         return result.stdout.strip() if result.returncode == 0 else None
     except Exception:
         return None
 
 
-def collect_core_context(command: str, exit_code: int, stderr: str, cwd: str) -> Dict[str, Any]:
+def collect_core_context(
+    command: str, exit_code: int, stderr: str, cwd: str
+) -> Dict[str, Any]:
     """收集核心级别的上下文信息。"""
     return {
         "command": command,
@@ -110,7 +118,9 @@ def collect_detailed_context(config: Dict[str, Any]) -> Dict[str, Any]:
         env_vars = {
             key: value[:100]
             for key, value in os.environ.items()
-            if not any(sensitive in key.lower() for sensitive in sensitive_keys)
+            if not any(
+                sensitive in key.lower() for sensitive in sensitive_keys
+            )
         }
         context["environment"] = env_vars
     except Exception:
@@ -125,7 +135,10 @@ def collect_detailed_context(config: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def collect_context(
-    command: str, exit_code: int, stderr: str = "", config: Dict[str, Any] = None
+    command: str,
+    exit_code: int,
+    stderr: str = "",
+    config: Dict[str, Any] = None,
 ) -> Dict[str, Any]:
     """根据配置收集上下文信息。"""
     if not config:
@@ -139,7 +152,11 @@ def collect_context(
     # 检查是否在敏感目录
     sensitive_dirs = config.get("sensitive_dirs", [])
     if is_sensitive_path(cwd, sensitive_dirs):
-        return {"error": "位于敏感目录，跳过上下文收集", "command": command, "exit_code": exit_code}
+        return {
+            "error": "位于敏感目录，跳过上下文收集",
+            "command": command,
+            "exit_code": exit_code,
+        }
 
     # 收集核心上下文
     context = collect_core_context(command, exit_code, stderr, cwd)

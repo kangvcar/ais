@@ -5,8 +5,6 @@ import sys
 from typing import List, Dict, Any
 from rich.console import Console
 from rich.markdown import Markdown
-from rich.panel import Panel
-from rich.text import Text
 
 
 def execute_command(command: str) -> bool:
@@ -16,7 +14,10 @@ def execute_command(command: str) -> bool:
         print("=" * 50)
 
         result = subprocess.run(
-            command, shell=True, capture_output=False, text=True  # 让输出直接显示给用户
+            command,
+            shell=True,
+            capture_output=False,
+            text=True,  # 让输出直接显示给用户
         )
 
         print("=" * 50)
@@ -34,7 +35,7 @@ def execute_command(command: str) -> bool:
 
 def confirm_dangerous_command(command: str) -> bool:
     """对危险命令进行二次确认。"""
-    print(f"\n⚠️  这是一个危险操作:")
+    print("\n⚠️  这是一个危险操作:")
     print(f"   {command}")
     print("\n⚠️  此命令可能会:")
     print("   • 删除重要文件")
@@ -59,7 +60,9 @@ def show_command_details(suggestion: Dict[str, Any], console: Console) -> None:
     console.print(separator)
 
     # 显示命令
-    console.print(f"[bold green]命令:[/bold green] [bold]{suggestion.get('command', 'N/A')}[/bold]")
+    console.print(
+        f"[bold green]命令:[/bold green] [bold]{suggestion.get('command', 'N/A')}[/bold]"
+    )
 
     # 显示风险等级
     risk_level = suggestion.get("risk_level", "safe")
@@ -73,7 +76,10 @@ def show_command_details(suggestion: Dict[str, Any], console: Console) -> None:
     console.print(f"[bold]风险等级:[/bold] [{color}]{text}[/{color}]")
 
     # 显示说明和解释
-    for field, title in [("description", "💡 解决方案说明"), ("explanation", "🔧 技术原理")]:
+    for field, title in [
+        ("description", "💡 解决方案说明"),
+        ("explanation", "🔧 技术原理"),
+    ]:
         if suggestion.get(field):
             console.print(f"\n[bold cyan]{title}:[/bold cyan]")
             console.print(suggestion[field])
@@ -81,7 +87,9 @@ def show_command_details(suggestion: Dict[str, Any], console: Console) -> None:
     console.print(separator)
 
 
-def ask_follow_up_question(console: Console, predefined_questions: List[str] = None) -> None:
+def ask_follow_up_question(
+    console: Console, predefined_questions: List[str] = None
+) -> None:
     """询问后续问题，支持预设问题选择。"""
     console.print("\n[bold blue]💬 后续问题[/bold blue]")
 
@@ -122,7 +130,9 @@ def ask_follow_up_question(console: Console, predefined_questions: List[str] = N
         from ..core.config import get_config
 
         config = get_config()
-        response = ask_ai(f"关于刚才的错误分析，用户有一个后续问题：{question}", config)
+        response = ask_ai(
+            f"关于刚才的错误分析，用户有一个后续问题：{question}", config
+        )
 
         if response:
             console.print("\n[bold green]🤖 AI 回答:[/bold green]")
@@ -142,7 +152,9 @@ def edit_command(command: str) -> str:
 
 
 def show_interactive_menu(
-    suggestions: List[Dict[str, Any]], console: Console, follow_up_questions: List[str] = None
+    suggestions: List[Dict[str, Any]],
+    console: Console,
+    follow_up_questions: List[str] = None,
 ) -> None:
     """显示交互式建议菜单。"""
     # 检查是否在交互式终端中
@@ -183,14 +195,20 @@ def show_interactive_menu(
         choices.extend(
             [
                 {"name": f"{next_num}. Edit a command...", "value": "edit"},
-                {"name": f"{next_num + 1}. Ask follow-up question", "value": "question"},
+                {
+                    "name": f"{next_num + 1}. Ask follow-up question",
+                    "value": "question",
+                },
                 {"name": f"{next_num + 2}. Exit", "value": "exit"},
             ]
         )
 
         # 显示菜单
         action = questionary.select(
-            "Select an action:", choices=choices, instruction="", use_shortcuts=True
+            "Select an action:",
+            choices=choices,
+            instruction="",
+            use_shortcuts=True,
         ).ask()
 
         if not action or action == "exit":
@@ -217,9 +235,13 @@ def show_interactive_menu(
             success = execute_command(command)
 
             if success:
-                console.print("\n[green]🎉 太好了！命令执行成功。你学到了新知识吗？[/green]")
+                console.print(
+                    "\n[green]🎉 太好了！命令执行成功。你学到了新知识吗？[/green]"
+                )
             else:
-                console.print("\n[yellow]🤔 命令执行失败了。要不要试试其他解决方案？[/yellow]")
+                console.print(
+                    "\n[yellow]🤔 命令执行失败了。要不要试试其他解决方案？[/yellow]"
+                )
 
             # 询问是否继续
             if not questionary.confirm("是否继续查看其他建议？").ask():
@@ -228,11 +250,14 @@ def show_interactive_menu(
         elif action == "details":
             # 查看详情
             choices = [
-                f"{i}. {sug.get('command', 'N/A')[:30]}..." for i, sug in enumerate(suggestions, 1)
+                f"{i}. {sug.get('command', 'N/A')[:30]}..."
+                for i, sug in enumerate(suggestions, 1)
             ]
             choices.append("返回")
 
-            detail_choice = questionary.select("选择要查看详情的命令:", choices=choices).ask()
+            detail_choice = questionary.select(
+                "选择要查看详情的命令:", choices=choices
+            ).ask()
 
             if detail_choice and detail_choice != "返回":
                 index = int(detail_choice.split(".")[0]) - 1
@@ -241,10 +266,15 @@ def show_interactive_menu(
 
         elif action == "edit":
             # 编辑命令
-            choices = [f"{i}. {sug.get('command', 'N/A')}" for i, sug in enumerate(suggestions, 1)]
+            choices = [
+                f"{i}. {sug.get('command', 'N/A')}"
+                for i, sug in enumerate(suggestions, 1)
+            ]
             choices.append("返回")
 
-            edit_choice = questionary.select("选择要编辑的命令:", choices=choices).ask()
+            edit_choice = questionary.select(
+                "选择要编辑的命令:", choices=choices
+            ).ask()
 
             if edit_choice and edit_choice != "返回":
                 index = int(edit_choice.split(".")[0]) - 1
@@ -252,7 +282,9 @@ def show_interactive_menu(
                 new_command = edit_command(original_command)
 
                 if new_command != original_command:
-                    console.print(f"\n✅ 命令已修改为: [bold]{new_command}[/bold]")
+                    console.print(
+                        f"\n✅ 命令已修改为: [bold]{new_command}[/bold]"
+                    )
 
                     if questionary.confirm("是否执行修改后的命令？").ask():
                         execute_command(new_command)
@@ -263,7 +295,9 @@ def show_interactive_menu(
 
 
 def show_simple_menu(
-    suggestions: List[Dict[str, Any]], console: Console, follow_up_questions: List[str] = None
+    suggestions: List[Dict[str, Any]],
+    console: Console,
+    follow_up_questions: List[str] = None,
 ) -> None:
     """简化版菜单（当 questionary 不可用时）。"""
     console.print()
@@ -278,10 +312,14 @@ def show_simple_menu(
         risk_icon = "✅" if risk_level == "safe" else "⚠️"
         prefix = "  ▸ " if i == 1 else "    "
 
-        console.print(f"{prefix}{i}. {command:<25} {risk_icon} ({description})")
+        console.print(
+            f"{prefix}{i}. {command:<25} {risk_icon} ({description})"
+        )
 
         if suggestion.get("explanation"):
-            console.print(f"       [dim]说明: {suggestion['explanation']}[/dim]")
+            console.print(
+                f"       [dim]说明: {suggestion['explanation']}[/dim]"
+            )
 
     # 添加固定选项
     separator = "    " + "-" * 75
@@ -298,5 +336,5 @@ def show_simple_menu(
         console.print(f"    {option}")
 
     console.print(
-        f"\n[dim]提示: 你可以手动复制并执行上述命令，或者在交互式终端中获得更好的体验。[/dim]"
+        "\n[dim]提示: 你可以手动复制并执行上述命令，或者在交互式终端中获得更好的体验。[/dim]"
     )

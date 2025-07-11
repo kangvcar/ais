@@ -19,7 +19,9 @@ def _build_context_summary(context: Dict[str, Any]) -> str:
     # Git仓库信息
     git_info = context.get("git_info", {})
     if git_info.get("in_repo"):
-        git_status = f"🔄 Git仓库: {git_info.get('current_branch', 'unknown')}分支"
+        git_status = (
+            f"🔄 Git仓库: {git_info.get('current_branch', 'unknown')}分支"
+        )
         if git_info.get("has_changes"):
             git_status += f" (有{git_info.get('changed_files', 0)}个文件变更)"
         summary_parts.append(git_status)
@@ -29,15 +31,21 @@ def _build_context_summary(context: Dict[str, Any]) -> str:
     if dir_info.get("project_type") and dir_info["project_type"] != "unknown":
         project_info = f"🚀 项目类型: {dir_info['project_type']}"
         if dir_info.get("key_files"):
-            project_info += f" (关键文件: {', '.join(dir_info['key_files'][:3])})"
+            project_info += (
+                f" (关键文件: {', '.join(dir_info['key_files'][:3])})"
+            )
         summary_parts.append(project_info)
 
     # 系统状态
     system_status = context.get("system_status", {})
     if system_status:
-        status_info = f"⚡ 系统状态: CPU {system_status.get('cpu_percent', 0):.1f}%"
+        status_info = (
+            f"⚡ 系统状态: CPU {system_status.get('cpu_percent', 0):.1f}%"
+        )
         if "memory" in system_status:
-            status_info += f", 内存 {system_status['memory'].get('percent', 0):.1f}%"
+            status_info += (
+                f", 内存 {system_status['memory'].get('percent', 0):.1f}%"
+            )
         summary_parts.append(status_info)
 
     # 最近的操作模式
@@ -65,7 +73,9 @@ def _make_api_request(
     provider = config.get("providers", {}).get(provider_name)
 
     if not provider:
-        raise ValueError(f"Provider '{provider_name}' not found in configuration")
+        raise ValueError(
+            f"Provider '{provider_name}' not found in configuration"
+        )
 
     base_url = provider.get("base_url")
     model_name = provider.get("model_name")
@@ -112,7 +122,11 @@ def ask_ai(question: str, config: Dict[str, Any]) -> Optional[str]:
 
 
 def analyze_error(
-    command: str, exit_code: int, stderr: str, context: Dict[str, Any], config: Dict[str, Any]
+    command: str,
+    exit_code: int,
+    stderr: str,
+    context: Dict[str, Any],
+    config: Dict[str, Any],
 ) -> Dict[str, Any]:
     """Analyze a command error using AI."""
     system_prompt = """你是一个专业的 Linux/macOS 命令行专家和导师。你的目标是帮助用户理解和解决终端问题，同时教会他们相关的知识。
@@ -189,7 +203,9 @@ def analyze_error(
     ]
 
     try:
-        content = _make_api_request(messages, config, temperature=0.3, max_tokens=2000)
+        content = _make_api_request(
+            messages, config, temperature=0.3, max_tokens=2000
+        )
         if not content:
             return {
                 "explanation": "No response from AI service",
@@ -206,7 +222,9 @@ def analyze_error(
             # Fallback: try to extract from markdown code block
             import re
 
-            json_match = re.search(r"```json\s*(\{.*?\})\s*```", content, re.DOTALL)
+            json_match = re.search(
+                r"```json\s*(\{.*?\})\s*```", content, re.DOTALL
+            )
             if json_match:
                 try:
                     return json.loads(json_match.group(1))
@@ -222,7 +240,11 @@ def analyze_error(
                     pass
 
             # 最后的fallback - 返回原始内容作为explanation
-            return {"explanation": content, "suggestions": [], "follow_up_questions": []}
+            return {
+                "explanation": content,
+                "suggestions": [],
+                "follow_up_questions": [],
+            }
 
     except Exception as e:
         return {
