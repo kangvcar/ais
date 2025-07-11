@@ -26,21 +26,7 @@ pip install ais-terminal
 pipx install ais-terminal
 ```
 
-### 方法2: Homebrew 安装（macOS/Linux）
-
-```bash
-# 添加到 Homebrew 后即可使用
-brew install ais
-```
-
-### 方法3: Windows PowerShell 安装
-
-```powershell
-# 管理员模式运行 PowerShell
-iwr -useb https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.ps1 | iex
-```
-
-### 方法4: 一键安装脚本
+### 方法2: 一键安装脚本
 
 ```bash
 # Linux/macOS 快速安装
@@ -50,7 +36,14 @@ curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh
 curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --from-source
 ```
 
-### 方法5: 手动安装
+### 方法3: Windows PowerShell 安装
+
+```powershell
+# 管理员模式运行 PowerShell
+iwr -useb https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.ps1 | iex
+```
+
+### 方法4: 手动安装
 
 ```bash
 # 克隆仓库

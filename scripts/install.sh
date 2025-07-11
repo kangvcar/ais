@@ -113,21 +113,12 @@ install_system_deps() {
             ;;
         macos)
             if ! command_exists python3; then
-                if command_exists brew; then
-                    print_info "通过 Homebrew 安装 Python 3..."
-                    brew install python3
-                else
-                    print_error "请先安装 Homebrew: https://brew.sh"
-                    exit 1
-                fi
+                print_error "请先安装 Python 3: https://www.python.org/downloads/"
+                exit 1
             fi
             if ! command_exists pipx; then
                 print_info "安装 pipx..."
-                if command_exists brew; then
-                    brew install pipx
-                else
-                    python3 -m pip install --user pipx
-                fi
+                python3 -m pip install --user pipx
             fi
             ;;
         *)

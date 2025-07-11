@@ -31,25 +31,25 @@ pipx install ais-terminal
 - 需要确保 Python 和 pip 已正确安装
 - 如果遇到权限问题，可以使用 `--user` 参数
 
-### 2. Homebrew 安装（macOS/Linux）
+### 2. 一键安装脚本
 
-适用于 macOS 和 Linux 用户：
+适用于 Linux 和 macOS 用户：
 
 ```bash
-# 安装 Homebrew（如果尚未安装）
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+# 快速安装
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
 
-# 安装 AIS
-brew install ais
+# 从源码安装
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --from-source
 ```
 
 **优点**：
-- 系统级包管理
-- 自动处理依赖和更新
-- 与系统环境良好集成
+- 自动检测系统环境
+- 一键安装和配置
+- 自动设置Shell集成
 
 **注意事项**：
-- 需要先安装 Homebrew
+- 需要网络连接
 - 首次发布后才可使用
 
 ### 3. Windows PowerShell 安装

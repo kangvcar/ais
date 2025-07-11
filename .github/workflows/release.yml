@@ -1,15 +1,5 @@
 name: Release
 
-# This workflow requires a Personal Access Token (PAT) for creating pull requests
-# Add a secret named 'GH_PAT' with the following scopes:
-# - repo (Full control of private repositories)
-# - pull_requests (Access to pull requests)
-# 
-# To create a PAT:
-# 1. Go to GitHub Settings > Developer settings > Personal access tokens
-# 2. Generate new token with 'repo' scope
-# 3. Add it as a repository secret named 'GH_PAT'
-
 permissions:
   contents: write
   pull-requests: write
@@ -142,88 +132,6 @@ jobs:
         password: ${{ secrets.PYPI_API_TOKEN }}
         skip-existing: true
 
-  create-homebrew-pr:
-    runs-on: ubuntu-latest
-    needs: [publish-pypi, build]
-    if: always() && needs.publish-pypi.result == 'success'
-    permissions:
-      contents: write
-      pull-requests: write
-    
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        # Use PAT for checkout to ensure proper permissions for PR creation
-        token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
-    
-    - name: Create Git Tag
-      run: |
-        VERSION=${{ needs.build.outputs.version }}
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        
-        # Check if tag already exists locally
-        if git rev-parse "v${VERSION}" >/dev/null 2>&1; then
-          echo "Tag v${VERSION} already exists locally"
-        else
-          git tag -a "v${VERSION}" -m "Release v${VERSION}"
-          echo "Created tag v${VERSION}"
-        fi
-        
-        # Check if tag already exists on remote
-        if git ls-remote --tags origin | grep -q "refs/tags/v${VERSION}$"; then
-          echo "Tag v${VERSION} already exists on remote"
-        else
-          git push origin "v${VERSION}"
-          echo "Pushed tag v${VERSION} to remote"
-        fi
-    
-    - name: Generate SHA256 for Homebrew
-      id: sha256
-      run: |
-        VERSION=${{ needs.build.outputs.version }}
-        URL="https://github.com/kangvcar/ais/archive/refs/tags/v${VERSION}.tar.gz"
-        # Wait a moment for GitHub to process the tag
-        sleep 10
-        SHA256=$(curl -sL "$URL" | sha256sum | cut -d' ' -f1)
-        echo "sha256=$SHA256" >> $GITHUB_OUTPUT
-        echo "url=$URL" >> $GITHUB_OUTPUT
-        echo "Generated SHA256: $SHA256 for URL: $URL"
-    
-    - name: Update Homebrew formula
-      run: |
-        VERSION=${{ needs.build.outputs.version }}
-        SHA256=${{ steps.sha256.outputs.sha256 }}
-        URL=${{ steps.sha256.outputs.url }}
-        
-        # Update ais.rb with new version and SHA256
-        sed -i "s/version \".*\"/version \"$VERSION\"/" ais.rb
-        sed -i "s/sha256 \".*\"/sha256 \"$SHA256\"/" ais.rb
-        sed -i "s|url \".*\"|url \"$URL\"|" ais.rb
-    
-    - name: Create Pull Request for Homebrew
-      uses: peter-evans/create-pull-request@v5
-      with:
-        # Use PAT instead of GITHUB_TOKEN for PR creation permissions
-        token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
-        commit-message: "Update Homebrew formula to v${{ needs.build.outputs.version }}"
-        title: "Update Homebrew formula to v${{ needs.build.outputs.version }}"
-        body: |
-          Auto-generated PR to update Homebrew formula to version ${{ needs.build.outputs.version }}
-          
-          Changes:
-          - Update version to ${{ needs.build.outputs.version }}
-          - Update SHA256 hash
-          - Update download URL
-          
-          This PR is automatically created by the release workflow.
-          
-          **Note**: If this PR creation fails, ensure that a Personal Access Token (PAT) 
-          with 'repo' and 'pull_requests' scopes is configured as the `GH_PAT` secret.
-        branch: homebrew-update-v${{ needs.build.outputs.version }}
-        base: main
-        delete-branch: true
 
   create-github-release:
     runs-on: ubuntu-latest
@@ -303,7 +211,7 @@ jobs:
 
   notify:
     runs-on: ubuntu-latest
-    needs: [publish-pypi, create-homebrew-pr, test-installation, build]
+    needs: [publish-pypi, test-installation, build]
     if: always()
     
     steps:
@@ -312,7 +220,6 @@ jobs:
       run: |
         echo "🎉 AIS v${{ needs.build.outputs.version }} 发布成功！"
         echo "📦 PyPI: https://pypi.org/project/ais-terminal/${{ needs.build.outputs.version }}/"
-        echo "🍺 Homebrew PR已创建"
         echo "✅ 安装测试通过"
     
     - name: Notify failure
