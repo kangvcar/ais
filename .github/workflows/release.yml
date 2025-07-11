@@ -15,7 +15,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
     
     steps:
@@ -192,11 +192,6 @@ jobs:
           brew install ais
           ```
           
-          **Windows PowerShell**:
-          ```powershell
-          iwr -useb https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.ps1 | iex
-          ```
-          
           **一键安装脚本**:
           ```bash
           curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
@@ -228,11 +223,8 @@ jobs:
     needs: [publish-pypi, build]
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         method: [pip, script]
-        exclude:
-          - os: windows-latest
-            method: script
     
     steps:
     - name: Test pip installation
@@ -247,12 +239,6 @@ jobs:
         curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
         ais --version
     
-    - name: Test PowerShell installation (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: powershell
-      run: |
-        iwr -useb https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.ps1 | iex
-        ais --version
 
   notify:
     runs-on: ubuntu-latest
