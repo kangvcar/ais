@@ -60,7 +60,9 @@ def save_command_log(
         stderr_output=stderr,
         context_json=json.dumps(context) if context else None,
         ai_explanation=ai_explanation,
-        ai_suggestions_json=(json.dumps(ai_suggestions) if ai_suggestions else None),
+        ai_suggestions_json=(
+            json.dumps(ai_suggestions) if ai_suggestions else None
+        ),
     )
 
     engine = get_engine()
@@ -81,7 +83,9 @@ def _execute_query(statement) -> List[CommandLog]:
 
 def get_recent_logs(limit: int = 10) -> List[CommandLog]:
     """获取最近的命令日志。"""
-    statement = select(CommandLog).order_by(CommandLog.timestamp.desc()).limit(limit)
+    statement = (
+        select(CommandLog).order_by(CommandLog.timestamp.desc()).limit(limit)
+    )
     return _execute_query(statement)
 
 

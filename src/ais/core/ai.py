@@ -19,7 +19,9 @@ def _build_context_summary(context: Dict[str, Any]) -> str:
     # Git仓库信息
     git_info = context.get("git_info", {})
     if git_info.get("in_repo"):
-        git_status = f"🔄 Git仓库: {git_info.get('current_branch', 'unknown')}分支"
+        git_status = (
+            f"🔄 Git仓库: {git_info.get('current_branch', 'unknown')}分支"
+        )
         if git_info.get("has_changes"):
             git_status += f" (有{git_info.get('changed_files', 0)}个文件变更)"
         summary_parts.append(git_status)
@@ -29,15 +31,21 @@ def _build_context_summary(context: Dict[str, Any]) -> str:
     if dir_info.get("project_type") and dir_info["project_type"] != "unknown":
         project_info = f"🚀 项目类型: {dir_info['project_type']}"
         if dir_info.get("key_files"):
-            project_info += f" (关键文件: {', '.join(dir_info['key_files'][:3])})"
+            project_info += (
+                f" (关键文件: {', '.join(dir_info['key_files'][:3])})"
+            )
         summary_parts.append(project_info)
 
     # 系统状态
     system_status = context.get("system_status", {})
     if system_status:
-        status_info = f"⚡ 系统状态: CPU {system_status.get('cpu_percent', 0):.1f}%"
+        status_info = (
+            f"⚡ 系统状态: CPU {system_status.get('cpu_percent', 0):.1f}%"
+        )
         if "memory" in system_status:
-            status_info += f", 内存 {system_status['memory'].get('percent', 0):.1f}%"
+            status_info += (
+                f", 内存 {system_status['memory'].get('percent', 0):.1f}%"
+            )
         summary_parts.append(status_info)
 
     # 最近的操作模式
@@ -65,7 +73,9 @@ def _make_api_request(
     provider = config.get("providers", {}).get(provider_name)
 
     if not provider:
-        raise ValueError(f"Provider '{provider_name}' not found in configuration")
+        raise ValueError(
+            f"Provider '{provider_name}' not found in configuration"
+        )
 
     base_url = provider.get("base_url")
     model_name = provider.get("model_name")
@@ -99,7 +109,8 @@ def _make_api_request(
         raise ConnectionError(f"Failed to connect to AI service: {e}")
     except httpx.HTTPStatusError as e:
         raise ConnectionError(
-            f"AI service returned error {e.response.status_code}: {e.response.text}"
+            f"AI service returned error {e.response.status_code}: "
+            f"{e.response.text}"
         )
     except Exception as e:
         raise RuntimeError(f"Unexpected error: {e}")
@@ -119,7 +130,8 @@ def analyze_error(
     config: Dict[str, Any],
 ) -> Dict[str, Any]:
     """Analyze a command error using AI."""
-    system_prompt = """你是一个专业的 Linux/macOS 命令行专家和导师。你的目标是帮助用户理解和解决终端问题，同时教会他们相关的知识。
+    system_prompt = """你是一个专业的 Linux/macOS 命令行专家和导师。
+你的目标是帮助用户理解和解决终端问题，同时教会他们相关的知识。
 
 **重要**：你需要结合用户的具体环境上下文来提供个性化的教学内容：
 - 如果在Git仓库中，重点解释与版本控制相关的概念
@@ -131,7 +143,11 @@ def analyze_error(
 请分析失败的命令并提供教学性的帮助。你必须用中文回复，并且严格按照以下 JSON 格式：
 
 {
-  "explanation": "**🔍 错误分析:**\\n[结合当前环境简明解释错误原因]\\n**📚 背景知识:**\\n[相关命令或概念的核心原理，结合用户所在的项目类型和环境]\\n**🎯 常见场景:**\\n[这类错误的典型触发情况，特别是在当前环境下]",
+  "explanation": (
+    "**🔍 错误分析:**\\n[结合当前环境简明解释错误原因]\\n"
+    "**📚 背景知识:**\\n[相关命令或概念的核心原理，结合用户所在的项目类型和环境]\\n"
+    "**🎯 常见场景:**\\n[这类错误的典型触发情况，特别是在当前环境下]"
+  ),
   "suggestions": [
     {
       "description": "这个解决方案的详细说明，包括为什么要这样做和预期效果（结合当前环境和项目背景）",
@@ -166,7 +182,10 @@ def analyze_error(
     if stderr and stderr.strip():
         error_info += f"\nError output: {stderr}"
     else:
-        error_info += f"\nNote: No stderr captured, analysis based on command and exit code"
+        error_info += (
+            "\nNote: No stderr captured, "
+            "analysis based on command and exit code"
+        )
 
     # 构建结构化的上下文信息
     context_summary = _build_context_summary(context)
@@ -193,7 +212,9 @@ def analyze_error(
     ]
 
     try:
-        content = _make_api_request(messages, config, temperature=0.3, max_tokens=2000)
+        content = _make_api_request(
+            messages, config, temperature=0.3, max_tokens=2000
+        )
         if not content:
             return {
                 "explanation": "No response from AI service",
@@ -210,7 +231,9 @@ def analyze_error(
             # Fallback: try to extract from markdown code block
             import re
 
-            json_match = re.search(r"```json\s*(\{.*?\})\s*```", content, re.DOTALL)
+            json_match = re.search(
+                r"```json\s*(\{.*?\})\s*```", content, re.DOTALL
+            )
             if json_match:
                 try:
                     return json.loads(json_match.group(1))

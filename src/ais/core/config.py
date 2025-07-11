@@ -28,7 +28,9 @@ def get_default_config() -> Dict[str, Any]:
             "default_free": {
                 "base_url": "https://api.deepbricks.ai/v1/chat/completions",
                 "model_name": "gpt-4o-mini",
-                "api_key": "sk-97RxyS9R2dsqFTUxcUZOpZwhnbjQCSOaFboooKDeTv5nHJgg",
+                "api_key": (
+                    "sk-97RxyS9R2dsqFTUxcUZOpZwhnbjQCSOaFboooKDeTv5nHJgg"
+                ),
             }
         },
         "advanced": {
@@ -84,7 +86,9 @@ def _validate_provider_exists(config: Dict[str, Any], name: str) -> None:
         raise ValueError(f"提供商 '{name}' 不存在")
 
 
-def add_provider(name: str, base_url: str, model_name: str, api_key: str = None) -> None:
+def add_provider(
+    name: str, base_url: str, model_name: str, api_key: str = None
+) -> None:
     """添加新的 AI 服务商。"""
     config = get_config()
 

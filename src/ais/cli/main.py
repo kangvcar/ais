@@ -90,7 +90,9 @@ def ask(question, help_detail):
 @main.command()
 @click.option("--set", "set_key", help="设置配置项 (key=value)")
 @click.option("--get", "get_key", help="获取配置项值")
-@click.option("--list-providers", is_flag=True, help="列出所有可用的 AI 服务商")
+@click.option(
+    "--list-providers", is_flag=True, help="列出所有可用的 AI 服务商"
+)
 @click.option("--help-context", is_flag=True, help="显示上下文级别配置帮助")
 def config(set_key, get_key, list_providers, help_context):
     """显示或修改配置。"""
@@ -108,15 +110,20 @@ def config(set_key, get_key, list_providers, help_context):
             if key == "context_level":
                 if value not in ["minimal", "standard", "detailed"]:
                     console.print(
-                        "[red]错误: context_level 必须是 minimal, " "standard 或 detailed[/red]"
+                        "[red]错误: context_level 必须是 minimal, "
+                        "standard 或 detailed[/red]"
                     )
-                    console.print("[dim]使用 'ais config --help-context' 查看详细说明[/dim]")
+                    console.print(
+                        "[dim]使用 'ais config --help-context' 查看详细说明[/dim]"
+                    )
                     return
             elif key == "auto_analysis":
                 if value.lower() in ["true", "false"]:
                     value = value.lower() == "true"
                 else:
-                    console.print("[red]错误: auto_analysis 必须是 true 或 false[/red]")
+                    console.print(
+                        "[red]错误: auto_analysis 必须是 true 或 false[/red]"
+                    )
                     return
             elif value.lower() in ["true", "false"]:
                 value = value.lower() == "true"
@@ -140,21 +147,28 @@ def config(set_key, get_key, list_providers, help_context):
             providers = config.get("providers", {})
             console.print("[green]可用的 AI 服务商:[/green]")
             for name, provider in providers.items():
-                current = "✓" if name == config.get("default_provider") else " "
-                console.print(f"{current} {name}: {provider.get('model_name', 'N/A')}")
+                current = (
+                    "✓" if name == config.get("default_provider") else " "
+                )
+                console.print(
+                    f"{current} {name}: {provider.get('model_name', 'N/A')}"
+                )
 
         elif help_context:
             # 显示上下文配置帮助
             console.print("[green]上下文收集级别配置帮助:[/green]")
             console.print()
             console.print("[bold]可用级别:[/bold]")
-            console.print("  • [blue]minimal[/blue]  - 只收集基本信息（命令、退出码、目录）")
+            console.print(
+                "  • [blue]minimal[/blue]  - 只收集基本信息（命令、退出码、目录）"
+            )
             console.print(
                 "  • [blue]standard[/blue] - 收集标准信息"
                 "（+ 命令历史、文件列表、Git状态）[dim]（默认）[/dim]"
             )
             console.print(
-                "  • [blue]detailed[/blue] - 收集详细信息" "（+ 系统信息、环境变量、完整目录）"
+                "  • [blue]detailed[/blue] - 收集详细信息"
+                "（+ 系统信息、环境变量、完整目录）"
             )
             console.print()
             console.print("[bold]设置方法:[/bold]")
@@ -163,15 +177,21 @@ def config(set_key, get_key, list_providers, help_context):
             console.print("  ais config --set context_level=detailed")
             console.print()
             console.print("[bold]其他配置项:[/bold]")
-            console.print("  auto_analysis=true/false    - 开启/关闭自动错误分析")
-            console.print("  default_provider=name       - 设置默认AI服务提供商")
+            console.print(
+                "  auto_analysis=true/false    - 开启/关闭自动错误分析"
+            )
+            console.print(
+                "  default_provider=name       - 设置默认AI服务提供商"
+            )
             console.print()
             console.print("[dim]查看当前配置: ais config[/dim]")
 
         else:
             # 显示当前配置
             console.print("[green]当前配置:[/green]")
-            console.print(f"默认提供商: {config.get('default_provider', 'default_free')}")
+            console.print(
+                f"默认提供商: {config.get('default_provider', 'default_free')}"
+            )
 
             auto_analysis = config.get("auto_analysis", True)
             auto_status = "✅ 开启" if auto_analysis else "❌ 关闭"
@@ -185,9 +205,15 @@ def config(set_key, get_key, list_providers, help_context):
 
             console.print()
             console.print("[dim]💡 提示:[/dim]")
-            console.print("[dim]  ais config --help-context  - 查看上下文配置帮助[/dim]")
-            console.print("[dim]  ais config --list-providers - 查看AI服务提供商[/dim]")
-            console.print("[dim]  ais config --set key=value  - 修改配置[/dim]")
+            console.print(
+                "[dim]  ais config --help-context  - 查看上下文配置帮助[/dim]"
+            )
+            console.print(
+                "[dim]  ais config --list-providers - 查看AI服务提供商[/dim]"
+            )
+            console.print(
+                "[dim]  ais config --set key=value  - 修改配置[/dim]"
+            )
 
     except Exception as e:
         console.print(f"[red]配置错误: {e}[/red]")
@@ -216,7 +242,9 @@ def off():
     _toggle_auto_analysis(False)
 
 
-def _handle_provider_operation(operation, name, success_msg, error_prefix, *args):
+def _handle_provider_operation(
+    operation, name, success_msg, error_prefix, *args
+):
     """处理提供商操作的通用函数。"""
     try:
         operation(name, *args)
@@ -230,7 +258,9 @@ def _handle_provider_operation(operation, name, success_msg, error_prefix, *args
 @click.option("--url", help="API 基础 URL")
 @click.option("--model", help="模型名称")
 @click.option("--key", help="API 密钥 (可选)")
-@click.option("--help-detail", is_flag=True, help="显示add-provider命令详细使用说明")
+@click.option(
+    "--help-detail", is_flag=True, help="显示add-provider命令详细使用说明"
+)
 def add_provider_cmd(name, url, model, key, help_detail):
     """添加新的 AI 服务商。"""
     if help_detail:
@@ -240,7 +270,9 @@ def add_provider_cmd(name, url, model, key, help_detail):
         console.print("  添加新的 AI 服务提供商配置，支持自定义 API 服务")
         console.print()
         console.print("[bold]用法:[/bold]")
-        console.print("  ais add-provider <名称> --url <API地址> --model <模型名> [--key <密钥>]")
+        console.print(
+            "  ais add-provider <名称> --url <API地址> --model <模型名> [--key <密钥>]"
+        )
         console.print()
         console.print("[bold]参数:[/bold]")
         console.print("  名称       提供商的唯一标识名称")
@@ -251,40 +283,54 @@ def add_provider_cmd(name, url, model, key, help_detail):
         console.print("[bold]示例:[/bold]")
         console.print("  # 添加 OpenAI 服务")
         console.print("  ais add-provider openai \\")
-        console.print("    --url https://api.openai.com/v1/chat/completions \\")
+        console.print(
+            "    --url https://api.openai.com/v1/chat/completions \\"
+        )
         console.print("    --model gpt-4 \\")
         console.print("    --key your_api_key")
         console.print()
         console.print("  # 添加本地 Ollama 服务")
         console.print("  ais add-provider ollama \\")
-        console.print("    --url http://localhost:11434/v1/chat/completions \\")
+        console.print(
+            "    --url http://localhost:11434/v1/chat/completions \\"
+        )
         console.print("    --model llama3")
         console.print()
         console.print("[bold]常用服务配置:[/bold]")
         console.print("  • OpenAI: https://api.openai.com/v1/chat/completions")
         console.print(
-            "  • Azure OpenAI: https://your-resource.openai.azure.com/openai/deployments/your-deployment/chat/completions?api-version=2023-05-15"
+            "  • Azure OpenAI: https://your-resource.openai.azure.com/"
+            "openai/deployments/your-deployment/chat/completions"
+            "?api-version=2023-05-15"
         )
         console.print("  • Ollama: http://localhost:11434/v1/chat/completions")
-        console.print("  • Claude (Anthropic): https://api.anthropic.com/v1/messages")
+        console.print(
+            "  • Claude (Anthropic): https://api.anthropic.com/v1/messages"
+        )
         console.print()
         console.print("[bold]相关命令:[/bold]")
         console.print("  ais list-provider         - 查看所有配置的提供商")
         console.print("  ais use-provider <名称>   - 切换默认提供商")
         console.print("  ais remove-provider <名称> - 删除提供商配置")
         console.print()
-        console.print("[dim]💡 提示: 添加后使用 'ais use-provider <名称>' 切换到新提供商[/dim]")
+        console.print(
+            "[dim]💡 提示: 添加后使用 'ais use-provider <名称>' 切换到新提供商[/dim]"
+        )
         return
 
     if not name or not url or not model:
         console.print("[red]错误: 缺少必需参数[/red]")
-        console.print("[dim]用法: ais add-provider <名称> --url <地址> --model <模型>[/dim]")
+        console.print(
+            "[dim]用法: ais add-provider <名称> --url <地址> --model <模型>[/dim]"
+        )
         console.print("[dim]帮助: ais add-provider --help-detail[/dim]")
         return
 
     from ..core.config import add_provider
 
-    _handle_provider_operation(add_provider, name, "已添加提供商", "添加提供商", url, model, key)
+    _handle_provider_operation(
+        add_provider, name, "已添加提供商", "添加提供商", url, model, key
+    )
 
 
 @main.command("remove-provider")
@@ -293,7 +339,9 @@ def remove_provider_cmd(name):
     """删除 AI 服务商。"""
     from ..core.config import remove_provider
 
-    _handle_provider_operation(remove_provider, name, "已删除提供商", "删除提供商")
+    _handle_provider_operation(
+        remove_provider, name, "已删除提供商", "删除提供商"
+    )
 
 
 @main.command("use-provider")
@@ -302,11 +350,15 @@ def use_provider_cmd(name):
     """切换默认 AI 服务商。"""
     from ..core.config import use_provider
 
-    _handle_provider_operation(use_provider, name, "已切换到提供商", "切换提供商")
+    _handle_provider_operation(
+        use_provider, name, "已切换到提供商", "切换提供商"
+    )
 
 
 @main.command("list-provider")
-@click.option("--help-detail", is_flag=True, help="显示list-provider命令详细使用说明")
+@click.option(
+    "--help-detail", is_flag=True, help="显示list-provider命令详细使用说明"
+)
 def list_provider(help_detail):
     """列出所有可用的 AI 服务商。"""
     if help_detail:
@@ -332,10 +384,15 @@ def list_provider(help_detail):
         console.print("[bold]示例输出:[/bold]")
         console.print("  [green]可用的 AI 服务商:[/green]")
         console.print(
-            "  ✓ default_free: gpt-4o-mini (https://api.deepbricks.ai/v1/chat/completions) 🔑"
+            "  ✓ default_free: gpt-4o-mini "
+            "(https://api.deepbricks.ai/v1/chat/completions) 🔑"
         )
-        console.print("    ollama: llama3 (http://localhost:11434/v1/chat/completions)")
-        console.print("    openai: gpt-4 (https://api.openai.com/v1/chat/completions) 🔑")
+        console.print(
+            "    ollama: llama3 (http://localhost:11434/v1/chat/completions)"
+        )
+        console.print(
+            "    openai: gpt-4 (https://api.openai.com/v1/chat/completions) 🔑"
+        )
         console.print()
         console.print("[bold]相关命令:[/bold]")
         console.print("  ais use-provider <名称>    - 切换到指定提供商")
@@ -394,9 +451,14 @@ def analyze_error(exit_code, command, stderr):
             for i, log in enumerate(similar_logs, 1):
                 time_str = log.timestamp.strftime("%m-%d %H:%M")
                 status = "已解决" if log.ai_explanation else "未分析"
-                console.print(f"  {i}. {log.original_command} ({time_str}) - {status}")
+                console.print(
+                    f"  {i}. {log.original_command} ({time_str}) - {status}"
+                )
 
-            console.print("[dim]💡 你可以使用 'ais history-detail <索引>' " "查看之前的分析[/dim]")
+            console.print(
+                "[dim]💡 你可以使用 'ais history-detail <索引>' "
+                "查看之前的分析[/dim]"
+            )
 
         # 使用 AI 分析错误
         analysis = analyze_error(command, exit_code, stderr, context, config)
@@ -414,7 +476,11 @@ def analyze_error(exit_code, command, stderr):
         )
 
         # 显示分析结果
-        if analysis and isinstance(analysis, dict) and analysis.get("explanation"):
+        if (
+            analysis
+            and isinstance(analysis, dict)
+            and analysis.get("explanation")
+        ):
             console.print("\n[bold blue]🤖 AI 错误分析[/bold blue]")
             console.print()
             console.print(Markdown(analysis["explanation"]))
@@ -453,7 +519,9 @@ def analyze_error(exit_code, command, stderr):
 @click.option("--limit", "-n", default=10, help="显示的历史记录数量")
 @click.option("--failed-only", is_flag=True, help="只显示失败的命令")
 @click.option("--command-filter", help="按命令名称过滤")
-@click.option("--help-detail", is_flag=True, help="显示history命令详细使用说明")
+@click.option(
+    "--help-detail", is_flag=True, help="显示history命令详细使用说明"
+)
 def show_history(limit, failed_only, command_filter, help_detail):
     """显示命令历史记录。"""
     if help_detail:
@@ -466,7 +534,9 @@ def show_history(limit, failed_only, command_filter, help_detail):
         console.print("  ais history [选项]")
         console.print()
         console.print("[bold]选项:[/bold]")
-        console.print("  -n, --limit <数量>        限制显示记录数量 (默认: 10)")
+        console.print(
+            "  -n, --limit <数量>        限制显示记录数量 (默认: 10)"
+        )
         console.print("  --failed-only            只显示失败的命令")
         console.print("  --command-filter <关键词> 按命令名称过滤")
         console.print()
@@ -474,7 +544,9 @@ def show_history(limit, failed_only, command_filter, help_detail):
         console.print("  ais history                    # 显示最近10条记录")
         console.print("  ais history -n 20              # 显示最近20条记录")
         console.print("  ais history --failed-only      # 只显示失败的命令")
-        console.print("  ais history --command-filter git # 只显示包含git的命令")
+        console.print(
+            "  ais history --command-filter git # 只显示包含git的命令"
+        )
         console.print()
         console.print("[bold]历史记录内容:[/bold]")
         console.print("  • 执行时间和用户")
@@ -486,7 +558,9 @@ def show_history(limit, failed_only, command_filter, help_detail):
         console.print("  ais history-detail <索引>  - 查看具体记录的详细分析")
         console.print("  ais analyze               - 手动分析上一个失败命令")
         console.print()
-        console.print("[dim]💡 提示: 历史记录存储在本地数据库中，保护你的隐私[/dim]")
+        console.print(
+            "[dim]💡 提示: 历史记录存储在本地数据库中，保护你的隐私[/dim]"
+        )
         return
 
     try:
@@ -539,7 +613,9 @@ def show_history(limit, failed_only, command_filter, help_detail):
         console.print(table)
 
         # 提示用户可以查看详情
-        console.print("\n[dim]💡 使用 'ais history-detail <索引>' 查看详细分析[/dim]")
+        console.print(
+            "\n[dim]💡 使用 'ais history-detail <索引>' 查看详细分析[/dim]"
+        )
 
     except Exception as e:
         console.print(f"[red]获取历史记录失败: {e}[/red]")
@@ -556,7 +632,9 @@ def show_history_detail(index):
         logs = get_recent_logs(50)  # 获取更多记录用于索引
 
         if index < 1 or index > len(logs):
-            console.print(f"[red]索引超出范围。请使用 1-{len(logs)} 之间的数字[/red]")
+            console.print(
+                f"[red]索引超出范围。请使用 1-{len(logs)} 之间的数字[/red]"
+            )
             return
 
         log = logs[index - 1]
@@ -595,8 +673,12 @@ def show_history_detail(index):
                 suggestions = json.loads(log.ai_suggestions_json)
                 console.print("\n[bold yellow]💡 AI 建议:[/bold yellow]")
                 for i, suggestion in enumerate(suggestions, 1):
-                    risk_icon = "✅" if suggestion.get("risk_level") == "safe" else "⚠️"
-                    console.print(f"{i}. {suggestion.get('command', 'N/A')} {risk_icon}")
+                    risk_icon = (
+                        "✅" if suggestion.get("risk_level") == "safe" else "⚠️"
+                    )
+                    console.print(
+                        f"{i}. {suggestion.get('command', 'N/A')} {risk_icon}"
+                    )
                     console.print(f"   {suggestion.get('description', '')}")
             except Exception:
                 pass
@@ -609,7 +691,9 @@ def show_history_detail(index):
 
 @main.command("suggest")
 @click.argument("task", required=False)
-@click.option("--help-detail", is_flag=True, help="显示suggest命令详细使用说明")
+@click.option(
+    "--help-detail", is_flag=True, help="显示suggest命令详细使用说明"
+)
 def suggest_command(task, help_detail):
     """根据任务描述建议命令。"""
     if help_detail:
@@ -741,7 +825,9 @@ def learn_command(topic, help_detail):
         console.print("  ais ask <问题>         - 直接提问具体问题")
         console.print("  ais suggest <任务>     - 获取任务相关命令建议")
         console.print()
-        console.print("[dim]💡 提示: 可以学习任何主题，即使不在内置列表中[/dim]")
+        console.print(
+            "[dim]💡 提示: 可以学习任何主题，即使不在内置列表中[/dim]"
+        )
         return
 
     try:
@@ -765,7 +851,9 @@ def learn_command(topic, help_detail):
             for i, topic in enumerate(topics, 1):
                 console.print(f"  {i}. {topic}")
 
-            console.print("\n[dim]使用 'ais learn <主题>' 开始学习，例如: ais learn git[/dim]")
+            console.print(
+                "\n[dim]使用 'ais learn <主题>' 开始学习，例如: ais learn git[/dim]"
+            )
             return
 
         # 生成学习内容
@@ -784,7 +872,9 @@ def learn_command(topic, help_detail):
         response = ask_ai(learning_prompt, config)
 
         if response:
-            console.print(f"\n[bold blue]📖 {topic.upper()} 学习指南[/bold blue]")
+            console.print(
+                f"\n[bold blue]📖 {topic.upper()} 学习指南[/bold blue]"
+            )
             console.print()
             console.print(Markdown(response))
         else:
@@ -806,7 +896,9 @@ def setup_shell():
     shell_name = os.path.basename(shell)
 
     # 获取集成脚本路径
-    script_path = os.path.join(os.path.dirname(__file__), "..", "shell", "integration.sh")
+    script_path = os.path.join(
+        os.path.dirname(__file__), "..", "shell", "integration.sh"
+    )
     script_path = os.path.abspath(script_path)
 
     console.print(f"检测到的 Shell: {shell_name}")
@@ -824,7 +916,9 @@ def setup_shell():
 
     target_files = config_files.get(shell_name, ["~/.bashrc"])
 
-    console.print("\n[bold yellow]📝 请手动添加以下内容到您的 shell 配置文件中:[/bold yellow]")
+    console.print(
+        "\n[bold yellow]📝 请手动添加以下内容到您的 shell 配置文件中:[/bold yellow]"
+    )
 
     for config_file in target_files:
         expanded_path = os.path.expanduser(config_file)
@@ -864,13 +958,17 @@ def test_integration():
         import os
 
         # 模拟上下文收集
-        context = collect_context("mdkirr /test", 127, "mdkirr: command not found")
+        context = collect_context(
+            "mdkirr /test", 127, "mdkirr: command not found"
+        )
         config = get_config()
 
         console.print("✅ 上下文收集: 成功")
 
         # 测试 AI 分析
-        analysis = analyze_error("mdkirr /test", 127, "mdkirr: command not found", context, config)
+        analysis = analyze_error(
+            "mdkirr /test", 127, "mdkirr: command not found", context, config
+        )
 
         console.print("✅ AI 分析: 成功")
 
@@ -901,22 +999,30 @@ def test_integration():
 @main.command("which")
 def which_command():
     """帮助选择合适的命令类型。"""
-    console.print("[bold green]🤔 不知道用哪个命令？让我来帮你选择！[/bold green]")
+    console.print(
+        "[bold green]🤔 不知道用哪个命令？让我来帮你选择！[/bold green]"
+    )
     console.print()
     console.print("[bold blue]📊 命令选择指南：[/bold blue]")
     console.print()
 
-    console.print("[bold yellow]🔍 ais ask[/bold yellow] - [blue]快速问答模式[/blue]")
+    console.print(
+        "[bold yellow]🔍 ais ask[/bold yellow] - [blue]快速问答模式[/blue]"
+    )
     console.print("  适用：想了解概念、快速解答疑问")
     console.print('  示例："什么是Docker？" "Git冲突怎么回事？"')
     console.print()
 
-    console.print("[bold yellow]💡 ais suggest[/bold yellow] - [blue]任务解决模式[/blue]")
+    console.print(
+        "[bold yellow]💡 ais suggest[/bold yellow] - [blue]任务解决模式[/blue]"
+    )
     console.print("  适用：需要完成具体任务、寻找操作方法")
     console.print('  示例："压缩文件夹" "批量重命名文件"')
     console.print()
 
-    console.print("[bold yellow]📚 ais learn[/bold yellow] - [blue]系统学习模式[/blue]")
+    console.print(
+        "[bold yellow]📚 ais learn[/bold yellow] - [blue]系统学习模式[/blue]"
+    )
     console.print("  适用：从头学习工具、深入掌握概念")
     console.print('  示例："git" "docker" "vim"')
     console.print()
@@ -927,13 +1033,17 @@ def which_command():
     console.print("  📖 想系统性学习 → [yellow]ais learn[/yellow]")
     console.print()
 
-    console.print("[dim]💡 提示：还可以用 ais help-all 查看所有命令详细说明[/dim]")
+    console.print(
+        "[dim]💡 提示：还可以用 ais help-all 查看所有命令详细说明[/dim]"
+    )
 
 
 @main.command("help-all")
 def help_all():
     """显示所有命令的详细帮助汇总。"""
-    console.print("[bold green]🚀 AIS - AI 智能终端助手 详细帮助汇总[/bold green]")
+    console.print(
+        "[bold green]🚀 AIS - AI 智能终端助手 详细帮助汇总[/bold green]"
+    )
     console.print()
     console.print("[bold]核心功能命令:[/bold]")
     console.print("  ais ask --help-detail       - AI 问答功能详细说明")
