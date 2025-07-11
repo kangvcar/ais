@@ -152,7 +152,7 @@ install_ais() {
     else
         print_info "从 PyPI 安装 AIS..."
         # 注意: 这里需要实际发布到PyPI后才能工作
-        pipx install ais || {
+        pipx install ais-terminal || {
             print_warning "PyPI 安装失败，尝试从源码安装..."
             INSTALL_METHOD="source"
             install_ais

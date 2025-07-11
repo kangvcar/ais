@@ -20,10 +20,10 @@
 
 ```bash
 # 使用 pip 安装
-pip install ais
+pip install ais-terminal
 
 # 或使用 pipx (推荐)
-pipx install ais
+pipx install ais-terminal
 ```
 
 ### 方法2: Homebrew 安装（macOS/Linux）
@@ -235,7 +235,7 @@ brew install python@3.8
 curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/uninstall.sh | bash
 
 # 或手动卸载
-pipx uninstall ais
+pipx uninstall ais-terminal
 # 然后手动删除 ~/.bashrc 中的 AIS 集成部分
 ```
 

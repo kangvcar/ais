@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "ais"
+name = "ais-terminal"
 version = "0.1.0"
 description = "智能终端助手 - AI-powered terminal assistant"
 readme = "docs/README.md"

@@ -80,7 +80,7 @@ python -m twine upload dist/*
 curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/install.sh | bash
 
 # 从 PyPI 安装
-pipx install ais
+pipx install ais-terminal
 
 # 从源码安装
 git clone https://github.com/kangvcar/ais.git
@@ -112,8 +112,8 @@ ais learn git
 #### 🌟 推广建议
 1. **在 README 中添加徽章**：
    ```markdown
-   ![PyPI version](https://img.shields.io/pypi/v/ais.svg)
-   ![Downloads](https://img.shields.io/pypi/dm/ais.svg)
+   ![PyPI version](https://img.shields.io/pypi/v/ais-terminal.svg)
+   ![Downloads](https://img.shields.io/pypi/dm/ais-terminal.svg)
    ![GitHub stars](https://img.shields.io/github/stars/kangvcar/ais.svg)
    ```
 

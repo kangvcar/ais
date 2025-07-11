@@ -88,9 +88,9 @@ remove_ais_app() {
     print_step 1 "移除 AIS 应用程序"
     
     if command_exists pipx; then
-        if pipx list | grep -q "ais"; then
+        if pipx list | grep -q "ais-terminal"; then
             print_info "使用 pipx 卸载 AIS..."
-            pipx uninstall ais
+            pipx uninstall ais-terminal
             print_success "AIS 应用程序已卸载"
         else
             print_info "未发现通过 pipx 安装的 AIS"

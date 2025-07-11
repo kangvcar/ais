@@ -181,7 +181,7 @@ jobs:
           
           **Python包管理器**:
           ```bash
-          pip install ais
+          pip install ais-terminal
           ```
           
           **Homebrew (macOS/Linux)**:
@@ -220,7 +220,7 @@ jobs:
     - name: Test pip installation
       if: matrix.method == 'pip'
       run: |
-        python -m pip install --upgrade ais
+        python -m pip install --upgrade ais-terminal
         ais --version
     
     - name: Test script installation (Unix)
@@ -240,7 +240,7 @@ jobs:
       if: needs.publish-pypi.result == 'success'
       run: |
         echo "🎉 AIS v${{ needs.build.outputs.version }} 发布成功！"
-        echo "📦 PyPI: https://pypi.org/project/ais/${{ needs.build.outputs.version }}/"
+        echo "📦 PyPI: https://pypi.org/project/ais-terminal/${{ needs.build.outputs.version }}/"
         echo "🍺 Homebrew PR已创建"
         echo "✅ 安装测试通过"
     
