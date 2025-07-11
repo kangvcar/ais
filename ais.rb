@@ -1,8 +1,8 @@
 class Ais < Formula
   desc "AI-powered terminal assistant for command analysis and learning"
   homepage "https://github.com/kangvcar/ais"
-  url "https://github.com/kangvcar/ais/archive/refs/tags/v0.1.0.tar.gz"
-  sha256 "PLACEHOLDER_SHA256"
+  url "https://github.com/kangvcar/ais/archive/refs/tags/v0.1.4.tar.gz"
+  sha256 "f35ad357703fbc52c1a47fea839eb2a894fea12251831a9c561dcbdbe4439f6b"
   license "MIT"
   head "https://github.com/kangvcar/ais.git", branch: "main"
 
