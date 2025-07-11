@@ -422,10 +422,11 @@ def analyze_error(exit_code, command, stderr):
                     console.print(analysis)
         
         suggestions = analysis.get('suggestions', [])
+        follow_up_questions = analysis.get('follow_up_questions', [])
         if suggestions:
             # 显示交互式菜单
             from .interactive import show_interactive_menu
-            show_interactive_menu(suggestions, console)
+            show_interactive_menu(suggestions, console, follow_up_questions)
         
     except Exception as e:
         console.print(f"[red]分析失败: {e}[/red]")

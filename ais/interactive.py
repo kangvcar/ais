@@ -84,13 +84,39 @@ def show_command_details(suggestion: Dict[str, Any], console: Console) -> None:
     console.print(separator)
 
 
-def ask_follow_up_question(console: Console) -> None:
-    """询问后续问题。"""
+def ask_follow_up_question(console: Console, predefined_questions: List[str] = None) -> None:
+    """询问后续问题，支持预设问题选择。"""
     console.print("\n[bold blue]💬 后续问题[/bold blue]")
     
-    question = input("请输入你的问题（按回车跳过）: ").strip()
-    if not question:
-        return
+    # 如果有预设问题，先显示选项
+    if predefined_questions:
+        console.print("\n[bold cyan]AI 建议的学习问题:[/bold cyan]")
+        for i, q in enumerate(predefined_questions, 1):
+            console.print(f"  {i}. {q}")
+        console.print(f"  {len(predefined_questions) + 1}. 自定义问题")
+        
+        try:
+            choice = input(f"\n请选择问题 (1-{len(predefined_questions) + 1}, 或回车跳过): ").strip()
+            if not choice:
+                return
+            
+            choice_num = int(choice)
+            if 1 <= choice_num <= len(predefined_questions):
+                question = predefined_questions[choice_num - 1]
+            elif choice_num == len(predefined_questions) + 1:
+                question = input("请输入你的问题: ").strip()
+                if not question:
+                    return
+            else:
+                console.print("[yellow]无效选择[/yellow]")
+                return
+        except ValueError:
+            console.print("[yellow]无效输入[/yellow]")
+            return
+    else:
+        question = input("请输入你的问题（按回车跳过）: ").strip()
+        if not question:
+            return
     
     try:
         from .ai import ask_ai
@@ -116,18 +142,18 @@ def edit_command(command: str) -> str:
     return new_command if new_command else command
 
 
-def show_interactive_menu(suggestions: List[Dict[str, Any]], console: Console) -> None:
+def show_interactive_menu(suggestions: List[Dict[str, Any]], console: Console, follow_up_questions: List[str] = None) -> None:
     """显示交互式建议菜单。"""
     # 检查是否在交互式终端中
     if not sys.stdin.isatty():
-        show_simple_menu(suggestions, console)
+        show_simple_menu(suggestions, console, follow_up_questions)
         return
         
     try:
         import questionary
     except ImportError:
         # 如果 questionary 不可用，使用简化版本
-        show_simple_menu(suggestions, console)
+        show_simple_menu(suggestions, console, follow_up_questions)
         return
     
     while True:
@@ -246,10 +272,10 @@ def show_interactive_menu(suggestions: List[Dict[str, Any]], console: Console) -
                         
         elif action == 'question':
             # 询问后续问题
-            ask_follow_up_question(console)
+            ask_follow_up_question(console, follow_up_questions)
 
 
-def show_simple_menu(suggestions: List[Dict[str, Any]], console: Console) -> None:
+def show_simple_menu(suggestions: List[Dict[str, Any]], console: Console, follow_up_questions: List[str] = None) -> None:
     """简化版菜单（当 questionary 不可用时）。"""
     console.print()
     console.print("? Select an action:")
