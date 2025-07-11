@@ -13,7 +13,17 @@ console = Console()
 @click.group()
 @click.version_option(version="0.1.0", prog_name="ais")
 def main():
-    """AIS - AI-powered terminal assistant."""
+    """AIS - AI-powered terminal assistant.
+    
+    智能终端助手，通过 AI 技术帮助用户分析错误、学习命令和提高效率。
+    
+    💡 提示: 大多数命令都支持 --help-detail 选项查看详细使用说明
+    
+    示例:
+      ais ask --help-detail     查看 ask 命令详细帮助
+      ais config --help-context 查看配置帮助
+      ais history --help-detail 查看历史命令帮助
+    """
     pass
 
 
@@ -23,9 +33,48 @@ def _handle_error(error_msg: str) -> None:
 
 
 @main.command()
-@click.argument("question", required=True)
-def ask(question):
+@click.argument("question", required=False)
+@click.option('--help-detail', is_flag=True, help='显示ask命令详细使用说明')
+def ask(question, help_detail):
     """Ask AI a question."""
+    if help_detail:
+        console.print("[green]ais ask 命令详细使用说明:[/green]")
+        console.print()
+        console.print("[bold]功能:[/bold]")
+        console.print("  快速问答模式，立即获得具体问题的答案")
+        console.print("  适合解决当前遇到的具体问题或疑惑")
+        console.print()
+        console.print("[bold]用法:[/bold]")
+        console.print("  ais ask <问题>")
+        console.print()
+        console.print("[bold]适用场景:[/bold]")
+        console.print("  • 解释概念：\"什么是Docker容器？\"")
+        console.print("  • 快速答疑：\"Git冲突是什么意思？\"") 
+        console.print("  • 概念查询：\"Linux权限755代表什么？\"")
+        console.print("  • 故障诊断：\"为什么命令执行失败？\"")
+        console.print()
+        console.print("[bold]vs 其他命令:[/bold]")
+        console.print("  • 需要具体操作步骤 → 使用 ais suggest")
+        console.print("  • 想系统学习主题 → 使用 ais learn")
+        console.print()
+        console.print("[bold]提示:[/bold]")
+        console.print("  • 问题用引号包围，避免 shell 解析问题")
+        console.print("  • 可以问任何编程、运维、工具使用相关问题")
+        console.print("  • AI 会提供中文回答和实用建议")
+        console.print("  • 回答基于当前配置的 AI 服务提供商")
+        console.print()
+        console.print("[bold]相关命令:[/bold]")
+        console.print("  ais config --list-providers - 查看可用的 AI 服务商")
+        console.print("  ais suggest <任务>          - 获取任务相关的命令建议")
+        console.print("  ais learn <主题>            - 学习特定主题知识")
+        return
+    
+    if not question:
+        console.print("[red]错误: 请提供要询问的问题[/red]")
+        console.print("[dim]用法: ais ask \"你的问题\"[/dim]")
+        console.print("[dim]帮助: ais ask --help-detail[/dim]")
+        return
+        
     try:
         config = get_config()
         response = ask_ai(question, config)
@@ -42,7 +91,8 @@ def ask(question):
 @click.option('--set', 'set_key', help='设置配置项 (key=value)')
 @click.option('--get', 'get_key', help='获取配置项值')
 @click.option('--list-providers', is_flag=True, help='列出所有可用的 AI 服务商')
-def config(set_key, get_key, list_providers):
+@click.option('--help-context', is_flag=True, help='显示上下文级别配置帮助')
+def config(set_key, get_key, list_providers, help_context):
     """显示或修改配置。"""
     try:
         config = get_config()
@@ -53,13 +103,30 @@ def config(set_key, get_key, list_providers):
                 console.print("[red]格式错误，请使用 key=value 格式[/red]")
                 return
             key, value = set_key.split('=', 1)
-            # 简单的类型转换
-            if value.lower() in ['true', 'false']:
+            
+            # 验证和转换配置值
+            if key == 'context_level':
+                if value not in ['minimal', 'standard', 'detailed']:
+                    console.print("[red]错误: context_level 必须是 minimal, standard 或 detailed[/red]")
+                    console.print("[dim]使用 'ais config --help-context' 查看详细说明[/dim]")
+                    return
+            elif key == 'auto_analysis':
+                if value.lower() in ['true', 'false']:
+                    value = value.lower() == 'true'
+                else:
+                    console.print("[red]错误: auto_analysis 必须是 true 或 false[/red]")
+                    return
+            elif value.lower() in ['true', 'false']:
                 value = value.lower() == 'true'
             elif value.isdigit():
                 value = int(value)
+            
             set_config(key, value)
             console.print(f"[green]✓ {key} = {value}[/green]")
+            
+            # 提供额外的设置提示
+            if key == 'context_level':
+                console.print(f"[dim]上下文收集级别已设置为 {value}[/dim]")
             
         elif get_key:
             # 获取配置项
@@ -74,13 +141,46 @@ def config(set_key, get_key, list_providers):
                 current = "✓" if name == config.get('default_provider') else " "
                 console.print(f"{current} {name}: {provider.get('model_name', 'N/A')}")
             
+        elif help_context:
+            # 显示上下文配置帮助
+            console.print("[green]上下文收集级别配置帮助:[/green]")
+            console.print()
+            console.print("[bold]可用级别:[/bold]")
+            console.print("  • [blue]minimal[/blue]  - 只收集基本信息（命令、退出码、目录）")
+            console.print("  • [blue]standard[/blue] - 收集标准信息（+ 命令历史、文件列表、Git状态）[dim]（默认）[/dim]")
+            console.print("  • [blue]detailed[/blue] - 收集详细信息（+ 系统信息、环境变量、完整目录）")
+            console.print()
+            console.print("[bold]设置方法:[/bold]")
+            console.print("  ais config --set context_level=minimal")
+            console.print("  ais config --set context_level=standard")
+            console.print("  ais config --set context_level=detailed")
+            console.print()
+            console.print("[bold]其他配置项:[/bold]")
+            console.print("  auto_analysis=true/false    - 开启/关闭自动错误分析")
+            console.print("  default_provider=name       - 设置默认AI服务提供商")
+            console.print()
+            console.print("[dim]查看当前配置: ais config[/dim]")
+            
         else:
             # 显示当前配置
             console.print("[green]当前配置:[/green]")
             console.print(f"默认提供商: {config.get('default_provider', 'default_free')}")
-            console.print(f"自动分析: {config.get('auto_analysis', True)}")
-            console.print(f"上下文级别: {config.get('context_level', 'standard')}")
-            console.print(f"敏感目录: {len(config.get('sensitive_dirs', []))} 个")
+            
+            auto_analysis = config.get('auto_analysis', True)
+            auto_status = "✅ 开启" if auto_analysis else "❌ 关闭"
+            console.print(f"自动分析: {auto_status}")
+            
+            context_level = config.get('context_level', 'standard')
+            console.print(f"上下文级别: {context_level}")
+            
+            sensitive_count = len(config.get('sensitive_dirs', []))
+            console.print(f"敏感目录: {sensitive_count} 个")
+            
+            console.print()
+            console.print("[dim]💡 提示:[/dim]")
+            console.print("[dim]  ais config --help-context  - 查看上下文配置帮助[/dim]")
+            console.print("[dim]  ais config --list-providers - 查看AI服务提供商[/dim]")
+            console.print("[dim]  ais config --set key=value  - 修改配置[/dim]")
             
     except Exception as e:
         console.print(f"[red]配置错误: {e}[/red]")
@@ -119,12 +219,60 @@ def _handle_provider_operation(operation, name, success_msg, error_prefix, *args
 
 
 @main.command("add-provider")
-@click.argument('name')
-@click.option('--url', required=True, help='API 基础 URL')
-@click.option('--model', required=True, help='模型名称')
+@click.argument('name', required=False)
+@click.option('--url', help='API 基础 URL')
+@click.option('--model', help='模型名称')
 @click.option('--key', help='API 密钥 (可选)')
-def add_provider_cmd(name, url, model, key):
+@click.option('--help-detail', is_flag=True, help='显示add-provider命令详细使用说明')
+def add_provider_cmd(name, url, model, key, help_detail):
     """添加新的 AI 服务商。"""
+    if help_detail:
+        console.print("[green]ais add-provider 命令详细使用说明:[/green]")
+        console.print()
+        console.print("[bold]功能:[/bold]")
+        console.print("  添加新的 AI 服务提供商配置，支持自定义 API 服务")
+        console.print()
+        console.print("[bold]用法:[/bold]")
+        console.print("  ais add-provider <名称> --url <API地址> --model <模型名> [--key <密钥>]")
+        console.print()
+        console.print("[bold]参数:[/bold]")
+        console.print("  名称       提供商的唯一标识名称")
+        console.print("  --url      API 基础 URL 地址")
+        console.print("  --model    使用的模型名称")
+        console.print("  --key      API 密钥（可选，某些服务需要）")
+        console.print()
+        console.print("[bold]示例:[/bold]")
+        console.print("  # 添加 OpenAI 服务")
+        console.print("  ais add-provider openai \\")
+        console.print("    --url https://api.openai.com/v1/chat/completions \\")
+        console.print("    --model gpt-4 \\")
+        console.print("    --key your_api_key")
+        console.print()
+        console.print("  # 添加本地 Ollama 服务")
+        console.print("  ais add-provider ollama \\")
+        console.print("    --url http://localhost:11434/v1/chat/completions \\")
+        console.print("    --model llama3")
+        console.print()
+        console.print("[bold]常用服务配置:[/bold]")
+        console.print("  • OpenAI: https://api.openai.com/v1/chat/completions")
+        console.print("  • Azure OpenAI: https://your-resource.openai.azure.com/openai/deployments/your-deployment/chat/completions?api-version=2023-05-15")
+        console.print("  • Ollama: http://localhost:11434/v1/chat/completions")
+        console.print("  • Claude (Anthropic): https://api.anthropic.com/v1/messages")
+        console.print()
+        console.print("[bold]相关命令:[/bold]")
+        console.print("  ais list-provider         - 查看所有配置的提供商")
+        console.print("  ais use-provider <名称>   - 切换默认提供商")
+        console.print("  ais remove-provider <名称> - 删除提供商配置")
+        console.print()
+        console.print("[dim]💡 提示: 添加后使用 'ais use-provider <名称>' 切换到新提供商[/dim]")
+        return
+    
+    if not name or not url or not model:
+        console.print("[red]错误: 缺少必需参数[/red]")
+        console.print("[dim]用法: ais add-provider <名称> --url <地址> --model <模型>[/dim]")
+        console.print("[dim]帮助: ais add-provider --help-detail[/dim]")
+        return
+        
     from .config import add_provider
     _handle_provider_operation(add_provider, name, "已添加提供商", "添加提供商", url, model, key)
 
@@ -146,8 +294,42 @@ def use_provider_cmd(name):
 
 
 @main.command("list-provider")
-def list_provider():
+@click.option('--help-detail', is_flag=True, help='显示list-provider命令详细使用说明')
+def list_provider(help_detail):
     """列出所有可用的 AI 服务商。"""
+    if help_detail:
+        console.print("[green]ais list-provider 命令详细使用说明:[/green]")
+        console.print()
+        console.print("[bold]功能:[/bold]")
+        console.print("  列出所有已配置的 AI 服务提供商及其详细信息")
+        console.print()
+        console.print("[bold]用法:[/bold]")
+        console.print("  ais list-provider")
+        console.print()
+        console.print("[bold]显示信息:[/bold]")
+        console.print("  • 提供商名称和当前状态（✓ 表示当前使用）")
+        console.print("  • 使用的模型名称")
+        console.print("  • API 端点地址")
+        console.print("  • 是否配置了 API 密钥（🔑 图标表示）")
+        console.print()
+        console.print("[bold]状态说明:[/bold]")
+        console.print("  ✓ 当前正在使用的默认提供商")
+        console.print("  🔑 已配置 API 密钥")
+        console.print("     无图标表示无需密钥或未配置密钥")
+        console.print()
+        console.print("[bold]示例输出:[/bold]")
+        console.print("  [green]可用的 AI 服务商:[/green]")
+        console.print("  ✓ default_free: gpt-4o-mini (https://api.deepbricks.ai/v1/chat/completions) 🔑")
+        console.print("    ollama: llama3 (http://localhost:11434/v1/chat/completions)")
+        console.print("    openai: gpt-4 (https://api.openai.com/v1/chat/completions) 🔑")
+        console.print()
+        console.print("[bold]相关命令:[/bold]")
+        console.print("  ais use-provider <名称>    - 切换到指定提供商")
+        console.print("  ais add-provider ...       - 添加新的提供商")
+        console.print("  ais remove-provider <名称> - 删除提供商")
+        console.print("  ais config                 - 查看当前配置状态")
+        return
+        
     try:
         config = get_config()
         providers = config.get('providers', {})
@@ -217,10 +399,27 @@ def analyze_error(exit_code, command, stderr):
         )
         
         # 显示分析结果
-        if analysis.get('explanation'):
+        if analysis and isinstance(analysis, dict) and analysis.get('explanation'):
             console.print("\n[bold blue]🤖 AI 错误分析[/bold blue]")
             console.print()
             console.print(Markdown(analysis['explanation']))
+        elif analysis:
+            # 如果analysis不是字典格式，显示调试信息
+            console.print("\n[bold blue]🤖 AI 错误分析[/bold blue]")
+            console.print()
+            console.print("[red]⚠️  AI返回了非预期格式的数据[/red]")
+            console.print(f"[dim]调试信息: {type(analysis)}[/dim]")
+            if isinstance(analysis, str):
+                # 尝试解析字符串中的JSON
+                try:
+                    import json as json_module
+                    parsed_analysis = json_module.loads(analysis)
+                    if parsed_analysis.get('explanation'):
+                        console.print(Markdown(parsed_analysis['explanation']))
+                        analysis = parsed_analysis  # 更新analysis用于后续处理
+                except:
+                    console.print("[yellow]原始内容:[/yellow]")
+                    console.print(analysis)
         
         suggestions = analysis.get('suggestions', [])
         if suggestions:
@@ -236,8 +435,42 @@ def analyze_error(exit_code, command, stderr):
 @click.option('--limit', '-n', default=10, help='显示的历史记录数量')
 @click.option('--failed-only', is_flag=True, help='只显示失败的命令')
 @click.option('--command-filter', help='按命令名称过滤')
-def show_history(limit, failed_only, command_filter):
+@click.option('--help-detail', is_flag=True, help='显示history命令详细使用说明')
+def show_history(limit, failed_only, command_filter, help_detail):
     """显示命令历史记录。"""
+    if help_detail:
+        console.print("[green]ais history 命令详细使用说明:[/green]")
+        console.print()
+        console.print("[bold]功能:[/bold]")
+        console.print("  查看和分析命令执行历史记录，包括成功和失败的命令")
+        console.print()
+        console.print("[bold]用法:[/bold]")
+        console.print("  ais history [选项]")
+        console.print()
+        console.print("[bold]选项:[/bold]")
+        console.print("  -n, --limit <数量>        限制显示记录数量 (默认: 10)")
+        console.print("  --failed-only            只显示失败的命令")
+        console.print("  --command-filter <关键词> 按命令名称过滤")
+        console.print()
+        console.print("[bold]示例:[/bold]")
+        console.print("  ais history                    # 显示最近10条记录")
+        console.print("  ais history -n 20              # 显示最近20条记录")
+        console.print("  ais history --failed-only      # 只显示失败的命令")
+        console.print("  ais history --command-filter git # 只显示包含git的命令")
+        console.print()
+        console.print("[bold]历史记录内容:[/bold]")
+        console.print("  • 执行时间和用户")
+        console.print("  • 原始命令和退出码")
+        console.print("  • 是否有AI分析结果")
+        console.print("  • 成功/失败状态标识")
+        console.print()
+        console.print("[bold]相关命令:[/bold]")
+        console.print("  ais history-detail <索引>  - 查看具体记录的详细分析")
+        console.print("  ais analyze               - 手动分析上一个失败命令")
+        console.print()
+        console.print("[dim]💡 提示: 历史记录存储在本地数据库中，保护你的隐私[/dim]")
+        return
+        
     try:
         from .database import get_recent_logs, get_similar_commands
         from rich.table import Table
@@ -358,9 +591,61 @@ def show_history_detail(index):
 
 
 @main.command("suggest")
-@click.argument('task')
-def suggest_command(task):
+@click.argument('task', required=False)
+@click.option('--help-detail', is_flag=True, help='显示suggest命令详细使用说明')
+def suggest_command(task, help_detail):
     """根据任务描述建议命令。"""
+    if help_detail:
+        console.print("[green]ais suggest 命令详细使用说明:[/green]")
+        console.print()
+        console.print("[bold]功能:[/bold]")
+        console.print("  任务导向模式，提供完成具体任务的命令方案")
+        console.print("  重点关注操作步骤、安全性和最佳实践")
+        console.print()
+        console.print("[bold]用法:[/bold]")
+        console.print("  ais suggest <任务描述>")
+        console.print()
+        console.print("[bold]适用场景:[/bold]")
+        console.print("  • 需要完成具体任务：\"压缩文件夹\"")
+        console.print("  • 寻找操作方法：\"批量重命名文件\"")
+        console.print("  • 系统管理任务：\"监控系统资源\"")
+        console.print("  • 数据处理任务：\"备份数据库\"")
+        console.print()
+        console.print("[bold]vs 其他命令:[/bold]")
+        console.print("  • 只想了解概念 → 使用 ais ask")
+        console.print("  • 想深入学习主题 → 使用 ais learn")
+        console.print()
+        console.print("[bold]建议内容包括:[/bold]")
+        console.print("  • 推荐命令（按安全性排序）")
+        console.print("  • 每个命令的详细解释")
+        console.print("  • 使用注意事项和风险提示")
+        console.print("  • 相关学习资源和延伸知识")
+        console.print("  • 最佳实践建议")
+        console.print()
+        console.print("[bold]安全特性:[/bold]")
+        console.print("  • 命令按安全等级排序")
+        console.print("  • 危险操作会特别标注")
+        console.print("  • 提供风险评估和预防措施")
+        console.print()
+        console.print("[bold]适用场景:[/bold]")
+        console.print("  • 不确定如何完成某个任务")
+        console.print("  • 寻找更好的命令替代方案")
+        console.print("  • 学习任务相关的工具和技巧")
+        console.print("  • 了解操作的安全性和风险")
+        console.print()
+        console.print("[bold]相关命令:[/bold]")
+        console.print("  ais ask <问题>         - 直接提问具体问题")
+        console.print("  ais learn <主题>       - 学习特定主题知识")
+        console.print()
+        console.print("[dim]💡 提示: 任务描述越具体，建议越准确[/dim]")
+        return
+    
+    if not task:
+        console.print("[red]错误: 请提供任务描述[/red]")
+        console.print("[dim]用法: ais suggest \"你要完成的任务\"[/dim]")
+        console.print("[dim]帮助: ais suggest --help-detail[/dim]")
+        return
+        
     try:
         from .ai import ask_ai
         
@@ -393,8 +678,55 @@ def suggest_command(task):
 
 @main.command("learn")
 @click.argument('topic', required=False)
-def learn_command(topic):
+@click.option('--help-detail', is_flag=True, help='显示learn命令详细使用说明')
+def learn_command(topic, help_detail):
     """学习命令行知识。"""
+    if help_detail:
+        console.print("[green]ais learn 命令详细使用说明:[/green]")
+        console.print()
+        console.print("[bold]功能:[/bold]")
+        console.print("  系统学习模式，提供特定主题的完整知识体系")
+        console.print("  适合从零开始学习或深入了解某个工具/概念")
+        console.print()
+        console.print("[bold]用法:[/bold]")
+        console.print("  ais learn [主题]")
+        console.print("  ais learn             # 显示所有可学习主题")
+        console.print()
+        console.print("[bold]内置主题:[/bold]")
+        console.print("  • git     - Git 版本控制基础")
+        console.print("  • ssh     - 远程连接和密钥管理")
+        console.print("  • docker  - 容器化技术基础")
+        console.print("  • vim     - 文本编辑器使用")
+        console.print("  • grep    - 文本搜索和正则表达式")
+        console.print("  • find    - 文件查找技巧")
+        console.print("  • permissions - Linux 权限管理")
+        console.print("  • process - 进程管理")
+        console.print("  • network - 网络工具和诊断")
+        console.print()
+        console.print("[bold]适用场景:[/bold]")
+        console.print("  • 系统学习：\"我想全面学习Git\"")
+        console.print("  • 深入了解：\"Docker的核心概念和常用操作\"")
+        console.print("  • 技能提升：\"掌握Vim编辑器的使用\"")
+        console.print("  • 知识补全：\"Linux权限管理完整知识\"")
+        console.print()
+        console.print("[bold]vs 其他命令:[/bold]")
+        console.print("  • 快速解答问题 → 使用 ais ask")
+        console.print("  • 完成具体任务 → 使用 ais suggest")
+        console.print()
+        console.print("[bold]学习内容包括:[/bold]")
+        console.print("  • 概念介绍和重要性说明")
+        console.print("  • 5-10个最常用命令和示例")
+        console.print("  • 每个命令的使用场景")
+        console.print("  • 实践建议和学习路径")
+        console.print("  • 最佳实践和注意事项")
+        console.print()
+        console.print("[bold]相关命令:[/bold]")
+        console.print("  ais ask <问题>         - 直接提问具体问题")
+        console.print("  ais suggest <任务>     - 获取任务相关命令建议")
+        console.print()
+        console.print("[dim]💡 提示: 可以学习任何主题，即使不在内置列表中[/dim]")
+        return
+        
     try:
         from .ai import ask_ai
         
@@ -545,6 +877,76 @@ def test_integration():
         
     except Exception as e:
         console.print(f"[red]❌ 测试失败: {e}[/red]")
+
+
+@main.command("which")
+def which_command():
+    """帮助选择合适的命令类型。"""
+    console.print("[bold green]🤔 不知道用哪个命令？让我来帮你选择！[/bold green]")
+    console.print()
+    console.print("[bold blue]📊 命令选择指南：[/bold blue]")
+    console.print()
+    
+    console.print("[bold yellow]🔍 ais ask[/bold yellow] - [blue]快速问答模式[/blue]")
+    console.print("  适用：想了解概念、快速解答疑问")
+    console.print("  示例：\"什么是Docker？\" \"Git冲突怎么回事？\"")
+    console.print()
+    
+    console.print("[bold yellow]💡 ais suggest[/bold yellow] - [blue]任务解决模式[/blue]") 
+    console.print("  适用：需要完成具体任务、寻找操作方法")
+    console.print("  示例：\"压缩文件夹\" \"批量重命名文件\"")
+    console.print()
+    
+    console.print("[bold yellow]📚 ais learn[/bold yellow] - [blue]系统学习模式[/blue]")
+    console.print("  适用：从头学习工具、深入掌握概念")
+    console.print("  示例：\"git\" \"docker\" \"vim\"")
+    console.print()
+    
+    console.print("[bold green]🎯 快速决策树：[/bold green]")
+    console.print("  ❓ 不懂概念/原理 → [yellow]ais ask[/yellow]")
+    console.print("  🎯 要完成具体任务 → [yellow]ais suggest[/yellow]") 
+    console.print("  📖 想系统性学习 → [yellow]ais learn[/yellow]")
+    console.print()
+    
+    console.print("[dim]💡 提示：还可以用 ais help-all 查看所有命令详细说明[/dim]")
+
+
+@main.command("help-all")
+def help_all():
+    """显示所有命令的详细帮助汇总。"""
+    console.print("[bold green]🚀 AIS - AI 智能终端助手 详细帮助汇总[/bold green]")
+    console.print()
+    console.print("[bold]核心功能命令:[/bold]")
+    console.print("  ais ask --help-detail       - AI 问答功能详细说明")
+    console.print("  ais suggest --help-detail   - 任务建议功能详细说明")
+    console.print("  ais learn --help-detail     - 学习功能详细说明")
+    console.print()
+    console.print("[bold]配置管理命令:[/bold]")
+    console.print("  ais config --help-context   - 配置管理详细说明")
+    console.print("  ais on/off                  - 开启/关闭自动分析")
+    console.print()
+    console.print("[bold]历史记录命令:[/bold]")
+    console.print("  ais history --help-detail   - 历史记录查看详细说明")
+    console.print("  ais history-detail <索引>   - 查看具体记录详情")
+    console.print()
+    console.print("[bold]AI 服务商管理:[/bold]")
+    console.print("  ais add-provider --help-detail    - 添加服务商详细说明")
+    console.print("  ais list-provider --help-detail   - 列出服务商详细说明")
+    console.print("  ais use-provider <名称>           - 切换服务商")
+    console.print("  ais remove-provider <名称>        - 删除服务商")
+    console.print()
+    console.print("[bold]系统管理命令:[/bold]")
+    console.print("  ais analyze                  - 手动分析错误")
+    console.print("  ais setup-shell             - 设置 Shell 集成")
+    console.print("  ais test-integration         - 测试集成是否正常")
+    console.print()
+    console.print("[bold green]💡 使用技巧:[/bold green]")
+    console.print("  • 每个命令都有 --help 选项查看基本帮助")
+    console.print("  • 大多数命令支持 --help-detail 查看详细说明")
+    console.print("  • 配置相关帮助使用 --help-context")
+    console.print("  • 错误分析会自动触发，也可手动调用")
+    console.print()
+    console.print("[dim]更多信息请查看: ais --help[/dim]")
 
 
 if __name__ == "__main__":

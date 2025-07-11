@@ -5,6 +5,10 @@
 # 全局变量用于跟踪命令状态
 _ais_last_command=""
 _ais_last_exit_code=0
+_ais_last_stderr=""
+AI_STDERR_FILE="/tmp/ais_stderr_$$"
+AI_LAST_COMMAND=""
+AI_LAST_EXIT_CODE=0
 
 # 检查 AIS 是否可用
 _ais_check_availability() {
@@ -29,26 +33,81 @@ _ais_check_auto_analysis() {
 # preexec 钩子：命令执行前调用
 _ais_preexec() {
     _ais_last_command="$1"
+    _ais_last_stderr=""  # 清空之前的 stderr
 }
 
 # precmd 钩子：命令执行后调用
 _ais_precmd() {
-    _ais_last_exit_code=$?
+    local current_exit_code=$?
     
     # 只处理非零退出码且非中断信号（Ctrl+C 是 130）
-    if [ $_ais_last_exit_code -ne 0 ] && [ $_ais_last_exit_code -ne 130 ]; then
+    if [ $current_exit_code -ne 0 ] && [ $current_exit_code -ne 130 ]; then
         # 检查功能是否开启
         if _ais_check_auto_analysis; then
-            # 同步调用分析，立即显示结果和交互菜单
-            echo  # 添加空行分隔
+            local last_command=$(history 1 | sed 's/^[ ]*[0-9]*[ ]*//' 2>/dev/null || echo "$_ais_last_command")
             
-            # 调用 ais analyze 进行分析
-            ais analyze \
-                --exit-code "$_ais_last_exit_code" \
-                --command "$_ais_last_command" \
-                --stderr ""
+            # 过滤内部命令和特殊情况
+            if [[ "$last_command" != *"_ais_"* ]] && [[ "$last_command" != *"ais_"* ]] && [[ "$last_command" != *"history"* ]]; then
+                
+                # 尝试多种方式获取错误输出
+                local stderr_output=""
+                
+                # 方法1: 优先使用ai_exec捕获的错误
+                if [ -f "$AI_STDERR_FILE" ] && [ -s "$AI_STDERR_FILE" ]; then
+                    stderr_output=$(cat "$AI_STDERR_FILE" 2>/dev/null || echo "")
+                    > "$AI_STDERR_FILE" 2>/dev/null || true  # 清空文件
+                fi
+                
+                # 方法2: 如果没有捕获到stderr，尝试重新执行命令获取错误信息（仅对安全命令）
+                if [ -z "$stderr_output" ]; then
+                    if [[ "$last_command" != *"|"* ]] && [[ "$last_command" != *">"* ]] && [[ "$last_command" != *"&"* ]] && [[ "$last_command" != *"sudo"* ]]; then
+                        # 安全地重新执行命令，只获取stderr
+                        stderr_output=$(eval "$last_command" 2>&1 >/dev/null || true)
+                    fi
+                    
+                    # 如果还是没有捕获到错误，生成通用错误信息
+                    if [ -z "$stderr_output" ]; then
+                        local cmd_name=$(echo "$last_command" | awk '{print $1}')
+                        if ! command -v "$cmd_name" >/dev/null 2>&1; then
+                            stderr_output="bash: $cmd_name: command not found"
+                        else
+                            stderr_output="Command failed with exit code $current_exit_code"
+                        fi
+                    fi
+                fi
+                
+                # 同步调用分析，立即显示结果和交互菜单
+                echo  # 添加空行分隔
+                
+                # 调用 ais analyze 进行分析
+                ais analyze \
+                    --exit-code "$current_exit_code" \
+                    --command "$last_command" \
+                    --stderr "$stderr_output"
+            fi
         fi
     fi
+}
+
+# 高级命令执行包装器 - 支持实时stderr捕获
+ai_exec() {
+    if [ $# -eq 0 ]; then
+        echo "用法: ai_exec <命令>"
+        echo "示例: ai_exec ls /nonexistent"
+        return 1
+    fi
+    
+    # 清空之前的错误
+    > "$AI_STDERR_FILE" 2>/dev/null || true
+    
+    # 执行命令并捕获stderr，同时保持用户交互
+    "$@" 2> >(tee "$AI_STDERR_FILE" >&2)
+    local exit_code=$?
+    
+    AI_LAST_EXIT_CODE=$exit_code
+    AI_LAST_COMMAND="$*"
+    
+    return $exit_code
 }
 
 # 根据不同 shell 设置钩子
@@ -99,10 +158,16 @@ ais_status() {
         else
             echo "😴 自动错误分析: 关闭"
         fi
+        echo ""
+        echo "💡 使用方法:"
+        echo "  • 普通命令: 直接执行，失败时会基于命令和退出码分析"
+        echo "  • 完整分析: ai_exec <命令> - 捕获完整错误信息进行分析"
+        echo ""
+        echo "示例: ai_exec chmod 999 /etc/passwd"
     else
         echo "❌ AIS 不可用"
     fi
 }
 
 # 导出函数供用户使用
-export -f ais_analyze_last ais_status 2>/dev/null || true
+export -f ais_analyze_last ais_status ai_exec 2>/dev/null || true

@@ -62,7 +62,7 @@ def analyze_error(command: str, exit_code: int, stderr: str, context: Dict[str, 
 请分析失败的命令并提供教学性的帮助。你必须用中文回复，并且严格按照以下 JSON 格式：
 
 {
-  "explanation": "详细的错误分析，包含：1) 错误原因的简明解释 2) 相关命令或概念的背景知识 3) 这类错误的常见场景 4) 如何避免类似错误。使用 Markdown 格式，如 `代码` 或 **重点**。",
+  "explanation": "详细的错误分析，包含：1. 错误原因的简明解释 2. 相关命令或概念的背景知识 3. 这类错误的常见场景 4. 如何避免类似错误。使用 Markdown 格式，如 `代码` 或 **重点**。",
   "suggestions": [
     {
       "description": "这个解决方案的详细说明，包括为什么要这样做和预期效果",
@@ -86,14 +86,20 @@ def analyze_error(command: str, exit_code: int, stderr: str, context: Dict[str, 
 5. 如果可能，提供相关的学习资源或进阶技巧
 """
     
-    user_prompt = f"""Command failed: `{command}`
-Exit code: {exit_code}
-Error output: {stderr}
+    # 构建更详细的错误描述
+    error_info = f"Command failed: `{command}`\nExit code: {exit_code}"
+    
+    if stderr and stderr.strip():
+        error_info += f"\nError output: {stderr}"
+    else:
+        error_info += f"\nNote: No stderr captured, analysis based on command and exit code"
+    
+    user_prompt = f"""{error_info}
 
 Context information:
 {json.dumps(context, indent=2)}
 
-Please analyze this error and provide helpful suggestions."""
+Please analyze this error and provide helpful suggestions. If no stderr is available, focus on common issues with this type of command and the specific exit code."""
     
     messages = [
         {"role": "system", "content": system_prompt},
@@ -107,15 +113,29 @@ Please analyze this error and provide helpful suggestions."""
         
         # Try to parse JSON response
         try:
+            # 清理可能的前后空白和换行
+            content = content.strip()
             return json.loads(content)
         except json.JSONDecodeError:
             # Fallback: try to extract from markdown code block
             import re
             json_match = re.search(r'```json\s*(\{.*?\})\s*```', content, re.DOTALL)
             if json_match:
-                return json.loads(json_match.group(1))
-            else:
-                return {"explanation": content, "suggestions": []}
+                try:
+                    return json.loads(json_match.group(1))
+                except json.JSONDecodeError:
+                    pass
+            
+            # 尝试查找任何JSON对象
+            json_match = re.search(r'\{[\s\S]*\}', content)
+            if json_match:
+                try:
+                    return json.loads(json_match.group(0))
+                except json.JSONDecodeError:
+                    pass
+            
+            # 最后的fallback - 返回原始内容作为explanation
+            return {"explanation": content, "suggestions": []}
                 
     except Exception as e:
         return {"explanation": f"Error communicating with AI service: {e}", "suggestions": []}
