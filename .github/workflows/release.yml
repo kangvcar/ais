@@ -1,5 +1,15 @@
 name: Release
 
+# This workflow requires a Personal Access Token (PAT) for creating pull requests
+# Add a secret named 'GH_PAT' with the following scopes:
+# - repo (Full control of private repositories)
+# - pull_requests (Access to pull requests)
+# 
+# To create a PAT:
+# 1. Go to GitHub Settings > Developer settings > Personal access tokens
+# 2. Generate new token with 'repo' scope
+# 3. Add it as a repository secret named 'GH_PAT'
+
 permissions:
   contents: write
   pull-requests: write
@@ -143,6 +153,9 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        # Use PAT for checkout to ensure proper permissions for PR creation
+        token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
     
     - name: Create Git Tag
       run: |
@@ -192,7 +205,8 @@ jobs:
     - name: Create Pull Request for Homebrew
       uses: peter-evans/create-pull-request@v5
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        # Use PAT instead of GITHUB_TOKEN for PR creation permissions
+        token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
         commit-message: "Update Homebrew formula to v${{ needs.build.outputs.version }}"
         title: "Update Homebrew formula to v${{ needs.build.outputs.version }}"
         body: |
@@ -204,6 +218,9 @@ jobs:
           - Update download URL
           
           This PR is automatically created by the release workflow.
+          
+          **Note**: If this PR creation fails, ensure that a Personal Access Token (PAT) 
+          with 'repo' and 'pull_requests' scopes is configured as the `GH_PAT` secret.
         branch: homebrew-update-v${{ needs.build.outputs.version }}
         base: main
         delete-branch: true
