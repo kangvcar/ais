@@ -113,20 +113,31 @@ jobs:
   create-homebrew-pr:
     runs-on: ubuntu-latest
     needs: [publish-pypi, build]
-    if: github.event_name == 'release'
+    if: always() && needs.publish-pypi.result == 'success'
     
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+    
+    - name: Create Git Tag
+      run: |
+        VERSION=${{ needs.build.outputs.version }}
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git tag -a "v${VERSION}" -m "Release v${VERSION}" || echo "Tag may already exist"
+        git push origin "v${VERSION}" || echo "Tag may already exist on remote"
     
     - name: Generate SHA256 for Homebrew
       id: sha256
       run: |
         VERSION=${{ needs.build.outputs.version }}
         URL="https://github.com/kangvcar/ais/archive/refs/tags/v${VERSION}.tar.gz"
+        # Wait a moment for GitHub to process the tag
+        sleep 10
         SHA256=$(curl -sL "$URL" | sha256sum | cut -d' ' -f1)
         echo "sha256=$SHA256" >> $GITHUB_OUTPUT
         echo "url=$URL" >> $GITHUB_OUTPUT
+        echo "Generated SHA256: $SHA256 for URL: $URL"
     
     - name: Update Homebrew formula
       run: |
