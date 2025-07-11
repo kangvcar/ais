@@ -119,8 +119,8 @@ def ask_follow_up_question(console: Console, predefined_questions: List[str] = N
             return
     
     try:
-        from .ai import ask_ai
-        from .config import get_config
+        from ..core.ai import ask_ai
+        from ..core.config import get_config
         
         config = get_config()
         response = ask_ai(f"关于刚才的错误分析，用户有一个后续问题：{question}", config)

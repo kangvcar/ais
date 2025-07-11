@@ -18,7 +18,7 @@ def test_version():
 
 def test_cli_version():
     """Test CLI version command."""
-    result = subprocess.run([sys.executable, '-m', 'ais.cli', '--version'], 
+    result = subprocess.run(['ais', '--version'], 
                           capture_output=True, text=True)
     assert result.returncode == 0
     assert ais.__version__ in result.stdout
@@ -26,13 +26,13 @@ def test_cli_version():
 
 def test_cli_help():
     """Test CLI help command."""
-    result = subprocess.run([sys.executable, '-m', 'ais.cli', '--help'], 
+    result = subprocess.run(['ais', '--help'], 
                           capture_output=True, text=True)
     assert result.returncode == 0
     assert 'AIS - AI-powered terminal assistant' in result.stdout
 
 
-@patch('ais.config.get_config')
+@patch('ais.core.config.get_config')
 def test_config_command(mock_get_config):
     """Test config command."""
     mock_get_config.return_value = {
@@ -42,21 +42,21 @@ def test_config_command(mock_get_config):
         'sensitive_dirs': []
     }
     
-    result = subprocess.run([sys.executable, '-m', 'ais.cli', 'config'], 
+    result = subprocess.run(['ais', 'config'], 
                           capture_output=True, text=True)
     assert result.returncode == 0
 
 
 def test_import_modules():
     """Test that all modules can be imported."""
-    import ais.cli
-    import ais.config
-    import ais.ai
-    import ais.database
-    import ais.context
-    import ais.interactive
+    import ais.cli.main
+    import ais.core.config
+    import ais.core.ai
+    import ais.core.database
+    import ais.core.context
+    import ais.cli.interactive
     
     # Basic smoke test - modules should import without errors
-    assert hasattr(ais.cli, 'main')
-    assert hasattr(ais.config, 'get_config')
-    assert hasattr(ais.ai, 'ask_ai')
+    assert hasattr(ais.cli.main, 'main')
+    assert hasattr(ais.core.config, 'get_config')
+    assert hasattr(ais.core.ai, 'ask_ai')

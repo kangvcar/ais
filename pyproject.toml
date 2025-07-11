@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "ais-cli"
 version = "0.1.0"
 description = "智能终端助手 - AI-powered terminal assistant"
-readme = "README.md"
+readme = "docs/README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
 authors = [
@@ -47,16 +47,16 @@ dependencies = [
 ]
 
 [project.scripts]
-ais = "ais.cli:main"
+ais = "ais.cli.main:main"
 
 
 
 [project.urls]
 Homepage = "https://github.com/kangvcar/ais"
 Repository = "https://github.com/kangvcar/ais"
-Documentation = "https://github.com/kangvcar/ais#readme"
+Documentation = "https://github.com/kangvcar/ais/blob/main/docs/README.md"
 Issues = "https://github.com/kangvcar/ais/issues"
-Changelog = "https://github.com/kangvcar/ais/blob/main/CHANGELOG.md"
+Changelog = "https://github.com/kangvcar/ais/blob/main/docs/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
@@ -69,24 +69,18 @@ dev = [
 ]
 
 [tool.hatch.version]
-path = "ais/__init__.py"
+path = "src/ais/__init__.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["ais"]
-include = [
-    "ais/**/*.py",
-    "shell/integration.sh",
-]
+packages = ["src/ais"]
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "ais/",
-    "shell/",
-    "README.md",
+    "src/ais/",
+    "scripts/",
+    "docs/README.md",
     "LICENSE",
     "pyproject.toml",
-    "install.sh",
-    "uninstall.sh",
 ]
 
 [tool.black]

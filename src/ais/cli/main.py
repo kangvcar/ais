@@ -4,8 +4,8 @@ import click
 from rich.console import Console
 from rich.markdown import Markdown
 
-from .config import get_config, set_config
-from .ai import ask_ai
+from ..core.config import get_config, set_config
+from ..core.ai import ask_ai
 
 console = Console()
 
@@ -273,7 +273,7 @@ def add_provider_cmd(name, url, model, key, help_detail):
         console.print("[dim]帮助: ais add-provider --help-detail[/dim]")
         return
         
-    from .config import add_provider
+    from ..core.config import add_provider
     _handle_provider_operation(add_provider, name, "已添加提供商", "添加提供商", url, model, key)
 
 
@@ -281,7 +281,7 @@ def add_provider_cmd(name, url, model, key, help_detail):
 @click.argument('name')
 def remove_provider_cmd(name):
     """删除 AI 服务商。"""
-    from .config import remove_provider
+    from ..core.config import remove_provider
     _handle_provider_operation(remove_provider, name, "已删除提供商", "删除提供商")
 
 
@@ -289,7 +289,7 @@ def remove_provider_cmd(name):
 @click.argument('name')
 def use_provider_cmd(name):
     """切换默认 AI 服务商。"""
-    from .config import use_provider
+    from ..core.config import use_provider
     _handle_provider_operation(use_provider, name, "已切换到提供商", "切换提供商")
 
 
@@ -359,9 +359,9 @@ def list_provider(help_detail):
 def analyze_error(exit_code, command, stderr):
     """分析命令错误。"""
     try:
-        from .context import collect_context
-        from .ai import analyze_error
-        from .database import save_command_log
+        from ..core.context import collect_context
+        from ..core.ai import analyze_error
+        from ..core.database import save_command_log
         import os
         
         # 收集上下文信息
@@ -371,7 +371,7 @@ def analyze_error(exit_code, command, stderr):
         config = get_config()
         
         # 检查是否有相似的历史错误
-        from .database import get_similar_commands
+        from ..core.database import get_similar_commands
         similar_logs = get_similar_commands(command, 3)
         
         if similar_logs:
@@ -473,7 +473,7 @@ def show_history(limit, failed_only, command_filter, help_detail):
         return
         
     try:
-        from .database import get_recent_logs, get_similar_commands
+        from ..core.database import get_recent_logs, get_similar_commands
         from rich.table import Table
         from rich.text import Text
         import json
@@ -534,7 +534,7 @@ def show_history(limit, failed_only, command_filter, help_detail):
 def show_history_detail(index):
     """显示历史命令的详细分析。"""
     try:
-        from .database import get_recent_logs
+        from ..core.database import get_recent_logs
         import json
         
         logs = get_recent_logs(50)  # 获取更多记录用于索引
@@ -648,7 +648,7 @@ def suggest_command(task, help_detail):
         return
         
     try:
-        from .ai import ask_ai
+        from ..core.ai import ask_ai
         
         config = get_config()
         
@@ -729,7 +729,7 @@ def learn_command(topic, help_detail):
         return
         
     try:
-        from .ai import ask_ai
+        from ..core.ai import ask_ai
         
         if not topic:
             # 显示学习主题
@@ -840,9 +840,9 @@ def test_integration():
         # 模拟一个错误命令的分析
         console.print("模拟命令错误: mdkirr /test")
         
-        from .context import collect_context
-        from .ai import analyze_error
-        from .database import save_command_log
+        from ..core.context import collect_context
+        from ..core.ai import analyze_error
+        from ..core.database import save_command_log
         import os
         
         # 模拟上下文收集
