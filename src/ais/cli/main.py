@@ -89,9 +89,111 @@ fi
     os.chmod(script_path, 0o755)
 
 
+def _auto_setup_shell_integration():
+    """自动设置Shell集成（首次运行时）"""
+    import os
+    from pathlib import Path
+
+    # 检查是否已经设置过
+    marker_file = Path.home() / ".config" / "ais" / ".auto_setup_done"
+    if marker_file.exists():
+        return
+
+    # 创建配置目录
+    config_dir = Path.home() / ".config" / "ais"
+    config_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        # 自动运行setup-shell但不显示输出
+        import ais
+
+        package_path = os.path.dirname(ais.__file__)
+        script_path = os.path.join(package_path, "shell", "integration.sh")
+
+        # 如果集成脚本不存在，创建它
+        if not os.path.exists(script_path):
+            os.makedirs(os.path.dirname(script_path), exist_ok=True)
+            _create_integration_script(script_path)
+
+        # 自动添加到用户的shell配置文件
+        shell = os.environ.get("SHELL", "/bin/bash")
+        shell_name = os.path.basename(shell)
+
+        # 检测用户使用的Shell配置文件
+        config_files = {
+            "bash": [Path.home() / ".bashrc", Path.home() / ".bash_profile"],
+            "zsh": [Path.home() / ".zshrc"],
+        }
+
+        target_files = config_files.get(shell_name, [Path.home() / ".bashrc"])
+
+        # 找到存在的配置文件或创建默认的
+        config_file = None
+        for cf in target_files:
+            if cf.exists():
+                config_file = cf
+                break
+
+        if not config_file:
+            config_file = target_files[0]
+            config_file.touch()  # 创建文件
+
+        # 检查是否已经添加了集成配置
+        if config_file.exists():
+            content = config_file.read_text()
+            if "# START AIS INTEGRATION" not in content:
+                # 添加集成配置
+                integration_config = f"""
+
+# START AIS INTEGRATION
+# AIS - AI 智能终端助手自动集成
+if [ -f "{script_path}" ]; then
+    source "{script_path}"
+fi
+# END AIS INTEGRATION
+"""
+                with open(config_file, "a") as f:
+                    f.write(integration_config)
+
+        # 确保默认配置中启用自动分析
+        config_file_path = config_dir / "config.toml"
+        if not config_file_path.exists():
+            default_config = """# AIS 配置文件
+default_provider = "default_free"
+auto_analysis = true
+context_level = "standard"
+sensitive_dirs = ["~/.ssh", "~/.config/ais", "~/.aws"]
+
+[providers.default_free]
+base_url = "https://api.deepbricks.ai/v1/chat/completions"
+model_name = "gpt-4o-mini"
+api_key = "sk-97RxyS9R2dsqFTUxcUZOpZwhnbjQCSOaFboooKDeTv5nHJgg"
+"""
+            config_file_path.write_text(default_config)
+
+        # 标记已完成自动设置
+        marker_file.write_text("auto setup completed")
+
+        # 显示一次性提示
+        console.print("\n[green]🎉 AIS 已自动配置完成！[/green]")
+        console.print(
+            "[yellow]💡 为了启用自动错误分析，请重新加载Shell配置：[/yellow]"
+        )
+        console.print(f"[dim]   source {config_file}[/dim]")
+        console.print("[dim]   或者重新打开终端[/dim]")
+        console.print(
+            "\n[green]✨ 之后当命令失败时，将自动显示AI分析！[/green]"
+        )
+
+    except Exception:
+        # 静默失败，不影响正常使用
+        pass
+
+
 @click.group()
 @click.version_option(version="0.1.0", prog_name="ais")
-def main():
+@click.pass_context
+def main(ctx):
     """AIS - AI-powered terminal assistant.
 
     智能终端助手，通过 AI 技术帮助用户分析错误、学习命令和提高效率。
@@ -103,7 +205,9 @@ def main():
       ais config --help-context 查看配置帮助
       ais history --help-detail 查看历史命令帮助
     """
-    pass
+    # 只在执行具体命令时进行自动设置（不是--help时）
+    if ctx.invoked_subcommand and ctx.invoked_subcommand != "help":
+        _auto_setup_shell_integration()
 
 
 def _handle_error(error_msg: str) -> None:

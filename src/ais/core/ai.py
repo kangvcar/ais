@@ -140,14 +140,12 @@ def analyze_error(
 - 根据用户的命令历史判断技能水平，调整解释的深度
 - 基于当前工作目录和文件结构提供针对性建议
 
-请分析失败的命令并提供教学性的帮助。你必须用中文回复，并且严格按照以下 JSON 格式：
+请分析失败的命令并提供教学性的帮助。你必须用中文回复，并且严格按照以下 JSON 格式，确保是有效的JSON：
 
 {
-  "explanation": (
-    "**🔍 错误分析:**\\n[结合当前环境简明解释错误原因]\\n"
-    "**📚 背景知识:**\\n[相关命令或概念的核心原理，结合用户所在的项目类型和环境]\\n"
-    "**🎯 常见场景:**\\n[这类错误的典型触发情况，特别是在当前环境下]"
-  ),
+  "explanation": "**🔍 错误分析:**\\n[结合当前环境简明解释错误原因]\\n"
+                 "**📚 背景知识:**\\n[相关命令或概念的核心原理，结合用户所在的项目类型和环境]\\n"
+                 "**🎯 常见场景:**\\n[这类错误的典型触发情况，特别是在当前环境下]",
   "suggestions": [
     {
       "description": "这个解决方案的详细说明，包括为什么要这样做和预期效果（结合当前环境和项目背景）",
@@ -174,6 +172,8 @@ def analyze_error(
 4. **实用性优先**：结合具体环境提供真正有用的解决方案
 5. **学习引导**：提供后续学习方向和互动问题
 6. **预防性教育**：不仅解决当前问题，还要帮助用户避免类似错误
+
+**重要：请确保返回的是有效的JSON格式，不要使用Python语法或其他非JSON语法。所有字符串必须用双引号包围，不要使用圆括号或其他特殊语法。**
 """
 
     # 构建更详细的错误描述
@@ -240,13 +240,61 @@ def analyze_error(
                 except json.JSONDecodeError:
                     pass
 
-            # 尝试查找任何JSON对象
+            # 尝试查找任何JSON对象（更宽松的匹配）
             json_match = re.search(r"\{[\s\S]*\}", content)
             if json_match:
                 try:
-                    return json.loads(json_match.group(0))
+                    # 尝试清理格式问题
+                    json_content = json_match.group(0)
+                    # 移除Python元组语法等
+                    json_content = re.sub(
+                        r'\(\s*"([^"]+)"\s*\)', r'"\1"', json_content
+                    )
+                    # 修复字符串连接问题
+                    json_content = re.sub(r'"\s*\+\s*"', "", json_content)
+                    json_content = re.sub(
+                        r'"\s*\)\s*,\s*\(\s*"', "", json_content
+                    )
+                    return json.loads(json_content)
                 except json.JSONDecodeError:
                     pass
+
+            # 如果还是解析失败，尝试使用更智能的方式解析
+            try:
+                # 尝试提取explanation, suggestions和follow_up_questions
+                explanation_match = re.search(
+                    r'"explanation":\s*\(\s*"([^"]+)', content
+                )
+                if explanation_match:
+                    explanation = explanation_match.group(1)
+                    # 清理explanation中的格式问题
+                    explanation = explanation.replace("\\n", "\n")
+
+                    # 提取suggestions
+                    suggestions = []
+                    suggestion_pattern = (
+                        r'"description":\s*"([^"]+)"[^}]*'
+                        r'"command":\s*"([^"]+)"[^}]*'
+                        r'"risk_level":\s*"([^"]+)"[^}]*'
+                        r'"explanation":\s*"([^"]+)"'
+                    )
+                    for match in re.finditer(suggestion_pattern, content):
+                        suggestions.append(
+                            {
+                                "description": match.group(1),
+                                "command": match.group(2),
+                                "risk_level": match.group(3),
+                                "explanation": match.group(4),
+                            }
+                        )
+
+                    return {
+                        "explanation": explanation,
+                        "suggestions": suggestions,
+                        "follow_up_questions": [],
+                    }
+            except Exception:
+                pass
 
             # 最后的fallback - 返回原始内容作为explanation
             return {
