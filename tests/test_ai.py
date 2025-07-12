@@ -116,9 +116,8 @@ class TestApiRequest:
         }
 
         with patch("httpx.Client") as mock_client:
-            mock_client.return_value.__enter__.return_value.post.return_value = (
-                mock_response
-            )
+            mock_post = mock_client.return_value.__enter__.return_value.post
+            mock_post.return_value = mock_response
 
             messages = [{"role": "user", "content": "Test message"}]
             result = _make_api_request(messages, config)
@@ -200,9 +199,8 @@ class TestApiRequest:
         }
 
         with patch("httpx.Client") as mock_client:
-            mock_client.return_value.__enter__.return_value.post.side_effect = httpx.RequestError(
-                "Connection failed"
-            )
+            mock_post = mock_client.return_value.__enter__.return_value.post
+            mock_post.side_effect = httpx.RequestError("Connection failed")
 
             messages = [{"role": "user", "content": "Test message"}]
 
@@ -258,9 +256,8 @@ class TestApiRequest:
         mock_response.json.return_value = {"choices": []}
 
         with patch("httpx.Client") as mock_client:
-            mock_client.return_value.__enter__.return_value.post.return_value = (
-                mock_response
-            )
+            mock_post = mock_client.return_value.__enter__.return_value.post
+            mock_post.return_value = mock_response
 
             messages = [{"role": "user", "content": "Test message"}]
             result = _make_api_request(messages, config)

@@ -1,12 +1,8 @@
 """Tests for database module."""
 
-import json
-import tempfile
 from datetime import datetime
 from pathlib import Path
 from unittest.mock import patch, Mock
-
-import pytest
 from sqlmodel import Session, create_engine
 
 from ais.core.database import (
@@ -106,7 +102,7 @@ class TestDatabaseOperations:
                 with patch(
                     "ais.core.database.Session",
                     return_value=Session(mock_engine),
-                ) as mock_session_class:
+                ):
                     log_id = save_command_log(
                         username="testuser", command="ls -la", exit_code=0
                     )

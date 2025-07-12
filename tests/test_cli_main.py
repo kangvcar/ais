@@ -455,7 +455,7 @@ class TestAnalyzeCommand:
         with patch("ais.cli.main.collect_context") as mock_context:
             with patch("ais.cli.main.get_config") as mock_config:
                 with patch("ais.cli.main.analyze_error") as mock_analyze:
-                    with patch("ais.cli.main.save_command_log") as mock_save:
+                    with patch("ais.cli.main.save_command_log"):
                         with patch(
                             "ais.cli.main.get_similar_commands"
                         ) as mock_similar:

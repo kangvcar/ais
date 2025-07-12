@@ -3,6 +3,7 @@
 from pathlib import Path
 from unittest.mock import patch, mock_open
 import toml
+import pytest
 
 from ais.core.config import (
     get_config_path,

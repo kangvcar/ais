@@ -5,8 +5,6 @@ import subprocess
 from pathlib import Path
 from unittest.mock import patch, Mock
 
-import pytest
-
 from ais.core.context import (
     is_sensitive_path,
     filter_sensitive_data,
@@ -34,7 +32,7 @@ class TestSensitivePath:
                 )
                 mock_resolve.return_value = Path("/home/user/.ssh")
 
-                # Mock relative_to to succeed (meaning path is under sensitive dir)
+                # Mock relative_to to succeed (path is under sensitive dir)
                 mock_expand.return_value.resolve.return_value.relative_to = (
                     Mock(return_value=Path("keys"))
                 )
@@ -51,12 +49,12 @@ class TestSensitivePath:
         sensitive_dirs = ["~/.ssh", "~/.config/ais"]
 
         with patch("pathlib.Path.expanduser") as mock_expand:
-            with patch("pathlib.Path.resolve") as mock_resolve:
+            with patch("pathlib.Path.resolve"):
                 # Mock path resolution
                 test_path = Path("/home/user/project")
                 mock_expand.return_value.resolve.return_value = test_path
 
-                # Mock relative_to to raise ValueError (meaning path is not under sensitive dir)
+                # Mock relative_to to raise ValueError
                 test_path.relative_to = Mock(
                     side_effect=ValueError("Not relative")
                 )
@@ -212,38 +210,35 @@ class TestCollectStandardContext:
 
         with patch("ais.core.context.run_safe_command") as mock_run:
             with patch("pathlib.Path.cwd") as mock_cwd:
-                with patch("pathlib.Path.iterdir") as mock_iterdir:
-                    # Mock command history
-                    mock_run.return_value = (
-                        "  100  ls\n  101  pwd\n  102  git status"
-                    )
+                # Mock command history
+                mock_run.return_value = (
+                    "  100  ls\n  101  pwd\n  102  git status"
+                )
 
-                    # Mock current directory files
-                    mock_file1 = Mock()
-                    mock_file1.name = "file1.txt"
-                    mock_file1.is_file.return_value = True
-                    mock_file2 = Mock()
-                    mock_file2.name = "file2.py"
-                    mock_file2.is_file.return_value = True
+                # Mock current directory files
+                mock_file1 = Mock()
+                mock_file1.name = "file1.txt"
+                mock_file1.is_file.return_value = True
+                mock_file2 = Mock()
+                mock_file2.name = "file2.py"
+                mock_file2.is_file.return_value = True
 
-                    mock_cwd.return_value.iterdir.return_value = [
-                        mock_file1,
-                        mock_file2,
-                    ]
+                mock_cwd.return_value.iterdir.return_value = [
+                    mock_file1,
+                    mock_file2,
+                ]
 
-                    with patch(
-                        "ais.core.context._collect_git_info"
-                    ) as mock_git:
-                        mock_git.return_value = {"git_branch": "main"}
+                with patch("ais.core.context._collect_git_info") as mock_git:
+                    mock_git.return_value = {"git_branch": "main"}
 
-                        result = collect_standard_context(config)
+                    result = collect_standard_context(config)
 
-                        assert "recent_history" in result
-                        assert "current_files" in result
-                        assert "git_branch" in result
-                        assert len(result["recent_history"]) == 3
-                        assert "file1.txt" in result["current_files"]
-                        assert "file2.py" in result["current_files"]
+                    assert "recent_history" in result
+                    assert "current_files" in result
+                    assert "git_branch" in result
+                    assert len(result["recent_history"]) == 3
+                    assert "file1.txt" in result["current_files"]
+                    assert "file2.py" in result["current_files"]
 
     def test_collect_standard_context_file_error(self):
         """Test collecting standard context with file listing error."""
@@ -280,7 +275,7 @@ class TestCollectDetailedContext:
         with patch("ais.core.context.run_safe_command") as mock_run:
             mock_run.side_effect = [
                 "Linux hostname 5.4.0 #1 SMP x86_64 GNU/Linux",  # uname
-                "total 16\n-rw-r--r-- 1 user user 1234 Jul 11 10:30 file.txt",  # ls -la
+                "total 16\n-rw-r--r-- 1 user user 1234 Jul 11 10:30 file.txt",
             ]
 
             with patch.dict(
@@ -299,7 +294,7 @@ class TestCollectDetailedContext:
                 assert "PATH" in result["environment"]
 
     def test_collect_detailed_context_filter_sensitive_env(self):
-        """Test collecting detailed context filters sensitive environment variables."""
+        """Test collecting detailed context filters sensitive env variables."""
         config = {}
 
         with patch("ais.core.context.run_safe_command") as mock_run:

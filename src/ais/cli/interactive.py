@@ -185,7 +185,7 @@ def show_interactive_menu(
 
             # 格式化选项文本：编号. 命令名称    风险图标 (描述)
             choice_text = f"{i}. {command:<25} {risk_icon} ({description})"
-            choices.append({"name": choice_text, "value": f"execute_{i-1}"})
+            choices.append({"name": choice_text, "value": f"execute_{i - 1}"})
 
         # 添加分割线
         separator_line = "-" * 75

@@ -1,8 +1,6 @@
 """Tests for interactive module."""
 
-import subprocess
-from unittest.mock import patch, Mock, mock_open
-
+from unittest.mock import patch, Mock
 import pytest
 
 from ais.cli.interactive import (
@@ -379,7 +377,7 @@ class TestShowInteractiveMenu:
 
         with patch("sys.stdin.isatty", return_value=True):
             try:
-                import questionary
+                import questionary  # noqa: F401
 
                 mock_questionary = Mock()
                 mock_questionary.select.return_value.ask.return_value = "exit"
@@ -409,7 +407,7 @@ class TestShowInteractiveMenu:
 
         with patch("sys.stdin.isatty", return_value=True):
             try:
-                import questionary
+                import questionary  # noqa: F401
 
                 mock_questionary = Mock()
                 mock_questionary.select.return_value.ask.side_effect = [
@@ -435,7 +433,7 @@ class TestShowInteractiveMenu:
                 pytest.skip("questionary not available")
 
     def test_show_interactive_menu_execute_dangerous_command_confirmed(self):
-        """Test interactive menu executing dangerous command with confirmation."""
+        """Test interactive menu executing dangerous command confirmed."""
         suggestions = [
             {
                 "command": "rm -rf /",
@@ -447,7 +445,7 @@ class TestShowInteractiveMenu:
 
         with patch("sys.stdin.isatty", return_value=True):
             try:
-                import questionary
+                import questionary  # noqa: F401
 
                 mock_questionary = Mock()
                 mock_questionary.select.return_value.ask.side_effect = [
@@ -464,7 +462,8 @@ class TestShowInteractiveMenu:
                     ) as mock_execute:
                         with patch("ais.cli.interactive.show_command_details"):
                             with patch(
-                                "ais.cli.interactive.confirm_dangerous_command",
+                                "ais.cli.interactive."
+                                "confirm_dangerous_command",
                                 return_value=True,
                             ):
                                 mock_execute.return_value = True
@@ -493,7 +492,7 @@ class TestShowInteractiveMenu:
 
         with patch("sys.stdin.isatty", return_value=True):
             try:
-                import questionary
+                import questionary  # noqa: F401
 
                 mock_questionary = Mock()
                 mock_questionary.select.return_value.ask.side_effect = [
@@ -509,7 +508,8 @@ class TestShowInteractiveMenu:
                     ) as mock_execute:
                         with patch("ais.cli.interactive.show_command_details"):
                             with patch(
-                                "ais.cli.interactive.confirm_dangerous_command",
+                                "ais.cli.interactive."
+                                "confirm_dangerous_command",
                                 return_value=False,
                             ):
                                 show_interactive_menu(
