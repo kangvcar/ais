@@ -175,11 +175,6 @@ jobs:
           pip install ais-terminal
           ```
           
-          **Homebrew (macOS/Linux)**:
-          ```bash
-          brew install ais
-          ```
-          
           **一键安装脚本**:
           ```bash
           curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash

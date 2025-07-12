@@ -246,9 +246,6 @@ pip install --proxy http://proxy.example.com:8080 ais-cli
 # PyPI 安装的卸载
 pip uninstall ais-terminal
 
-# Homebrew 安装的卸载
-brew uninstall ais
-
 # 使用卸载脚本
 curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/uninstall.sh | bash
 ```
@@ -260,9 +257,6 @@ curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/uninstall.
 ```bash
 # PyPI 更新
 pip install --upgrade ais-terminal
-
-# Homebrew 更新
-brew upgrade ais
 
 # 检查更新
 ais --version
