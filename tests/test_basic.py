@@ -1,10 +1,7 @@
 """Basic tests for AIS."""
 
 import subprocess
-import sys
 from unittest.mock import patch
-
-import pytest
 
 import ais
 

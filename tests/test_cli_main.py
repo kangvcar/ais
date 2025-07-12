@@ -1,9 +1,6 @@
 """Tests for CLI main module."""
 
-import json
-from unittest.mock import patch, Mock, call
-
-import pytest
+from unittest.mock import patch, Mock
 from click.testing import CliRunner
 
 from ais.cli.main import (
