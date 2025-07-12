@@ -2,7 +2,7 @@
 # AIS Windows PowerShell Installation Script
 
 param(
-    [string]$InstallMethod = "pip",  # pip, source, local
+    [string]$InstallMethod = "pipx",  # pipx, pip, source, local
     [string]$PythonCommand = "python",
     [switch]$NoShellIntegration,
     [switch]$GlobalInstall,
@@ -23,14 +23,15 @@ AIS Windows 安装脚本
 用法: .\install.ps1 [选项]
 
 选项:
-  -InstallMethod <method>    安装方式: pip, source, local (默认: pip)
+  -InstallMethod <method>    安装方式: pipx, pip, source, local (默认: pipx)
   -PythonCommand <command>   Python命令 (默认: python)
   -NoShellIntegration        跳过Shell集成
   -GlobalInstall             全局安装
   -Help                      显示此帮助
 
 示例:
-  .\install.ps1                           # 使用pip安装
+  .\install.ps1                           # 使用pipx安装（推荐）
+  .\install.ps1 -InstallMethod pip        # 使用pip安装
   .\install.ps1 -InstallMethod source     # 从源码安装
   .\install.ps1 -GlobalInstall           # 全局安装
 "@

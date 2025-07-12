@@ -1,6 +1,6 @@
 # AIS 安装指南
 
-本文档提供了AIS（AI-powered terminal assistant）的详细安装指南，适用于不同操作系统和使用场景。
+本文档提供了AIS（AI-powered terminal assistant）的详细安装指南，涵盖所有安装方式和使用场景。
 
 ## 系统要求
 
@@ -8,271 +8,220 @@
 - **操作系统**: Linux, macOS, Windows
 - **网络**: 需要网络连接以下载依赖和AI服务
 
-## 安装方法
+## 🎯 推荐安装方式
 
-### 1. PyPI 安装（推荐）
+### 个人使用（最佳实践）
 
-最简单的安装方式，适用于所有平台：
+使用pipx进行用户级安装，安全且符合Python最佳实践：
 
 ```bash
-# 使用 pip 安装
-pip install ais-terminal
+# 1. 安装pipx（如果没有）
+python3 -m pip install --user pipx
+python3 -m pipx ensurepath
 
-# 或使用 pipx（推荐，避免依赖冲突）
+# 2. 安装AIS
 pipx install ais-terminal
+
+# 3. 设置shell集成
+ais setup-shell
 ```
 
-**优点**：
-- 一键安装，快速便捷
-- 自动处理依赖关系
-- 支持自动更新
+**优势：**
+- ✅ 安全隔离，独立虚拟环境
+- ✅ 无需sudo权限
+- ✅ 版本管理简单
+- ✅ 符合Python生态标准
 
-**注意事项**：
-- 需要确保 Python 和 pip 已正确安装
-- 如果遇到权限问题，可以使用 `--user` 参数
+### 多用户环境（推荐）
 
-### 2. 一键安装脚本
-
-适用于 Linux 和 macOS 用户：
+使用pipx全局安装，兼顾安全性和多用户支持：
 
 ```bash
-# 快速安装
-curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
+# 1. 安装pipx（如果没有）
+sudo apt install pipx  # Ubuntu/Debian
+# 或 sudo yum install python3-pipx  # CentOS/RHEL
+# 或 sudo pip install pipx  # 通用方式
 
-# 从源码安装
-curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --from-source
+# 2. 全局安装AIS
+sudo pipx install --global ais-terminal
+
+# 3. 每个用户设置shell集成
+ais setup-shell
 ```
 
-**优点**：
-- 自动检测系统环境
-- 一键安装和配置
-- 自动设置Shell集成
+**优势：**
+- ✅ 所有用户都可以使用
+- ✅ 保持虚拟环境隔离
+- ✅ 比系统级安装更安全
+- ✅ 管理和升级简单
 
-**注意事项**：
-- 需要网络连接
-- 首次发布后才可使用
+## 🔧 其他安装方式
 
-### 3. Windows PowerShell 安装
+### 智能安装脚本
 
-Windows 用户的专用安装方式：
-
-```powershell
-# 方法1: 一键安装（推荐）
-iwr -useb https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.ps1 | iex
-
-# 方法2: 下载后运行
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.ps1" -OutFile "install.ps1"
-.\install.ps1
-
-# 方法3: 带参数安装
-.\install.ps1 -InstallMethod pip -GlobalInstall
-```
-
-**安装选项**：
-- `-InstallMethod`: 安装方式（pip/source/local）
-- `-GlobalInstall`: 全局安装（需要管理员权限）
-- `-NoShellIntegration`: 跳过 PowerShell 集成
-
-**特色功能**：
-- 自动检测 Python 环境
-- 智能处理权限问题
-- 自动配置 PowerShell 集成
-
-### 4. 一键安装脚本（Linux/macOS）
-
-适用于 Linux 和 macOS 的快速安装：
+自动检测环境并提供最佳安装选择：
 
 ```bash
-# 标准安装
+# 运行智能安装脚本
 curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
 
-# 从源码安装
-curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --from-source
-
-# 本地安装
-curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --local
+# 脚本会检测pipx并提供选择：
+# 1. pipx用户级安装
+# 2. pipx全局安装（推荐）
+# 3. 传统系统级安装
 ```
 
-**安装选项**：
-- `--from-source`: 从 GitHub 源码安装
-- `--local`: 本地开发安装
-- `--no-shell-integration`: 跳过 Shell 集成
+### 系统级安装（运维环境）
 
-### 5. 手动安装
+适用于深度系统集成的场景：
 
-适用于开发者或需要定制安装的用户：
+```bash
+# 全局安装脚本（传统方式）
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --system-install
+```
+
+### 开发环境安装
+
+在项目虚拟环境中安装：
+
+```bash
+# 在已激活的虚拟环境中
+pip install ais-terminal
+```
+
+### 从源码安装
+
+开发者或需要最新功能：
 
 ```bash
 # 克隆仓库
 git clone https://github.com/kangvcar/ais.git
 cd ais
 
-# 创建虚拟环境（推荐）
+# 使用pipx安装
+pipx install -e .
+
+# 或在虚拟环境中安装
 python -m venv venv
-source venv/bin/activate  # Linux/macOS
-# 或
-venv\Scripts\activate     # Windows
-
-# 安装依赖
+source venv/bin/activate  # Linux/Mac
+# 或 venv\Scripts\activate  # Windows
 pip install -e .
-
-# 测试安装
-ais --version
 ```
 
-## 安装后配置
+## 📊 安装方式对比
 
-### Shell 集成
+| 安装方式 | 安全性 | 多用户 | 管理难度 | 权限需求 | 推荐度 | 适用场景 |
+|---------|-------|-------|---------|---------|--------|----------|
+| **pipx用户级** | 🟢 最高 | ❌ 否 | 🟢 最简单 | 普通用户 | ⭐⭐⭐⭐⭐ | 个人开发 |
+| **pipx全局** | 🟢 高 | ✅ 是 | 🟢 简单 | sudo | ⭐⭐⭐⭐⭐ | 多用户环境 |
+| **系统全局** | 🟡 中等 | ✅ 是 | 🟡 中等 | sudo | ⭐⭐⭐ | 运维环境 |
+| **项目级** | 🟢 高 | ❌ 否 | 🟢 简单 | 普通用户 | ⭐⭐⭐ | 开发测试 |
+| **源码安装** | 🟡 中等 | 看情况 | 🟡 复杂 | 看情况 | ⭐⭐ | 开发贡献 |
 
-AIS 支持自动错误分析，需要配置 Shell 集成：
+## 🔧 安装后配置
 
-#### Bash 集成
+### Shell集成设置
+
+无论使用哪种安装方式，都建议设置shell集成以启用自动错误分析：
 
 ```bash
-# 添加到 ~/.bashrc
-echo 'source /path/to/ais/scripts/shell/integration.sh' >> ~/.bashrc
-source ~/.bashrc
+# 自动设置shell集成
+ais setup-shell
+
+# 手动加载（可选）
+source ~/.bashrc  # Bash
+source ~/.zshrc   # Zsh
 ```
 
-#### Zsh 集成
-
-```bash
-# 添加到 ~/.zshrc
-echo 'source /path/to/ais/scripts/shell/integration.sh' >> ~/.zshrc
-source ~/.zshrc
-```
-
-#### PowerShell 集成
-
-PowerShell 集成会在安装过程中自动配置。如需手动配置：
-
-```powershell
-# 编辑 PowerShell 配置文件
-notepad $PROFILE
-
-# 添加以下内容
-. (Join-Path (Split-Path $PROFILE) "ais_integration.ps1")
-```
-
-### 初始配置
-
-首次使用需要配置 AI 服务：
-
-```bash
-# 运行配置向导
-ais config
-
-# 或手动设置
-ais config set ai_provider openai
-ais config set api_key your_api_key
-```
-
-## 验证安装
-
-运行以下命令验证安装是否成功：
+### 验证安装
 
 ```bash
 # 检查版本
 ais --version
 
-# 查看帮助
-ais --help
-
 # 测试基本功能
-ais ask "如何使用 git"
+ais ask "Hello"
 
-# 测试错误分析（故意输入错误命令）
-nonexistent_command
+# 测试自动错误分析
+mkdirr /tmp/test  # 故意输错命令
 ```
 
-## 常见问题
+## 🛠️ 故障排除
 
-### Python 版本问题
+### 常见问题
 
-**问题**: `ModuleNotFoundError: No module named 'ais'`
-
-**解决方案**:
+#### 1. pipx命令不存在
 ```bash
-# 检查 Python 版本
-python --version
+# 安装pipx
+python3 -m pip install --user pipx
+python3 -m pipx ensurepath
 
-# 确保使用正确的 Python
-python3 -m pip install ais-terminal
+# 重新加载shell配置
+source ~/.bashrc
 ```
 
-### 权限问题
-
-**问题**: `Permission denied` 或 `Access denied`
-
-**解决方案**:
+#### 2. ais命令找不到
 ```bash
-# Linux/macOS
-sudo pip install ais-terminal
-# 或
-pip install --user ais-cli
+# 检查PATH
+echo $PATH
 
-# Windows
-# 以管理员身份运行 PowerShell
+# pipx用户级安装
+export PATH="$HOME/.local/bin:$PATH"
+
+# pipx全局安装
+echo $PATH | grep "/usr/local/bin"
 ```
 
-### 网络问题
-
-**问题**: 安装时网络连接失败
-
-**解决方案**:
+#### 3. 权限问题
 ```bash
-# 使用国内镜像
-pip install -i https://mirrors.aliyun.com/pypi/simple/ ais-cli
-
-# 或配置代理
-pip install --proxy http://proxy.example.com:8080 ais-cli
+# 避免使用sudo pip
+# 使用pipx或--user参数
+python3 -m pip install --user ais-terminal
 ```
 
-### Shell 集成问题
-
-**问题**: 错误分析功能不工作
-
-**解决方案**:
-1. 检查 Shell 集成是否正确配置
-2. 重新启动终端
-3. 检查 AIS 是否在 PATH 中
-4. 运行 `ais config` 检查配置
-
-## 卸载
-
-如需卸载 AIS：
-
+#### 4. 依赖冲突
 ```bash
-# PyPI 安装的卸载
-pip uninstall ais-terminal
+# 使用pipx解决依赖冲突
+pipx install ais-terminal
 
+# 或创建独立虚拟环境
+python3 -m venv ais-env
+source ais-env/bin/activate
+pip install ais-terminal
+```
+
+### 卸载
+
+#### pipx安装的卸载
+```bash
+# 用户级
+pipx uninstall ais-terminal
+
+# 全局级
+sudo pipx uninstall --global ais-terminal
+```
+
+#### 系统级安装的卸载
+```bash
 # 使用卸载脚本
 curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/uninstall.sh | bash
 ```
 
-## 更新
+## 📚 更多资源
 
-更新到最新版本：
+- [pipx安装详细指南](PIPX_INSTALLATION_GUIDE.md)
+- [安装策略分析](INSTALLATION_STRATEGY.md)
+- [多用户配置](../README.md#多用户环境)
+- [开发环境设置](../CONTRIBUTING.md)
 
-```bash
-# PyPI 更新
-pip install --upgrade ais-terminal
+## 🆘 获得帮助
 
-# 检查更新
-ais --version
-```
+如果遇到安装问题：
 
-## 获取帮助
-
-如果遇到安装问题，可以通过以下方式获取帮助：
-
-1. 查看 [常见问题](https://github.com/kangvcar/ais/issues)
-2. 提交 [Issue](https://github.com/kangvcar/ais/issues/new)
-3. 参与 [讨论](https://github.com/kangvcar/ais/discussions)
-
-## 下一步
-
-安装完成后，建议阅读：
-- [用户指南](README.md)
-- [配置说明](CONFIG.md)
-- [部署指南](DEPLOYMENT_GUIDE.md)
+1. 查看 [GitHub Issues](https://github.com/kangvcar/ais/issues)
+2. 运行 `ais --debug` 获取诊断信息
+3. 提交issue时请包含：
+   - 操作系统和版本
+   - Python版本
+   - 安装方式
+   - 错误信息

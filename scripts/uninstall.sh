@@ -87,23 +87,56 @@ confirm_uninstall() {
 remove_ais_app() {
     print_step 1 "移除 AIS 应用程序"
     
+    # 检查 pipx 安装（用户级和全局级）
     if command_exists pipx; then
-        if pipx list | grep -q "ais-terminal"; then
-            print_info "使用 pipx 卸载 AIS..."
+        print_info "检查 pipx 安装..."
+        
+        # 检查用户级 pipx 安装
+        if pipx list 2>/dev/null | grep -q "ais-terminal"; then
+            print_info "发现 pipx 用户级安装，正在卸载..."
             pipx uninstall ais-terminal
-            print_success "AIS 应用程序已卸载"
+            print_success "pipx 用户级安装已卸载"
         else
-            print_info "未发现通过 pipx 安装的 AIS"
+            print_info "未发现 pipx 用户级安装"
+        fi
+        
+        # 检查全局 pipx 安装
+        if command -v sudo >/dev/null 2>&1; then
+            if sudo pipx list --global 2>/dev/null | grep -q "ais-terminal"; then
+                print_info "发现 pipx 全局安装，正在卸载..."
+                read -p "是否卸载 pipx 全局安装？(y/N): " -r
+                if [[ $REPLY =~ ^[Yy]$ ]]; then
+                    sudo pipx uninstall --global ais-terminal
+                    print_success "pipx 全局安装已卸载"
+                fi
+            else
+                print_info "未发现 pipx 全局安装"
+            fi
         fi
     else
-        print_info "pipx 未安装，跳过"
+        print_info "pipx 未安装，跳过 pipx 检查"
     fi
     
-    # 检查全局安装
+    # 检查 pip 安装
+    if command_exists pip; then
+        if pip show ais-terminal >/dev/null 2>&1; then
+            print_info "发现 pip 安装，正在卸载..."
+            read -p "是否卸载 pip 安装？(y/N): " -r
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                pip uninstall -y ais-terminal
+                print_success "pip 安装已卸载"
+            fi
+        fi
+    fi
+    
+    # 检查系统级全局安装
     if [ -f "/usr/local/bin/ais" ]; then
-        print_info "移除全局 AIS 命令..."
-        sudo rm -f /usr/local/bin/ais
-        print_success "全局 AIS 命令已移除"
+        print_info "发现系统级全局安装..."
+        read -p "是否删除系统级全局安装？(y/N): " -r
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            sudo rm -f /usr/local/bin/ais
+            print_success "系统级全局安装已移除"
+        fi
     fi
     
     # 检查是否还有残留
@@ -112,7 +145,11 @@ remove_ais_app() {
         print_warning "发现残留的 AIS: $ais_path"
         read -p "是否删除？(y/N): " -r
         if [[ $REPLY =~ ^[Yy]$ ]]; then
-            rm -f "$ais_path"
+            if [[ "$ais_path" == "/usr/local/bin/ais" ]] || [[ "$ais_path" == "/opt/"* ]]; then
+                sudo rm -f "$ais_path"
+            else
+                rm -f "$ais_path"
+            fi
             print_success "残留文件已删除"
         fi
     fi

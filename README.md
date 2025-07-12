@@ -38,16 +38,60 @@ AIS（AI-powered terminal assistant）是一个革命性的命令行工具，通
 
 ## 🚀 快速开始
 
-### 一键安装
+### 安装方式
 
+AIS 提供多种安装方式，请根据使用场景选择：
+
+#### 🎯 个人使用（推荐）
 ```bash
-# PyPI 安装（推荐）
-pip install ais-terminal
+# 安装pipx（如果没有）
+python3 -m pip install --user pipx
+python3 -m pipx ensurepath
 
-# 或使用 pipx（避免依赖冲突）
+# 安装AIS（仅当前用户可用）
 pipx install ais-terminal
 
-# Linux/macOS 一键安装脚本
+# 设置shell集成
+ais setup-shell
+```
+> ✨ **最佳实践**：安全隔离，无需sudo，符合Python标准
+
+#### 🌐 多用户环境 - pipx全局（推荐）
+```bash
+# 安装pipx（如果没有）
+sudo apt install pipx  # 或 sudo pip install pipx
+
+# 全局安装AIS（所有用户可用）
+sudo pipx install --global ais-terminal
+
+# 每个用户设置shell集成
+ais setup-shell
+```
+> 🎯 **推荐**：既有pipx的隔离优势，又支持多用户
+
+#### 🏢 多用户/运维环境
+```bash
+# 全局安装（所有用户可用）
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
+```
+> 🔧 **适用于**：服务器、开发机、CI/CD环境
+
+#### 🧪 开发/测试环境
+```bash
+# 项目虚拟环境中
+pip install ais-terminal
+```
+
+#### 📋 安装方式对比
+
+| 方式 | 安全性 | 多用户 | 管理难度 | 权限需求 | 适用场景 |
+|------|--------|--------|----------|----------|----------|
+| **pipx用户级** | 🟢 高 | ❌ 否 | 🟢 简单 | 普通用户 | 个人开发 |
+| **pipx全局** | 🟢 高 | ✅ 是 | 🟢 简单 | sudo | 多用户环境 |
+| **系统全局** | 🟡 中 | ✅ 是 | 🟡 中等 | sudo | 运维环境 |
+| **项目级** | 🟢 高 | ❌ 否 | 🟢 简单 | 普通用户 | 测试开发 |
+
+### 智能安装脚本
 curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
 
 # Windows PowerShell 安装
