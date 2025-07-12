@@ -1,10 +1,9 @@
 #!/bin/bash
 # AIS - AI智能终端助手
-# 一键安装脚本 - 零配置体验
+# 全局安装脚本 - 所有用户可用
 # 
-# 快速安装: curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
+# 默认安装: curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
 # 从源码安装: curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --from-source
-# 全局安装: curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --global
 # 
 # GitHub: https://github.com/kangvcar/ais
 
@@ -38,119 +37,14 @@ print_error() {
     echo -e "${RED}❌ $1${NC}"
 }
 
-print_step() {
-    echo -e "${BLUE}📋 第$1步: $2${NC}"
-}
 
 # 检查命令是否存在
 command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
-# 检测操作系统
-detect_os() {
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        if command_exists apt-get; then
-            echo "ubuntu"
-        elif command_exists yum; then
-            echo "centos"
-        elif command_exists pacman; then
-            echo "arch"
-        else
-            echo "linux"
-        fi
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        echo "macos"
-    else
-        echo "unknown"
-    fi
-}
 
-# 检测用户的 shell 配置文件
-detect_shell_config() {
-    shell_name=$(basename "$SHELL")
-    case $shell_name in
-        zsh)
-            echo "$HOME/.zshrc"
-            ;;
-        bash)
-            if [ -f "$HOME/.bashrc" ]; then
-                echo "$HOME/.bashrc"
-            else
-                echo "$HOME/.bash_profile"
-            fi
-            ;;
-        *)
-            echo "$HOME/.bashrc"
-            ;;
-    esac
-}
 
-# 检查并安装系统依赖
-install_system_deps() {
-    os_type=$(detect_os)
-    print_info "检测到操作系统: $os_type"
-    
-    case $os_type in
-        ubuntu)
-            if ! command_exists python3; then
-                print_info "安装 Python 3..."
-                sudo apt update && sudo apt install -y python3 python3-pip python3-venv
-            fi
-            if ! command_exists pipx; then
-                print_info "安装 pipx..."
-                sudo apt install -y pipx
-            fi
-            ;;
-        centos)
-            if ! command_exists python3; then
-                print_info "安装 Python 3..."
-                sudo yum install -y python3 python3-pip
-            fi
-            if ! command_exists pipx; then
-                print_info "安装 pipx..."
-                python3 -m pip install --user pipx
-            fi
-            ;;
-        macos)
-            if ! command_exists python3; then
-                print_error "请先安装 Python 3: https://www.python.org/downloads/"
-                exit 1
-            fi
-            if ! command_exists pipx; then
-                print_info "安装 pipx..."
-                python3 -m pip install --user pipx
-            fi
-            ;;
-        *)
-            print_warning "未知操作系统，请手动安装 Python 3.8+ 和 pipx"
-            ;;
-    esac
-}
-
-# 安装 AIS
-install_ais() {
-    if [[ "$INSTALL_METHOD" == "source" ]]; then
-        print_info "从源码安装 AIS..."
-        temp_dir=$(mktemp -d)
-        git clone "https://github.com/$GITHUB_REPO.git" "$temp_dir"
-        cd "$temp_dir"
-        pipx install -e .
-        cd - >/dev/null
-        rm -rf "$temp_dir"
-    elif [[ "$INSTALL_METHOD" == "local" ]]; then
-        print_info "从当前目录安装 AIS..."
-        pipx install -e .
-    else
-        print_info "从 PyPI 安装 AIS..."
-        # 注意: 这里需要实际发布到PyPI后才能工作
-        pipx install ais-terminal || {
-            print_warning "PyPI 安装失败，尝试从源码安装..."
-            INSTALL_METHOD="source"
-            install_ais
-        }
-    fi
-}
 
 # 主安装函数
 main() {
@@ -161,182 +55,62 @@ main() {
     echo "GitHub: https://github.com/$GITHUB_REPO"
     echo
     
-    # 检测安装方式
-    if [[ "$1" == "--global" ]]; then
-        # 全局安装：下载并执行全局安装脚本
-        print_info "全局安装模式：为所有用户安装"
+    # 检测安装方式 - 只支持全局安装
+    if [ -f "pyproject.toml" ] && grep -q "ais" pyproject.toml 2>/dev/null; then
+        INSTALL_MODE="local"
+        print_info "检测到开发环境，将从当前目录全局安装"
+    elif [[ "$1" == "--from-source" ]]; then
+        INSTALL_MODE="source"
+        print_info "将从 GitHub 源码全局安装"
+    elif [[ "$1" == "--global-exec" ]]; then
+        # 内部执行全局安装（已有sudo权限）
+        shift  # 移除 --global-exec 参数
+        INSTALL_MODE="global"
+        print_info "执行全局安装..."
+    else
+        # 默认全局安装模式
+        INSTALL_MODE="global"
+        print_info "全局安装模式：为所有用户安装 AIS"
+        
+        # 检查权限
+        if [[ "$EUID" != "0" ]] && [[ -z "$SUDO_USER" ]]; then
+            print_warning "全局安装需要管理员权限"
+            echo "继续安装吗？(Y/n)"
+            read -r response
+            if [[ "$response" =~ ^[Nn]$ ]]; then
+                print_info "已取消安装。"
+                exit 0
+            fi
+        fi
+        
+        # 执行全局安装
+        exec sudo bash "$0" --global-exec "$@"
+    fi
+    
+    # 所有安装模式都使用全局安装脚本
+    if [[ "$INSTALL_MODE" == "global" ]]; then
+        # 下载并执行全局安装脚本
         temp_script=$(mktemp)
         curl -sSL "https://raw.githubusercontent.com/$GITHUB_REPO/main/scripts/install_global.sh" -o "$temp_script"
         chmod +x "$temp_script"
-        exec sudo "$temp_script"
-    elif [[ "$EUID" == "0" ]] || [[ -n "$SUDO_USER" ]]; then
-        # 如果是root用户执行，自动切换到全局安装模式
-        print_warning "检测到root权限，推荐使用全局安装模式"
-        echo "是否为所有用户安装 AIS？(y/N)"
-        read -r response
-        if [[ "$response" =~ ^[Yy]$ ]]; then
-            print_info "切换到全局安装模式"
-            temp_script=$(mktemp)
-            curl -sSL "https://raw.githubusercontent.com/$GITHUB_REPO/main/scripts/install_global.sh" -o "$temp_script"
-            chmod +x "$temp_script"
-            exec sudo "$temp_script"
-        fi
-    elif [ -f "pyproject.toml" ] && grep -q "ais" pyproject.toml 2>/dev/null; then
-        INSTALL_METHOD="local"
-        print_info "检测到开发环境，将从当前目录安装"
-    elif [[ "$1" == "--from-source" ]]; then
-        INSTALL_METHOD="source"
-        print_info "将从 GitHub 源码安装"
-    else
-        INSTALL_METHOD="pypi"
-        print_info "将从 PyPI 安装（推荐）"
+        exec "$temp_script" "$@"
+    elif [[ "$INSTALL_MODE" == "local" ]]; then
+        # 开发环境也使用全局安装
+        temp_script=$(mktemp)
+        curl -sSL "https://raw.githubusercontent.com/$GITHUB_REPO/main/scripts/install_global.sh" -o "$temp_script"
+        chmod +x "$temp_script"
+        exec "$temp_script" "$@"
+    elif [[ "$INSTALL_MODE" == "source" ]]; then
+        # 源码安装也使用全局安装
+        temp_script=$(mktemp)
+        curl -sSL "https://raw.githubusercontent.com/$GITHUB_REPO/main/scripts/install_global.sh" -o "$temp_script"
+        chmod +x "$temp_script"
+        exec "$temp_script" --from-source "$@"
     fi
     
-    # 第1步：检查系统环境
-    print_step 1 "检查系统环境"
-    
-    # 检查Python版本
-    if command_exists python3; then
-        python_version=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
-        if python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 8) else 1)'; then
-            print_success "Python $python_version (满足要求 >=3.8)"
-        else
-            print_error "Python 版本过低 ($python_version)，需要 3.8 或更高版本"
-            exit 1
-        fi
-    else
-        print_info "Python 3 未安装，准备安装..."
-    fi
-    
-    # 第2步：安装系统依赖
-    print_step 2 "安装系统依赖"
-    install_system_deps
-    
-    # 确保pipx在PATH中
-    if ! command_exists pipx; then
-        export PATH="$HOME/.local/bin:$PATH"
-        if ! command_exists pipx; then
-            print_error "pipx 安装失败或不在 PATH 中"
-            exit 1
-        fi
-    fi
-    print_success "pipx 已可用"
-    
-    # 第3步：安装 AIS
-    print_step 3 "安装 AIS"
-    install_ais
-    
-    # 验证安装
-    if ! command_exists ais; then
-        export PATH="$HOME/.local/bin:$PATH"
-        if ! command_exists ais; then
-            print_error "AIS 安装失败，命令不可用"
-            exit 1
-        fi
-    fi
-    
-    ais_version=$(ais --version 2>/dev/null | head -n1 || echo "unknown")
-    print_success "AIS 已安装: $ais_version"
-    
-    # 第4步：自动配置功能
-    print_step 4 "自动配置功能"
-    
-    # 确保PATH包含pipx安装的目录
-    if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
-        shell_config=$(detect_shell_config)
-        if [ -f "$shell_config" ]; then
-            echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$shell_config"
-            print_info "已添加 ~/.local/bin 到 PATH"
-        fi
-    fi
-    
-    # AIS现在支持自动配置，首次运行时会自动设置所有必要的配置
-    print_info "AIS 现在支持零配置安装！"
-    print_info "首次运行任何 ais 命令时，将自动完成所有配置"
-    
-    # 运行 ais config 触发自动配置
-    ais config >/dev/null 2>&1 || true
-    
-    print_success "配置初始化完成"
-    
-    # 第5步：激活当前会话的shell集成
-    print_step 5 "激活当前会话集成"
-    
-    # 检查是否生成了集成脚本
-    if command_exists ais; then
-        # 动态查找集成脚本路径
-        integration_script=""
-        
-        # 使用 pipx 环境路径
-        pipx_base="$HOME/.local/share/pipx/venvs/ais-terminal/lib"
-        if [ -d "$pipx_base" ]; then
-            # 查找所有可能的Python版本
-            for python_dir in "$pipx_base"/python3.*/site-packages/ais/shell/integration.sh; do
-                if [ -f "$python_dir" ]; then
-                    integration_script="$python_dir"
-                    break
-                fi
-            done
-        fi
-        
-        # 如果找到集成脚本，在当前会话中加载
-        if [ -n "$integration_script" ] && [ -f "$integration_script" ]; then
-            print_info "在当前会话中激活自动错误分析功能..."
-            source "$integration_script" 2>/dev/null || true
-            print_success "当前会话集成已激活 ✅"
-            print_info "现在可以直接测试自动错误分析功能！"
-        else
-            print_warning "未找到集成脚本，新终端会话将自动生效"
-            print_info "或者运行: source ~/.bashrc"
-        fi
-    fi
-    
-    # 第6步：安装完成
-    print_step 6 "安装完成"
-    
-    echo
-    print_success "🎉 AIS 安装成功！"
-    echo
-    
-    # 检查全局可用性
-    print_info "🔍 检查安装结果:"
-    if command -v ais >/dev/null 2>&1; then
-        print_success "✅ ais 命令已可用"
-        ais_path=$(which ais)
-        print_info "   安装路径: $ais_path"
-    else
-        print_warning "⚠️  ais 命令不在当前PATH中"
-        print_info "   请添加 ~/.local/bin 到PATH或重新启动终端"
-    fi
-    
-    # 检查多用户可用性
-    if [[ "$USER" != "root" ]]; then
-        print_info "💡 多用户支持:"
-        print_info "   当前为用户级安装，仅对用户 $USER 可用"
-        print_info "   如需所有用户可用，请使用:"
-        print_info "   curl -sSL https://raw.githubusercontent.com/$GITHUB_REPO/main/scripts/install.sh | bash -s -- --global"
-    fi
-    
-    echo
-    print_info "🚀 立即体验 (真正零配置):"
-    print_info "  1. 测试自动分析: mkdirr /tmp/test  (故意输错)"
-    print_info "  2. 手动提问: ais ask \"如何使用 docker?\""
-    print_info "  3. 查看完整帮助: ais --help"
-    print_info "  4. 查看配置状态: ais config"
-    echo
-    print_info "🔧 常用功能:"
-    print_info "  ais config        - 查看当前配置"
-    print_info "  ais on/off         - 控制自动错误分析"
-    print_info "  ais history        - 查看命令历史和分析"
-    print_info "  ais learn git      - 学习命令行知识"
-    print_info "  ais suggest \"任务\" - 获取命令建议"
-    echo
-    print_info "✨ 特色功能:"
-    print_info "  • 🤖 自动错误分析 - 命令失败时智能提供解决方案"
-    print_info "  • 📚 交互式学习 - 不仅告诉你怎么做，还解释为什么"
-    print_info "  • 🎯 上下文感知 - 基于当前环境提供个性化建议"
-    print_info "  • 🔒 隐私保护 - 本地数据存储，敏感信息自动过滤"
-    echo
+    # 如果到达这里说明有错误
+    print_error "未知的安装模式: $INSTALL_MODE"
+    exit 1
 }
 
 # 处理命令行参数
@@ -346,29 +120,27 @@ while [[ $# -gt 0 ]]; do
             FROM_SOURCE=1
             shift
             ;;
-        --global)
-            GLOBAL_INSTALL=1
+        --global-exec)
+            GLOBAL_EXEC=1
             shift
             ;;
         --help)
-            echo "AIS 安装脚本"
+            echo "AIS 全局安装脚本"
             echo
             echo "用法: $0 [选项]"
             echo
             echo "选项:"
             echo "  --from-source    从 GitHub 源码安装"
-            echo "  --global         全局安装 (需要sudo权限，为所有用户安装)"
             echo "  --help          显示此帮助信息"
             echo
             echo "安装方式:"
-            echo "  快速安装 (推荐):"
+            echo "  默认全局安装（所有用户可用）:"
             echo "    curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash"
             echo
-            echo "  全局安装 (所有用户可用):"
-            echo "    curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --global"
-            echo
-            echo "  从源码安装:"
+            echo "  从源码全局安装:"
             echo "    curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --from-source"
+            echo
+            echo "  注意：AIS 现在只支持全局安装，确保所有用户都可以使用。"
             exit 0
             ;;
         *)
@@ -382,6 +154,8 @@ done
 # 运行主函数
 if [[ "$FROM_SOURCE" == "1" ]]; then
     main --from-source
+elif [[ "$GLOBAL_EXEC" == "1" ]]; then
+    main --global-exec
 else
     main
 fi

@@ -19,15 +19,24 @@ AIS (AI-powered Shell) 是一个智能终端助手，能够自动分析命令错
 
 ### 安装
 
-**方式一：Python 包管理器**
+AIS 现在采用**全局安装**模式，确保所有用户都可以使用：
+
+**推荐方式：一键全局安装**
+```bash
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
+```
+
+**从源码安装**
+```bash
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --from-source
+```
+
+**使用 Python 包管理器（需要手动配置）**
 ```bash
 pip install ais-terminal
 ```
 
-**方式二：一键安装脚本**
-```bash
-curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
-```
+> 💡 **注意**：一键安装脚本会自动处理系统依赖、权限设置和环境配置，推荐使用。
 
 ### 使用
 

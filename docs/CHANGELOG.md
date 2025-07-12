@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- 🌍 **全局安装默认化** - 安装脚本现在默认进行全局安装，确保所有系统用户都可以使用 AIS
+- 🔄 **简化安装选项** - 移除用户级安装选项，统一为全局安装模式
+- 📚 **更新安装文档** - 重写 README 安装说明，突出全局安装的优势
+
 ### Fixed
 - 🔧 **Shell集成脚本缺失问题** - 修复 `ais setup-shell` 命令找不到集成脚本的问题
 - 📁 **包安装路径错误** - 改进脚本路径查找逻辑，支持多种安装场景
@@ -15,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 🔑 **权限问题** - 解决虚拟环境限制导致的全局可用性问题
 - 🤖 **AI分析结果显示** - 修复AI分析结果显示为JSON格式的问题，现在正确显示格式化内容和交互式菜单
 - 📝 **JSON解析增强** - 改进AI返回内容的解析逻辑，支持各种格式的AI响应
+- 🗂️ **questionary.Separator 错误** - 修复交互式菜单中 substitute 方法调用失败的问题
 
 ### Added
 - 📄 **内联集成脚本** - 当找不到外部脚本时自动创建内联版本
@@ -24,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 🎯 **零配置体验** - 安装后无需手动配置，自动启用所有功能
 - 🔄 **智能集成检测** - 自动检测并设置用户的shell配置文件
 - 📋 **默认配置生成** - 自动创建带有最佳默认设置的配置文件
+- 🎨 **交互式用户体验优化** - 全面重构交互式菜单，包含智能评分、风险评估和个性化建议
+- 🧠 **智能建议排序** - 基于风险级别、命令复杂度和用户上下文的多维度评分算法
 
 ### Planned
 - Windows support via WSL

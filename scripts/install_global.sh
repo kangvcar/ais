@@ -41,11 +41,11 @@ print_info "用户主目录: $CURRENT_HOME"
 print_info "步骤 1/7: 检查系统依赖..."
 if command -v apt-get >/dev/null 2>&1; then
     apt-get update >/dev/null 2>&1
-    apt-get install -y python3 python3-pip python3-venv curl >/dev/null 2>&1
+    apt-get install -y python3 python3-pip python3-venv curl git >/dev/null 2>&1
 elif command -v yum >/dev/null 2>&1; then
-    yum install -y python3 python3-pip curl >/dev/null 2>&1
+    yum install -y python3 python3-pip curl git >/dev/null 2>&1
 elif command -v pacman >/dev/null 2>&1; then
-    pacman -Sy --noconfirm python python-pip curl >/dev/null 2>&1
+    pacman -Sy --noconfirm python python-pip curl git >/dev/null 2>&1
 fi
 print_success "系统依赖检查完成"
 
@@ -66,17 +66,44 @@ source venv/bin/activate
 # 升级pip并安装AIS
 pip install --upgrade pip >/dev/null 2>&1
 
-# 从PyPI安装最新版本
-if pip install ais-terminal >/dev/null 2>&1; then
-    print_success "从 PyPI 安装 AIS 成功"
-else
-    print_warning "PyPI 安装失败，尝试从本地安装..."
-    if [ -f "$OLDPWD/pyproject.toml" ]; then
-        pip install -e "$OLDPWD" >/dev/null 2>&1
-        print_success "从本地源码安装成功"
+# 检查安装方式
+if [[ "$1" == "--from-source" ]]; then
+    print_info "从 GitHub 源码安装 AIS..."
+    if command -v git >/dev/null 2>&1; then
+        # 从 GitHub 克隆源码
+        temp_dir=$(mktemp -d)
+        git clone "https://github.com/kangvcar/ais.git" "$temp_dir" >/dev/null 2>&1
+        cd "$temp_dir"
+        pip install -e . >/dev/null 2>&1
+        cd /opt/ais
+        rm -rf "$temp_dir"
+        print_success "从 GitHub 源码安装成功"
     else
-        print_error "无法安装 AIS"
+        print_error "git 命令不可用，无法从源码安装"
         exit 1
+    fi
+elif [ -f "$OLDPWD/pyproject.toml" ] && grep -q "ais" "$OLDPWD/pyproject.toml" 2>/dev/null; then
+    print_info "从本地源码安装 AIS..."
+    pip install -e "$OLDPWD" >/dev/null 2>&1
+    print_success "从本地源码安装成功"
+else
+    # 默认从 PyPI 安装最新版本
+    if pip install ais-terminal >/dev/null 2>&1; then
+        print_success "从 PyPI 安装 AIS 成功"
+    else
+        print_warning "PyPI 安装失败，尝试从 GitHub 源码安装..."
+        if command -v git >/dev/null 2>&1; then
+            temp_dir=$(mktemp -d)
+            git clone "https://github.com/kangvcar/ais.git" "$temp_dir" >/dev/null 2>&1
+            cd "$temp_dir"
+            pip install -e . >/dev/null 2>&1
+            cd /opt/ais
+            rm -rf "$temp_dir"
+            print_success "从 GitHub 源码安装成功"
+        else
+            print_error "无法安装 AIS，PyPI 失败且 git 不可用"
+            exit 1
+        fi
     fi
 fi
 
