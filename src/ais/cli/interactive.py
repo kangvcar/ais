@@ -1011,15 +1011,10 @@ def show_command_details(
     except Exception as e:
         # 如果显示详情失败，显示简化版本
         console.print(f"[red]❌ 显示命令详情时出错: {e}[/red]")
-        console.print(
-            f"[yellow]命令: {
-                suggestion.get(
-                    'command',
-                    'N/A')}[/yellow]"
-        )
-        console.print(
-            f"[dim]描述: {suggestion.get('description', '无描述')}[/dim]"
-        )
+        command_text = suggestion.get('command', 'N/A')
+        description_text = suggestion.get('description', '无描述')
+        console.print(f"[yellow]命令: {command_text}[/yellow]")
+        console.print(f"[dim]描述: {description_text}[/dim]")
 
 
 def ask_follow_up_question(
