@@ -10,6 +10,77 @@ from ..core.ai import ask_ai
 console = Console()
 
 
+def _create_integration_script(script_path: str):
+    """创建Shell集成脚本。"""
+    with open(script_path, 'w') as f:
+        f.write("""#!/bin/bash
+# AIS Shell 集成脚本
+# 这个脚本通过 PROMPT_COMMAND 机制捕获命令执行错误
+
+# 检查 AIS 是否可用
+_ais_check_availability() {
+    command -v ais >/dev/null 2>&1
+}
+
+# 检查自动分析是否开启
+_ais_check_auto_analysis() {
+    if ! _ais_check_availability; then
+        return 1
+    fi
+    
+    # 检查配置文件中的 auto_analysis 设置
+    local config_file="$HOME/.config/ais/config.toml"
+    if [ -f "$config_file" ]; then
+        grep -q "auto_analysis = true" "$config_file" 2>/dev/null
+    else
+        return 1  # 默认关闭
+    fi
+}
+
+# precmd 钩子：命令执行后调用
+_ais_precmd() {
+    local current_exit_code=$?
+    
+    # 只处理非零退出码且非中断信号（Ctrl+C 是 130）
+    if [ $current_exit_code -ne 0 ] && [ $current_exit_code -ne 130 ]; then
+        # 检查功能是否开启
+        if _ais_check_auto_analysis; then
+            local last_command=$(history 1 | sed 's/^[ ]*[0-9]*[ ]*//' 2>/dev/null)
+            
+            # 过滤内部命令和特殊情况
+            if [[ "$last_command" != *"_ais_"* ]] && [[ "$last_command" != *"ais_"* ]] && [[ "$last_command" != *"history"* ]]; then
+                # 调用 ais analyze 进行分析
+                echo  # 添加空行分隔
+                ais analyze --exit-code "$current_exit_code" --command "$last_command"
+            fi
+        fi
+    fi
+}
+
+# 根据不同 shell 设置钩子
+if [ -n "$ZSH_VERSION" ]; then
+    # Zsh 设置
+    autoload -U add-zsh-hook 2>/dev/null || return
+    add-zsh-hook precmd _ais_precmd
+elif [ -n "$BASH_VERSION" ]; then
+    # Bash 设置
+    if [[ -z "$PROMPT_COMMAND" ]]; then
+        PROMPT_COMMAND="_ais_precmd"
+    else
+        PROMPT_COMMAND="_ais_precmd;$PROMPT_COMMAND"
+    fi
+else
+    # 对于其他 shell，提供基本的 PROMPT_COMMAND 支持
+    if [[ -z "$PROMPT_COMMAND" ]]; then
+        PROMPT_COMMAND="_ais_precmd"
+    else
+        PROMPT_COMMAND="_ais_precmd;$PROMPT_COMMAND"
+    fi
+fi
+""")
+    os.chmod(script_path, 0o755)
+
+
 @click.group()
 @click.version_option(version="0.1.0", prog_name="ais")
 def main():
@@ -896,10 +967,26 @@ def setup_shell():
     shell_name = os.path.basename(shell)
 
     # 获取集成脚本路径
-    script_path = os.path.join(
-        os.path.dirname(__file__), "..", "shell", "integration.sh"
-    )
-    script_path = os.path.abspath(script_path)
+    import ais
+    
+    # 优先查找已安装包的路径
+    package_path = os.path.dirname(ais.__file__)
+    script_path = os.path.join(package_path, "shell", "integration.sh")
+    
+    # 如果包内没有，创建集成脚本目录和文件
+    if not os.path.exists(script_path):
+        os.makedirs(os.path.dirname(script_path), exist_ok=True)
+        
+        # 尝试从项目根目录复制脚本
+        src_script = os.path.join(
+            os.path.dirname(__file__), "..", "..", "..", "scripts", "shell", "integration.sh"
+        )
+        if os.path.exists(src_script):
+            import shutil
+            shutil.copy2(src_script, script_path)
+        else:
+            # 如果源脚本不存在，则创建内联脚本
+            _create_integration_script(script_path)
 
     console.print(f"检测到的 Shell: {shell_name}")
     console.print(f"集成脚本路径: {script_path}")

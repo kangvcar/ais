@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- 🔧 **Shell集成脚本缺失问题** - 修复 `ais setup-shell` 命令找不到集成脚本的问题
+- 📁 **包安装路径错误** - 改进脚本路径查找逻辑，支持多种安装场景
+- 🌐 **全局安装方案** - 新增 `install_global.sh` 脚本，实现真正的系统级全局安装
+- 🔄 **自动错误分析触发** - 修复在某些环境下自动错误分析不工作的问题
+- 🔑 **权限问题** - 解决虚拟环境限制导致的全局可用性问题
+
+### Added
+- 📄 **内联集成脚本** - 当找不到外部脚本时自动创建内联版本
+- 🚀 **改进的全局安装器** - 支持所有用户无权限问题的系统级安装
+- 🔧 **健壮的路径处理** - 改进包文件查找和路径解析逻辑
+
 ### Planned
 - Windows support via WSL
 - Plugin system for custom AI providers
