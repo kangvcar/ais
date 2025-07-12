@@ -1077,33 +1077,41 @@ def show_interactive_menu(
             separator_text = f"  {separator_line}"
 
             # 验证questionary模块和Separator类
-            if (questionary and
-                    hasattr(questionary, 'Separator') and
-                    callable(questionary.Separator)):
+            if (
+                questionary
+                and hasattr(questionary, "Separator")
+                and callable(questionary.Separator)
+            ):
                 try:
                     sep = questionary.Separator(separator_text)
                     choices.append(sep)
                 except Exception:
                     # Separator创建失败，使用备用方案
-                    choices.append({
-                        "name": separator_text,
-                        "value": "separator",
-                        "disabled": True,
-                    })
+                    choices.append(
+                        {
+                            "name": separator_text,
+                            "value": "separator",
+                            "disabled": True,
+                        }
+                    )
             else:
                 # questionary不可用或Separator不存在
-                choices.append({
-                    "name": "  " + "─" * 20,
-                    "value": "separator",
-                    "disabled": True,
-                })
+                choices.append(
+                    {
+                        "name": "  " + "─" * 20,
+                        "value": "separator",
+                        "disabled": True,
+                    }
+                )
         except Exception:
             # 任何异常都使用最简单的分割线
-            choices.append({
-                "name": "  ──────────────────────",
-                "value": "separator",
-                "disabled": True,
-            })
+            choices.append(
+                {
+                    "name": "  ──────────────────────",
+                    "value": "separator",
+                    "disabled": True,
+                }
+            )
 
         # 添加固定选项 - 使用快捷键
         choices.extend(
