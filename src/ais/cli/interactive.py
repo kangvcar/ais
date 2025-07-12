@@ -59,7 +59,13 @@ def _format_command_choice(
             else command
         )
 
-    return f"{prefix}{middle:<{available_width}}{suffix}"
+    # 安全的格式化，避免substitute错误
+    try:
+        formatted_middle = f"{middle:<{available_width}}"
+        return f"{prefix}{formatted_middle}{suffix}"
+    except (ValueError, TypeError):
+        # 如果格式化失败，使用简单的字符串连接
+        return f"{prefix}{middle}{suffix}"
 
 
 def _calculate_suggestion_score(
@@ -1063,20 +1069,41 @@ def show_interactive_menu(
                 "[dim]🧠 已启用智能排序: 基于你的使用习惯和当前环境[/dim]"
             )
 
-        # 添加美化的分割线（防止questionary.Separator错误）
+        # 添加美化的分割线（增强错误处理）
         try:
-            separator_line = "─" * max(1, min(terminal_width - 10, 50))
-            if questionary:
-                choices.append(questionary.Separator(f"  {separator_line}"))
-        except Exception:
-            # 如果Separator失败，使用普通选项代替
-            choices.append(
-                {
+            # 安全的分割线长度计算
+            safe_width = max(10, min(terminal_width - 10, 50))
+            separator_line = "─" * safe_width
+            separator_text = f"  {separator_line}"
+
+            # 验证questionary模块和Separator类
+            if (questionary and
+                    hasattr(questionary, 'Separator') and
+                    callable(questionary.Separator)):
+                try:
+                    sep = questionary.Separator(separator_text)
+                    choices.append(sep)
+                except Exception:
+                    # Separator创建失败，使用备用方案
+                    choices.append({
+                        "name": separator_text,
+                        "value": "separator",
+                        "disabled": True,
+                    })
+            else:
+                # questionary不可用或Separator不存在
+                choices.append({
                     "name": "  " + "─" * 20,
                     "value": "separator",
                     "disabled": True,
-                }
-            )
+                })
+        except Exception:
+            # 任何异常都使用最简单的分割线
+            choices.append({
+                "name": "  ──────────────────────",
+                "value": "separator",
+                "disabled": True,
+            })
 
         # 添加固定选项 - 使用快捷键
         choices.extend(
@@ -1121,14 +1148,25 @@ def show_interactive_menu(
             # 忽略分割线点击
             continue
         elif action.startswith("execute_"):
-            # 执行命令
-            index = int(action.split("_")[1])
-            suggestion = suggestions[index]
-            command = suggestion.get("command", "")
-            risk_level = suggestion.get("risk_level", "safe")
+            # 执行命令（增强错误处理）
+            try:
+                index = int(action.split("_")[1])
+                if 0 <= index < len(suggestions):
+                    suggestion = suggestions[index]
+                    command = suggestion.get("command", "")
+                    risk_level = suggestion.get("risk_level", "safe")
 
-            # 显示命令详情（传入用户上下文）
-            show_command_details(suggestion, console, user_context)
+                    # 显示命令详情（传入用户上下文）
+                    show_command_details(suggestion, console, user_context)
+                else:
+                    console.print("[red]❌ 无效的选择索引[/red]")
+                    continue
+            except (ValueError, IndexError, KeyError) as e:
+                console.print(f"[red]❌ 处理选择时出错: {e}[/red]")
+                continue
+            except Exception as e:
+                console.print(f"[red]❌ 执行操作时发生未知错误: {e}[/red]")
+                continue
 
             # 智能确认流程（基于用户上下文）
             should_skip = _should_skip_confirmation(

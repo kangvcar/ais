@@ -171,22 +171,26 @@ cat > /etc/profile.d/ais.sh << 'EOF'
 # 确保ais命令在PATH中
 export PATH="/usr/local/bin:$PATH"
 
-# 加载AIS shell集成（尝试多个可能的位置）
-AIS_INTEGRATION_PATHS=(
-    "/opt/ais/venv/lib/python*/site-packages/ais/shell/integration.sh"
-    "/usr/local/share/ais/integration.sh"
-    "~/.local/share/ais/integration.sh"
-)
-
-for path in "${AIS_INTEGRATION_PATHS[@]}"; do
-    # 展开通配符和用户目录
-    for expanded_path in $(eval echo $path); do
-        if [ -f "$expanded_path" ]; then
-            source "$expanded_path"
-            break 2
-        fi
+# 加载AIS shell集成（兼容所有shell）
+# 尝试多个可能的位置
+_load_ais_integration() {
+    # 检查各种可能的集成脚本位置
+    for pattern in "/opt/ais/venv/lib/python*/site-packages/ais/shell/integration.sh" \
+                   "/usr/local/share/ais/integration.sh" \
+                   "$HOME/.local/share/ais/integration.sh"; do
+        # 使用通配符展开
+        for path in $pattern; do
+            if [ -f "$path" ]; then
+                . "$path"
+                return 0
+            fi
+        done
     done
-done
+    return 1
+}
+
+# 调用集成加载函数
+_load_ais_integration >/dev/null 2>&1 || true
 EOF
 
 chmod 644 /etc/profile.d/ais.sh
