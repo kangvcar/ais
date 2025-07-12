@@ -58,18 +58,41 @@ main() {
     # 智能安装建议
     print_info "🧠 安装方式建议:"
     if command_exists pipx; then
-        print_info "  ✨ 检测到pipx，推荐使用: pipx install ais-terminal"
-        print_info "  🔒 更安全的隔离安装，符合Python最佳实践"
+        print_info "  ✨ 检测到pipx，有多种安装选择:"
+        print_info "  1. pipx install ais-terminal           (仅当前用户)"
+        print_info "  2. sudo pipx install --global ais-terminal  (所有用户，推荐)"
+        print_info "  3. 继续当前的系统级安装                    (传统方式)"
         echo
-        print_warning "⚠️  当前将进行全局安装，适用于多用户/运维环境"
-        echo "是否继续全局安装？(y/N)"
-        read -r response
-        if [[ ! "$response" =~ ^[Yy]$ ]]; then
-            print_info "💡 推荐使用pipx安装:"
-            print_info "   pipx install ais-terminal"
-            print_info "   ais setup-shell  # 设置shell集成"
-            exit 0
-        fi
+        print_warning "📋 选择安装方式 (1-3)，或按回车使用pipx全局安装:"
+        read -r choice
+        
+        case "$choice" in
+            "1")
+                print_info "💡 使用pipx用户级安装:"
+                print_info "   pipx install ais-terminal"
+                print_info "   ais setup-shell"
+                exit 0
+                ;;
+            "2"|"")
+                print_info "🚀 使用pipx全局安装:"
+                if [ "$EUID" -eq 0 ]; then
+                    print_info "   正在执行: pipx install --global ais-terminal"
+                    pipx install --global ais-terminal
+                    print_success "✅ pipx全局安装完成！所有用户都可以使用ais命令"
+                    print_info "💡 用户可以运行: ais setup-shell 来设置shell集成"
+                else
+                    print_info "   sudo pipx install --global ais-terminal"
+                    print_info "   ais setup-shell"
+                fi
+                exit 0
+                ;;
+            "3")
+                print_info "继续使用系统级安装脚本..."
+                ;;
+            *)
+                print_error "无效选择，继续使用系统级安装"
+                ;;
+        esac
     elif [ "$EUID" -ne 0 ] && [ -z "$SUDO_USER" ]; then
         print_info "  💡 个人使用推荐: pipx install ais-terminal"
         print_info "  🏢 多用户环境推荐: 当前的全局安装"
