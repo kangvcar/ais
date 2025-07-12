@@ -169,6 +169,18 @@ main() {
         curl -sSL "https://raw.githubusercontent.com/$GITHUB_REPO/main/scripts/install_global.sh" -o "$temp_script"
         chmod +x "$temp_script"
         exec sudo "$temp_script"
+    elif [[ "$EUID" == "0" ]] || [[ -n "$SUDO_USER" ]]; then
+        # 如果是root用户执行，自动切换到全局安装模式
+        print_warning "检测到root权限，推荐使用全局安装模式"
+        echo "是否为所有用户安装 AIS？(y/N)"
+        read -r response
+        if [[ "$response" =~ ^[Yy]$ ]]; then
+            print_info "切换到全局安装模式"
+            temp_script=$(mktemp)
+            curl -sSL "https://raw.githubusercontent.com/$GITHUB_REPO/main/scripts/install_global.sh" -o "$temp_script"
+            chmod +x "$temp_script"
+            exec sudo "$temp_script"
+        fi
     elif [ -f "pyproject.toml" ] && grep -q "ais" pyproject.toml 2>/dev/null; then
         INSTALL_METHOD="local"
         print_info "检测到开发环境，将从当前目录安装"
@@ -284,6 +296,27 @@ main() {
     
     echo
     print_success "🎉 AIS 安装成功！"
+    echo
+    
+    # 检查全局可用性
+    print_info "🔍 检查安装结果:"
+    if command -v ais >/dev/null 2>&1; then
+        print_success "✅ ais 命令已可用"
+        ais_path=$(which ais)
+        print_info "   安装路径: $ais_path"
+    else
+        print_warning "⚠️  ais 命令不在当前PATH中"
+        print_info "   请添加 ~/.local/bin 到PATH或重新启动终端"
+    fi
+    
+    # 检查多用户可用性
+    if [[ "$USER" != "root" ]]; then
+        print_info "💡 多用户支持:"
+        print_info "   当前为用户级安装，仅对用户 $USER 可用"
+        print_info "   如需所有用户可用，请使用:"
+        print_info "   curl -sSL https://raw.githubusercontent.com/$GITHUB_REPO/main/scripts/install.sh | bash -s -- --global"
+    fi
+    
     echo
     print_info "🚀 立即体验 (真正零配置):"
     print_info "  1. 测试自动分析: mkdirr /tmp/test  (故意输错)"

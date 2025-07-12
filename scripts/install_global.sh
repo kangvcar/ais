@@ -82,16 +82,26 @@ fi
 
 # 4. 创建全局启动脚本
 print_info "步骤 4/7: 创建全局命令..."
-cat > /usr/local/bin/ais << 'EOF'
+
+# 找到实际的Python路径
+PYTHON_SITE_PACKAGES=$(find /opt/ais/venv/lib -name "site-packages" -type d | head -n1)
+
+cat > /usr/local/bin/ais << EOF
 #!/bin/bash
-# AIS 全局启动脚本 - 无虚拟环境限制
+# AIS 全局启动脚本 - 支持所有用户
+
+# 检查安装是否存在
+if [ ! -f "/opt/ais/venv/bin/ais" ]; then
+    echo "\033[0;31m\u2757 AIS 系统安装损坏，请重新安装\033[0m"
+    exit 1
+fi
 
 # 设置环境变量
 export AIS_SYSTEM_INSTALL=1
-export PYTHONPATH="/opt/ais/venv/lib/python*/site-packages:$PYTHONPATH"
+export PYTHONPATH="$PYTHON_SITE_PACKAGES:\$PYTHONPATH"
 
-# 直接执行ais（使用系统Python环境）
-exec /opt/ais/venv/bin/ais "$@"
+# 使用虚拟环境中的ais
+exec /opt/ais/venv/bin/ais "\$@"
 EOF
 
 chmod +x /usr/local/bin/ais
@@ -235,11 +245,31 @@ print_info "  ais setup-shell           - 重新设置Shell集成"
 print_info "  ais --help               - 查看完整帮助"
 echo
 
-# 为当前会话加载配置（如果可能）
-if [ -n "$SUDO_USER" ]; then
-    print_info "💡 提示: 当前会话需要手动加载配置："
-    print_info "  su - $SUDO_USER  # 切换到用户"
-    print_info "  source $CONFIG_FILE  # 加载配置"
+# 验证多用户访问
+print_info "🧪 验证多用户访问..."
+
+# 测试root用户
+if /usr/local/bin/ais --version >/dev/null 2>&1; then
+    print_success "root用户可以访问 AIS"
+else
+    print_error "root用户无法访问 AIS"
 fi
 
-print_success "安装完成！现在所有用户都可以使用 'ais' 命令了。"
+# 测试普通用户（如果有SUDO_USER）
+if [ -n "$SUDO_USER" ]; then
+    if sudo -u "$SUDO_USER" /usr/local/bin/ais --version >/dev/null 2>&1; then
+        print_success "用户 $SUDO_USER 可以访问 AIS"
+    else
+        print_warning "用户 $SUDO_USER 无法访问 AIS，可能需要重新登录"
+    fi
+fi
+
+# 为当前会话加载配置（如果可能）
+if [ -n "$SUDO_USER" ]; then
+    print_info "💡 使用提示:"
+    print_info "  1. 切换到普通用户: su - $SUDO_USER"
+    print_info "  2. 或者直接测试: ais --version"
+    print_info "  3. 如果命令不存在，请重新登录终端"
+fi
+
+print_success "✅ 安装完成！现在所有用户都可以使用 'ais' 命令了。"

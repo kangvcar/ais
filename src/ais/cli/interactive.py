@@ -1063,9 +1063,18 @@ def show_interactive_menu(
                 "[dim]🧠 已启用智能排序: 基于你的使用习惯和当前环境[/dim]"
             )
 
-        # 添加美化的分割线
-        separator_line = "─" * (terminal_width - 10)
-        choices.append(questionary.Separator(f"  {separator_line}"))
+        # 添加美化的分割线（防止questionary.Separator错误）
+        try:
+            separator_line = "─" * max(1, min(terminal_width - 10, 50))
+            if questionary:
+                choices.append(questionary.Separator(f"  {separator_line}"))
+        except Exception:
+            # 如果Separator失败，使用普通选项代替
+            choices.append({
+                "name": "  " + "─" * 20,
+                "value": "separator",
+                "disabled": True
+            })
 
         # 添加固定选项 - 使用快捷键
         choices.extend(
@@ -1089,18 +1098,26 @@ def show_interactive_menu(
             "[dim]💡 快捷键: 1-9选择建议, E编辑, Q提问, X退出, ⭐推荐选项[/dim]"
         )
 
-        # 显示菜单
-        action = questionary.select(
-            "Select an action:",
-            choices=choices,
-            instruction="",
-            use_shortcuts=True,
-        ).ask()
+        # 显示菜单（增加错误处理）
+        try:
+            action = questionary.select(
+                "Select an action:",
+                choices=choices,
+                instruction="",
+                use_shortcuts=True,
+            ).ask()
+        except Exception as e:
+            console.print(f"[red]菜单显示错误: {e}[/red]")
+            console.print("[yellow]回退到简单模式[/yellow]")
+            show_simple_menu(suggestions, console, follow_up_questions)
+            return
 
         if not action or action == "exit":
             console.print("[yellow]👋 再见！[/yellow]")
             break
-
+        elif action == "separator":
+            # 忽略分割线点击
+            continue
         elif action.startswith("execute_"):
             # 执行命令
             index = int(action.split("_")[1])
