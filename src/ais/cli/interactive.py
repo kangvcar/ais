@@ -1220,10 +1220,10 @@ def show_interactive_menu(
             except Exception as e:
                 console.print(f"[red]❌ 执行操作时发生未知错误: {e}[/red]")
                 # 添加详细的调试信息
-                console.print(
-                    f"[dim]调试信息: action={action}, suggestions_count={
-                        len(suggestions)}[/dim]"
+                debug_info = (
+                    f"action={action}, suggestions_count={len(suggestions)}"
                 )
+                console.print(f"[dim]调试信息: {debug_info}[/dim]")
                 continue
 
             # 智能确认流程（基于用户上下文）
