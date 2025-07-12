@@ -1011,8 +1011,8 @@ def show_command_details(
     except Exception as e:
         # 如果显示详情失败，显示简化版本
         console.print(f"[red]❌ 显示命令详情时出错: {e}[/red]")
-        command_text = suggestion.get('command', 'N/A')
-        description_text = suggestion.get('description', '无描述')
+        command_text = suggestion.get("command", "N/A")
+        description_text = suggestion.get("description", "无描述")
         console.print(f"[yellow]命令: {command_text}[/yellow]")
         console.print(f"[dim]描述: {description_text}[/dim]")
 
