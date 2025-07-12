@@ -58,11 +58,8 @@ def _format_command_choice(
     prefix = f"{index}. "
     suffix = f" {icon} ({risk_text})"
     available_width = max(
-        20,
-        terminal_width -
-        len(prefix) -
-        len(suffix) -
-        10)  # 确保最小宽度
+        20, terminal_width - len(prefix) - len(suffix) - 10
+    )  # 确保最小宽度
 
     # 智能截断命令和描述
     if len(command) + len(description) + 3 <= available_width:  # 3 for " - "
@@ -898,7 +895,8 @@ def show_command_details(
         # 使用增强型风险评估（安全包装）
         try:
             risk_assessment = _enhanced_risk_assessment(
-                suggestion, user_context)
+                suggestion, user_context
+            )
             risk_level = risk_assessment.get("level", "safe")
         except Exception:
             # 如果风险评估失败，使用默认值
@@ -906,7 +904,8 @@ def show_command_details(
             risk_assessment = {
                 "level": risk_level,
                 "factors": [],
-                "recommendations": []}
+                "recommendations": [],
+            }
 
         icon, color, risk_text = _get_risk_display(risk_level)
 
@@ -937,12 +936,14 @@ def show_command_details(
         # 添加命令行（安全转义）
         safe_command = _safe_escape_for_questionary(command)
         details_table.add_row(
-            "📋 命令", f"[bold green]{safe_command}[/bold green]")
+            "📋 命令", f"[bold green]{safe_command}[/bold green]"
+        )
 
         # 添加描述（安全转义）
         if suggestion.get("description"):
             safe_description = _safe_escape_for_questionary(
-                suggestion["description"])
+                suggestion["description"]
+            )
             details_table.add_row("💡 方案", safe_description)
 
         # 添加技术原理（安全转义）
@@ -994,8 +995,11 @@ def show_command_details(
             if warning_parts:
                 warning_content = "\n".join(warning_parts)
                 safe_warning_content = _safe_escape_for_questionary(
-                    warning_content)
-                safe_warning_title = _safe_escape_for_questionary("⚠️  智能安全提醒")
+                    warning_content
+                )
+                safe_warning_title = _safe_escape_for_questionary(
+                    "⚠️  智能安全提醒"
+                )
                 warning_panel = Panel(
                     safe_warning_content,
                     title=f"[bold {color}]{safe_warning_title}[/bold {color}]",
@@ -1011,8 +1015,11 @@ def show_command_details(
             f"[yellow]命令: {
                 suggestion.get(
                     'command',
-                    'N/A')}[/yellow]")
-        console.print(f"[dim]描述: {suggestion.get('description', '无描述')}[/dim]")
+                    'N/A')}[/yellow]"
+        )
+        console.print(
+            f"[dim]描述: {suggestion.get('description', '无描述')}[/dim]"
+        )
 
 
 def ask_follow_up_question(
@@ -1160,7 +1167,7 @@ def show_interactive_menu(
             {
                 "name": _safe_escape_for_questionary("  👋 [X] 退出"),
                 "value": "exit",
-                "shortcut": "x"
+                "shortcut": "x",
             },
         ]
         choices.extend(fixed_options)
@@ -1220,7 +1227,8 @@ def show_interactive_menu(
                 # 添加详细的调试信息
                 console.print(
                     f"[dim]调试信息: action={action}, suggestions_count={
-                        len(suggestions)}[/dim]")
+                        len(suggestions)}[/dim]"
+                )
                 continue
 
             # 智能确认流程（基于用户上下文）
