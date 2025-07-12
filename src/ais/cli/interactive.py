@@ -1070,11 +1070,13 @@ def show_interactive_menu(
                 choices.append(questionary.Separator(f"  {separator_line}"))
         except Exception:
             # 如果Separator失败，使用普通选项代替
-            choices.append({
-                "name": "  " + "─" * 20,
-                "value": "separator",
-                "disabled": True
-            })
+            choices.append(
+                {
+                    "name": "  " + "─" * 20,
+                    "value": "separator",
+                    "disabled": True,
+                }
+            )
 
         # 添加固定选项 - 使用快捷键
         choices.extend(
