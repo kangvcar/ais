@@ -83,8 +83,6 @@ include = [
     "pyproject.toml",
 ]
 
-[tool.hatch.build.targets.wheel.shared-data]
-"scripts/shell" = "ais/shell"
 
 [tool.black]
 line-length = 79

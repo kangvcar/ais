@@ -1,9 +1,10 @@
 #!/bin/bash
-# AIS - AI-powered terminal assistant
-# 一键安装脚本
+# AIS - AI智能终端助手
+# 一键安装脚本 - 零配置体验
 # 
-# 快速安装: curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/install.sh | bash
-# 从源码安装: curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/install.sh | bash -s -- --from-source
+# 快速安装: curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
+# 从源码安装: curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --from-source
+# 全局安装: curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --global
 # 
 # GitHub: https://github.com/kangvcar/ais
 
@@ -161,7 +162,14 @@ main() {
     echo
     
     # 检测安装方式
-    if [ -f "pyproject.toml" ] && grep -q "ais" pyproject.toml 2>/dev/null; then
+    if [[ "$1" == "--global" ]]; then
+        # 全局安装：下载并执行全局安装脚本
+        print_info "全局安装模式：为所有用户安装"
+        temp_script=$(mktemp)
+        curl -sSL "https://raw.githubusercontent.com/$GITHUB_REPO/main/scripts/install_global.sh" -o "$temp_script"
+        chmod +x "$temp_script"
+        exec sudo "$temp_script"
+    elif [ -f "pyproject.toml" ] && grep -q "ais" pyproject.toml 2>/dev/null; then
         INSTALL_METHOD="local"
         print_info "检测到开发环境，将从当前目录安装"
     elif [[ "$1" == "--from-source" ]]; then
@@ -169,7 +177,7 @@ main() {
         print_info "将从 GitHub 源码安装"
     else
         INSTALL_METHOD="pypi"
-        print_info "将从 PyPI 安装"
+        print_info "将从 PyPI 安装（推荐）"
     fi
     
     # 第1步：检查系统环境
@@ -218,84 +226,21 @@ main() {
     ais_version=$(ais --version 2>/dev/null | head -n1 || echo "unknown")
     print_success "AIS 已安装: $ais_version"
     
-    # 第4步：配置 Shell 集成
-    print_step 4 "配置 Shell 集成"
+    # 第4步：自动配置功能
+    print_step 4 "自动配置功能"
     
-    shell_config=$(detect_shell_config)
-    print_info "Shell 配置文件: $shell_config"
-    
-    # 备份配置文件
-    if [ -f "$shell_config" ]; then
-        cp "$shell_config" "${shell_config}.backup.$(date +%Y%m%d_%H%M%S)"
-        print_info "已创建配置文件备份"
-    fi
-    
-    # 移除旧的集成配置
-    if grep -q "# START AIS INTEGRATION" "$shell_config" 2>/dev/null; then
-        print_info "移除旧的集成配置..."
-        sed -i '/# START AIS INTEGRATION/,/# END AIS INTEGRATION/d' "$shell_config" 2>/dev/null || true
-    fi
-    
-    # 查找集成脚本路径
-    integration_script=""
-    
-    # 方法1: 查找pipx安装的位置
-    if command_exists ais; then
-        ais_path=$(which ais)
-        ais_dir=$(dirname "$ais_path")
-        possible_script="$ais_dir/../share/ais/shell/integration.sh"
-        if [ -f "$possible_script" ]; then
-            integration_script="$possible_script"
+    # 确保PATH包含pipx安装的目录
+    if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
+        shell_config=$(detect_shell_config)
+        if [ -f "$shell_config" ]; then
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$shell_config"
+            print_info "已添加 ~/.local/bin 到 PATH"
         fi
     fi
     
-    # 方法2: 查找系统安装位置
-    if [ -z "$integration_script" ]; then
-        for path in "/usr/local/share/ais" "/opt/ais" "$HOME/.local/share/ais"; do
-            if [ -f "$path/shell/integration.sh" ]; then
-                integration_script="$path/shell/integration.sh"
-                break
-            fi
-        done
-    fi
-    
-    # 方法3: 如果是本地安装，使用当前目录
-    if [ -z "$integration_script" ] && [ -f "shell/integration.sh" ]; then
-        integration_script="$(pwd)/shell/integration.sh"
-        # 创建系统级别的副本
-        sudo mkdir -p /usr/local/share/ais/shell
-        sudo cp shell/integration.sh /usr/local/share/ais/shell/
-        integration_script="/usr/local/share/ais/shell/integration.sh"
-    fi
-    
-    # 添加新的集成配置
-    if [ -n "$integration_script" ]; then
-        cat >> "$shell_config" << EOF
-
-# START AIS INTEGRATION - Auto-added by installer
-# 确保 AIS 命令在 PATH 中
-export PATH="\$HOME/.local/bin:\$PATH"
-
-# 加载 AIS shell 集成
-if [ -f "$integration_script" ]; then
-    source "$integration_script"
-fi
-# END AIS INTEGRATION
-EOF
-        print_success "Shell 集成脚本: $integration_script"
-    else
-        print_warning "未找到集成脚本，请手动配置"
-    fi
-    
-    print_success "Shell 集成已配置"
-    
-    # 第5步：初始化配置
-    print_step 5 "初始化配置"
-    
-    # 初始化配置目录
-    ais config >/dev/null 2>&1 || true
-    
-    # 开启自动分析（可选）
+    # AIS现在支持自动配置，首次运行时会自动设置所有必要的配置
+    print_info "AIS 现在支持零配置安装！"
+    print_info "首次运行任何 ais 命令时，将自动完成所有配置"
     ais on >/dev/null 2>&1 || true
     
     print_success "配置初始化完成"
@@ -306,21 +251,25 @@ EOF
     echo
     print_success "🎉 AIS 安装成功！"
     echo
-    print_info "📋 开始使用:"
-    print_info "  1. 重新加载配置: source $shell_config"
-    print_info "  2. 或者重启终端"
+    print_info "🚀 立即体验 (零配置):"
+    print_info "  1. 运行任意命令触发自动配置: ais config"
+    print_info "  2. 重新加载Shell: source ~/.bashrc (或重启终端)"
     print_info "  3. 测试自动分析: mkdirr /tmp/test  (故意输错)"
     print_info "  4. 手动提问: ais ask \"如何使用 docker?\""
-    print_info "  5. 查看帮助: ais --help"
+    print_info "  5. 查看完整帮助: ais --help"
     echo
-    print_info "🔧 常用命令:"
-    print_info "  ais config        - 查看配置"
-    print_info "  ais on/off         - 开启/关闭自动分析"
-    print_info "  ais history        - 查看命令历史"
+    print_info "🔧 常用功能:"
+    print_info "  ais config        - 查看当前配置"
+    print_info "  ais on/off         - 控制自动错误分析"
+    print_info "  ais history        - 查看命令历史和分析"
     print_info "  ais learn git      - 学习命令行知识"
+    print_info "  ais suggest \"任务\" - 获取命令建议"
     echo
-    print_warning "⚠️  重要: 请运行以下命令激活配置:"
-    print_warning "  source $shell_config"
+    print_info "✨ 特色功能:"
+    print_info "  • 🤖 自动错误分析 - 命令失败时智能提供解决方案"
+    print_info "  • 📚 交互式学习 - 不仅告诉你怎么做，还解释为什么"
+    print_info "  • 🎯 上下文感知 - 基于当前环境提供个性化建议"
+    print_info "  • 🔒 隐私保护 - 本地数据存储，敏感信息自动过滤"
     echo
 }
 
@@ -331,6 +280,10 @@ while [[ $# -gt 0 ]]; do
             FROM_SOURCE=1
             shift
             ;;
+        --global)
+            GLOBAL_INSTALL=1
+            shift
+            ;;
         --help)
             echo "AIS 安装脚本"
             echo
@@ -338,13 +291,18 @@ while [[ $# -gt 0 ]]; do
             echo
             echo "选项:"
             echo "  --from-source    从 GitHub 源码安装"
+            echo "  --global         全局安装 (需要sudo权限，为所有用户安装)"
             echo "  --help          显示此帮助信息"
             echo
-            echo "快速安装:"
-            echo "  curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/install.sh | bash"
+            echo "安装方式:"
+            echo "  快速安装 (推荐):"
+            echo "    curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash"
             echo
-            echo "从源码安装:"
-            echo "  curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/install.sh | bash -s -- --from-source"
+            echo "  全局安装 (所有用户可用):"
+            echo "    curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --global"
+            echo
+            echo "  从源码安装:"
+            echo "    curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --from-source"
             exit 0
             ;;
         *)

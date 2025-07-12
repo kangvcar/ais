@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# AIS - AI-powered terminal assistant
-# 卸载脚本
+# AIS - AI智能终端助手
+# 卸载脚本 - 完全清理所有相关文件和配置
 # 
-# 使用方法: curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/uninstall.sh | bash
+# 使用方法: curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/uninstall.sh | bash
 
 set -e  # 遇到错误立即退出
 
@@ -165,6 +165,13 @@ remove_config_and_data() {
         print_success "数据目录已删除"
     else
         print_info "数据目录不存在"
+    fi
+    
+    # 移除自动配置标记文件
+    auto_setup_marker="$HOME/.config/ais/.auto_setup_done"
+    if [ -f "$auto_setup_marker" ]; then
+        rm -f "$auto_setup_marker"
+        print_info "自动配置标记已清除"
     fi
     
     # 检查其他可能的位置
