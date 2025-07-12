@@ -11,39 +11,38 @@ import ais
 
 def test_version():
     """Test that version is defined."""
-    assert hasattr(ais, '__version__')
+    assert hasattr(ais, "__version__")
     assert isinstance(ais.__version__, str)
     assert len(ais.__version__) > 0
 
 
 def test_cli_version():
     """Test CLI version command."""
-    result = subprocess.run(['ais', '--version'], 
-                          capture_output=True, text=True)
+    result = subprocess.run(
+        ["ais", "--version"], capture_output=True, text=True
+    )
     assert result.returncode == 0
     assert ais.__version__ in result.stdout
 
 
 def test_cli_help():
     """Test CLI help command."""
-    result = subprocess.run(['ais', '--help'], 
-                          capture_output=True, text=True)
+    result = subprocess.run(["ais", "--help"], capture_output=True, text=True)
     assert result.returncode == 0
-    assert 'AIS - AI-powered terminal assistant' in result.stdout
+    assert "AIS - AI-powered terminal assistant" in result.stdout
 
 
-@patch('ais.core.config.get_config')
+@patch("ais.core.config.get_config")
 def test_config_command(mock_get_config):
     """Test config command."""
     mock_get_config.return_value = {
-        'default_provider': 'test',
-        'auto_analysis': True,
-        'context_level': 'standard',
-        'sensitive_dirs': []
+        "default_provider": "test",
+        "auto_analysis": True,
+        "context_level": "standard",
+        "sensitive_dirs": [],
     }
-    
-    result = subprocess.run(['ais', 'config'], 
-                          capture_output=True, text=True)
+
+    result = subprocess.run(["ais", "config"], capture_output=True, text=True)
     assert result.returncode == 0
 
 
@@ -55,8 +54,8 @@ def test_import_modules():
     import ais.core.database
     import ais.core.context
     import ais.cli.interactive
-    
+
     # Basic smoke test - modules should import without errors
-    assert hasattr(ais.cli.main, 'main')
-    assert hasattr(ais.core.config, 'get_config')
-    assert hasattr(ais.core.ai, 'ask_ai')
+    assert hasattr(ais.cli.main, "main")
+    assert hasattr(ais.core.config, "get_config")
+    assert hasattr(ais.core.ai, "ask_ai")

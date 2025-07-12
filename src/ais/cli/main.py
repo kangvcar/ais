@@ -12,8 +12,11 @@ console = Console()
 
 def _create_integration_script(script_path: str):
     """创建Shell集成脚本。"""
-    with open(script_path, 'w') as f:
-        f.write("""#!/bin/bash
+    import os
+
+    with open(script_path, "w") as f:
+        f.write(
+            """#!/bin/bash
 # AIS Shell 集成脚本
 # 这个脚本通过 PROMPT_COMMAND 机制捕获命令执行错误
 
@@ -27,7 +30,7 @@ _ais_check_auto_analysis() {
     if ! _ais_check_availability; then
         return 1
     fi
-    
+
     # 检查配置文件中的 auto_analysis 设置
     local config_file="$HOME/.config/ais/config.toml"
     if [ -f "$config_file" ]; then
@@ -40,18 +43,22 @@ _ais_check_auto_analysis() {
 # precmd 钩子：命令执行后调用
 _ais_precmd() {
     local current_exit_code=$?
-    
+
     # 只处理非零退出码且非中断信号（Ctrl+C 是 130）
     if [ $current_exit_code -ne 0 ] && [ $current_exit_code -ne 130 ]; then
         # 检查功能是否开启
         if _ais_check_auto_analysis; then
-            local last_command=$(history 1 | sed 's/^[ ]*[0-9]*[ ]*//' 2>/dev/null)
-            
+            local last_command
+            last_command=$(history 1 | sed 's/^[ ]*[0-9]*[ ]*//' 2>/dev/null)
+
             # 过滤内部命令和特殊情况
-            if [[ "$last_command" != *"_ais_"* ]] && [[ "$last_command" != *"ais_"* ]] && [[ "$last_command" != *"history"* ]]; then
+            if [[ "$last_command" != *"_ais_"* ]] && \
+               [[ "$last_command" != *"ais_"* ]] && \
+               [[ "$last_command" != *"history"* ]]; then
                 # 调用 ais analyze 进行分析
                 echo  # 添加空行分隔
-                ais analyze --exit-code "$current_exit_code" --command "$last_command"
+                ais analyze --exit-code "$current_exit_code" \
+                    --command "$last_command"
             fi
         fi
     fi
@@ -77,7 +84,8 @@ else
         PROMPT_COMMAND="_ais_precmd;$PROMPT_COMMAND"
     fi
 fi
-""")
+"""
+        )
     os.chmod(script_path, 0o755)
 
 
@@ -968,21 +976,28 @@ def setup_shell():
 
     # 获取集成脚本路径
     import ais
-    
+
     # 优先查找已安装包的路径
     package_path = os.path.dirname(ais.__file__)
     script_path = os.path.join(package_path, "shell", "integration.sh")
-    
+
     # 如果包内没有，创建集成脚本目录和文件
     if not os.path.exists(script_path):
         os.makedirs(os.path.dirname(script_path), exist_ok=True)
-        
+
         # 尝试从项目根目录复制脚本
         src_script = os.path.join(
-            os.path.dirname(__file__), "..", "..", "..", "scripts", "shell", "integration.sh"
+            os.path.dirname(__file__),
+            "..",
+            "..",
+            "..",
+            "scripts",
+            "shell",
+            "integration.sh",
         )
         if os.path.exists(src_script):
             import shutil
+
             shutil.copy2(src_script, script_path)
         else:
             # 如果源脚本不存在，则创建内联脚本
