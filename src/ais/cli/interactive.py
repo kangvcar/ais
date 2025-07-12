@@ -24,6 +24,21 @@ def _get_risk_display(risk_level: str) -> Tuple[str, str, str]:
     return risk_configs.get(risk_level, ("⚪", "white", "未知"))
 
 
+def _safe_escape_for_questionary(text: str) -> str:
+    """安全转义文本，避免questionary内部模板替换错误。"""
+    if not isinstance(text, str):
+        text = str(text) if text is not None else ""
+
+    # 转义可能触发模板替换的特殊字符
+    # questionary内部可能使用{}进行模板替换
+    text = text.replace("{", "{{").replace("}", "}}")
+
+    # 转义其他可能的模板字符
+    text = text.replace("$", "$$")
+
+    return text
+
+
 def _format_command_choice(
     index: int,
     command: str,
@@ -32,14 +47,22 @@ def _format_command_choice(
     terminal_width: int = 80,
 ) -> str:
     """格式化菜单选项文本，支持动态宽度调整。"""
+    # 确保所有输入都是有效的字符串
+    command = str(command) if command is not None else "N/A"
+    description = str(description) if description is not None else "无描述"
+    risk_level = str(risk_level) if risk_level is not None else "safe"
+
     icon, color, risk_text = _get_risk_display(risk_level)
 
-    # 计算可用宽度
+    # 计算可用宽度，确保数值有效
     prefix = f"{index}. "
     suffix = f" {icon} ({risk_text})"
-    available_width = (
-        terminal_width - len(prefix) - len(suffix) - 10
-    )  # 预留边距
+    available_width = max(
+        20,
+        terminal_width -
+        len(prefix) -
+        len(suffix) -
+        10)  # 确保最小宽度
 
     # 智能截断命令和描述
     if len(command) + len(description) + 3 <= available_width:  # 3 for " - "
@@ -62,10 +85,13 @@ def _format_command_choice(
     # 安全的格式化，避免substitute错误
     try:
         formatted_middle = f"{middle:<{available_width}}"
-        return f"{prefix}{formatted_middle}{suffix}"
-    except (ValueError, TypeError):
+        final_text = f"{prefix}{formatted_middle}{suffix}"
+        # 安全转义最终文本
+        return _safe_escape_for_questionary(final_text)
+    except (ValueError, TypeError, AttributeError):
         # 如果格式化失败，使用简单的字符串连接
-        return f"{prefix}{middle}{suffix}"
+        simple_text = f"{prefix}{middle}{suffix}"
+        return _safe_escape_for_questionary(simple_text)
 
 
 def _calculate_suggestion_score(
@@ -521,9 +547,11 @@ def _get_enhanced_choices(
             display_idx, command, description, risk_level, terminal_width
         )
 
-        # 添加标记
+        # 安全地添加标记
         if markers:
-            choice_text = f"{marker_prefix}{choice_text}"
+            # 确保marker_prefix安全
+            safe_marker_prefix = _safe_escape_for_questionary(marker_prefix)
+            choice_text = f"{safe_marker_prefix}{choice_text}"
 
         choices.append(
             {
@@ -853,92 +881,138 @@ def show_command_details(
     suggestion: Dict[str, Any], console: Console, user_context: Dict = None
 ) -> None:
     """显示命令的详细信息，使用增强的视觉设计和智能风险评估。"""
-    command = suggestion.get("command", "N/A")
+    try:
+        # 安全验证输入参数
+        if not isinstance(suggestion, dict):
+            console.print("[red]❌ 无效的建议数据[/red]")
+            return
 
-    # 使用增强型风险评估
-    risk_assessment = _enhanced_risk_assessment(suggestion, user_context)
-    risk_level = risk_assessment["level"]
-    icon, color, risk_text = _get_risk_display(risk_level)
+        if not console:
+            print("❌ 控制台对象无效")
+            return
 
-    # 创建美化的面板
-    console.print()
+        command = suggestion.get("command", "N/A")
+        if not command:
+            command = "N/A"
 
-    # 风险等级横幅
-    risk_banner_style = f"bold {color} on {color}20"
-    risk_content = f"{icon} {risk_text.upper()} 风险等级"
-    risk_panel = Panel(
-        f"[{risk_banner_style}] {risk_content} [/{risk_banner_style}]",
-        box=None,
-        style=color,
-        padding=(0, 1),
-    )
-    console.print(risk_panel)
+        # 使用增强型风险评估（安全包装）
+        try:
+            risk_assessment = _enhanced_risk_assessment(
+                suggestion, user_context)
+            risk_level = risk_assessment.get("level", "safe")
+        except Exception:
+            # 如果风险评估失败，使用默认值
+            risk_level = suggestion.get("risk_level", "safe")
+            risk_assessment = {
+                "level": risk_level,
+                "factors": [],
+                "recommendations": []}
 
-    # 命令详情表格
-    details_table = Table(show_header=False, box=None, padding=(0, 1))
-    details_table.add_column("项目", style="bold cyan", width=12)
-    details_table.add_column("内容", style="white")
+        icon, color, risk_text = _get_risk_display(risk_level)
 
-    # 添加命令行
-    details_table.add_row("📋 命令", f"[bold green]{command}[/bold green]")
+        # 创建美化的面板
+        console.print()
 
-    # 添加描述
-    if suggestion.get("description"):
-        details_table.add_row("💡 方案", suggestion["description"])
+        # 风险等级横幅
+        risk_banner_style = f"bold {color} on {color}20"
+        risk_content = f"{icon} {risk_text.upper()} 风险等级"
+        # 安全转义横幅内容
+        safe_risk_content = _safe_escape_for_questionary(risk_content)
+        panel_content = (
+            f"[{risk_banner_style}] {safe_risk_content} [/{risk_banner_style}]"
+        )
+        risk_panel = Panel(
+            panel_content,
+            box=None,
+            style=color,
+            padding=(0, 1),
+        )
+        console.print(risk_panel)
 
-    # 添加技术原理
-    if suggestion.get("explanation"):
-        explanation = suggestion["explanation"]
-        # 如果解释太长，进行智能换行
-        if len(explanation) > 60:
-            explanation = (
-                explanation[:60] + "..." + "\n     " + explanation[60:]
-            )
-        details_table.add_row("🔧 原理", explanation)
+        # 命令详情表格
+        details_table = Table(show_header=False, box=None, padding=(0, 1))
+        details_table.add_column("项目", style="bold cyan", width=12)
+        details_table.add_column("内容", style="white")
 
-    # 创建主面板
-    main_panel = Panel(
-        details_table,
-        title="[bold blue]📖 命令详细说明[/bold blue]",
-        border_style="blue",
-        padding=(1, 2),
-    )
-    console.print(main_panel)
+        # 添加命令行（安全转义）
+        safe_command = _safe_escape_for_questionary(command)
+        details_table.add_row(
+            "📋 命令", f"[bold green]{safe_command}[/bold green]")
 
-    # 增强型风险警告（仅对危险和中等风险命令）
-    if risk_level in ["dangerous", "moderate"]:
-        warning_parts = []
+        # 添加描述（安全转义）
+        if suggestion.get("description"):
+            safe_description = _safe_escape_for_questionary(
+                suggestion["description"])
+            details_table.add_row("💡 方案", safe_description)
 
-        # 基础警告
-        base_warning = _get_risk_warning(risk_level)
-        if base_warning:
-            warning_parts.append(base_warning)
+        # 添加技术原理（安全转义）
+        if suggestion.get("explanation"):
+            explanation = suggestion["explanation"]
+            # 如果解释太长，进行智能换行
+            if len(explanation) > 60:
+                explanation = (
+                    explanation[:60] + "..." + "\n     " + explanation[60:]
+                )
+            safe_explanation = _safe_escape_for_questionary(explanation)
+            details_table.add_row("🔧 原理", safe_explanation)
 
-        # 增强评估结果
-        if risk_assessment.get("factors"):
-            warning_parts.append("\n🧠 智能分析:")
-            for factor in risk_assessment["factors"]:
-                warning_parts.append(f"  • {factor}")
+        # 创建主面板
+        safe_title = _safe_escape_for_questionary("📖 命令详细说明")
+        main_panel = Panel(
+            details_table,
+            title=f"[bold blue]{safe_title}[/bold blue]",
+            border_style="blue",
+            padding=(1, 2),
+        )
+        console.print(main_panel)
 
-        if risk_assessment.get("recommendations"):
-            warning_parts.append("\n📝 建议措施:")
-            for rec in risk_assessment["recommendations"]:
-                warning_parts.append(f"  ✓ {rec}")
+        # 增强型风险警告（仅对危险和中等风险命令）
+        if risk_level in ["dangerous", "moderate"]:
+            warning_parts = []
 
-        # 置信度显示
-        confidence = risk_assessment.get("confidence", 0.7)
-        confidence_text = f"\n🎯 评估置信度: {confidence:.0%}"
-        warning_parts.append(confidence_text)
+            # 基础警告
+            base_warning = _get_risk_warning(risk_level)
+            if base_warning:
+                warning_parts.append(base_warning)
 
-        if warning_parts:
-            warning_content = "\n".join(warning_parts)
-            warning_panel = Panel(
-                warning_content,
-                title=f"[bold {color}]⚠️  智能安全提醒[/bold {color}]",
-                border_style=color,
-                style=f"{color}20",
-            )
-            console.print(warning_panel)
+            # 增强评估结果
+            if risk_assessment.get("factors"):
+                warning_parts.append("\n🧠 智能分析:")
+                for factor in risk_assessment["factors"]:
+                    warning_parts.append(f"  • {factor}")
+
+            if risk_assessment.get("recommendations"):
+                warning_parts.append("\n📝 建议措施:")
+                for rec in risk_assessment["recommendations"]:
+                    warning_parts.append(f"  ✓ {rec}")
+
+            # 置信度显示
+            confidence = risk_assessment.get("confidence", 0.7)
+            confidence_text = f"\n🎯 评估置信度: {confidence:.0%}"
+            warning_parts.append(confidence_text)
+
+            if warning_parts:
+                warning_content = "\n".join(warning_parts)
+                safe_warning_content = _safe_escape_for_questionary(
+                    warning_content)
+                safe_warning_title = _safe_escape_for_questionary("⚠️  智能安全提醒")
+                warning_panel = Panel(
+                    safe_warning_content,
+                    title=f"[bold {color}]{safe_warning_title}[/bold {color}]",
+                    border_style=color,
+                    style=f"{color}20",
+                )
+                console.print(warning_panel)
+
+    except Exception as e:
+        # 如果显示详情失败，显示简化版本
+        console.print(f"[red]❌ 显示命令详情时出错: {e}[/red]")
+        console.print(
+            f"[yellow]命令: {
+                suggestion.get(
+                    'command',
+                    'N/A')}[/yellow]")
+        console.print(f"[dim]描述: {suggestion.get('description', '无描述')}[/dim]")
 
 
 def ask_follow_up_question(
@@ -1069,66 +1143,27 @@ def show_interactive_menu(
                 "[dim]🧠 已启用智能排序: 基于你的使用习惯和当前环境[/dim]"
             )
 
-        # 添加美化的分割线（增强错误处理）
-        try:
-            # 安全的分割线长度计算
-            safe_width = max(10, min(terminal_width - 10, 50))
-            separator_line = "─" * safe_width
-            separator_text = f"  {separator_line}"
+        # 移除分割线，界面更简洁
 
-            # 验证questionary模块和Separator类
-            if (
-                questionary
-                and hasattr(questionary, "Separator")
-                and callable(questionary.Separator)
-            ):
-                try:
-                    sep = questionary.Separator(separator_text)
-                    choices.append(sep)
-                except Exception:
-                    # Separator创建失败，使用备用方案
-                    choices.append(
-                        {
-                            "name": separator_text,
-                            "value": "separator",
-                            "disabled": True,
-                        }
-                    )
-            else:
-                # questionary不可用或Separator不存在
-                choices.append(
-                    {
-                        "name": "  " + "─" * 20,
-                        "value": "separator",
-                        "disabled": True,
-                    }
-                )
-        except Exception:
-            # 任何异常都使用最简单的分割线
-            choices.append(
-                {
-                    "name": "  ──────────────────────",
-                    "value": "separator",
-                    "disabled": True,
-                }
-            )
-
-        # 添加固定选项 - 使用快捷键
-        choices.extend(
-            [
-                {
-                    "name": "  ✏️  [E] 编辑命令",
-                    "value": "edit",
-                    "shortcut": "e",
-                },
-                {
-                    "name": "  💬 [Q] 提问学习",
-                    "value": "question",
-                    "shortcut": "q",
-                },
-                {"name": "  👋 [X] 退出", "value": "exit", "shortcut": "x"},
-            ]
-        )
+        # 添加固定选项 - 使用快捷键（安全转义）
+        fixed_options = [
+            {
+                "name": _safe_escape_for_questionary("  ✏️  [E] 编辑命令"),
+                "value": "edit",
+                "shortcut": "e",
+            },
+            {
+                "name": _safe_escape_for_questionary("  💬 [Q] 提问学习"),
+                "value": "question",
+                "shortcut": "q",
+            },
+            {
+                "name": _safe_escape_for_questionary("  👋 [X] 退出"),
+                "value": "exit",
+                "shortcut": "x"
+            },
+        ]
+        choices.extend(fixed_options)
 
         # 显示快捷键提示
         console.print(
@@ -1152,17 +1187,25 @@ def show_interactive_menu(
         if not action or action == "exit":
             console.print("[yellow]👋 再见！[/yellow]")
             break
-        elif action == "separator":
-            # 忽略分割线点击
-            continue
         elif action.startswith("execute_"):
             # 执行命令（增强错误处理）
             try:
                 index = int(action.split("_")[1])
                 if 0 <= index < len(suggestions):
                     suggestion = suggestions[index]
+
+                    # 安全验证suggestion数据
+                    if not isinstance(suggestion, dict):
+                        console.print("[red]❌ 无效的建议数据格式[/red]")
+                        continue
+
                     command = suggestion.get("command", "")
                     risk_level = suggestion.get("risk_level", "safe")
+
+                    # 验证command不为空
+                    if not command or not isinstance(command, str):
+                        console.print("[red]❌ 无效的命令数据[/red]")
+                        continue
 
                     # 显示命令详情（传入用户上下文）
                     show_command_details(suggestion, console, user_context)
@@ -1174,6 +1217,10 @@ def show_interactive_menu(
                 continue
             except Exception as e:
                 console.print(f"[red]❌ 执行操作时发生未知错误: {e}[/red]")
+                # 添加详细的调试信息
+                console.print(
+                    f"[dim]调试信息: action={action}, suggestions_count={
+                        len(suggestions)}[/dim]")
                 continue
 
             # 智能确认流程（基于用户上下文）
@@ -1294,8 +1341,6 @@ def show_simple_menu(
             )
 
     # 添加固定选项
-    separator = "    " + "-" * 75
-    console.print(separator)
 
     next_num = len(suggestions) + 1
     fixed_options = [

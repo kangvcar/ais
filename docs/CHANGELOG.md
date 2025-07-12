@@ -20,7 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 🔑 **权限问题** - 解决虚拟环境限制导致的全局可用性问题
 - 🤖 **AI分析结果显示** - 修复AI分析结果显示为JSON格式的问题，现在正确显示格式化内容和交互式菜单
 - 📝 **JSON解析增强** - 改进AI返回内容的解析逻辑，支持各种格式的AI响应
-- 🗂️ **questionary.Separator 错误** - 修复交互式菜单中 substitute 方法调用失败的问题
+- 🗂️ **交互式菜单 substitute 错误** - 彻底修复选择AI建议时的 'NoneType' object has no attribute 'substitute' 错误
+  - 添加 `_safe_escape_for_questionary` 函数，安全转义特殊字符（{}、$）
+  - 增强 questionary.Separator 的错误处理机制
+  - 完善所有用户输入的验证和转义
+  - 添加全面的异常捕获和降级显示方案
+  - 修复命令选择格式化中的 None 值处理问题
 
 ### Added
 - 📄 **内联集成脚本** - 当找不到外部脚本时自动创建内联版本
