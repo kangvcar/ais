@@ -19,24 +19,42 @@ AIS (AI-powered Shell) 是一个智能终端助手，能够自动分析命令错
 
 ### 安装
 
-AIS 现在采用**全局安装**模式，确保所有用户都可以使用：
+AIS 提供多种安装方式，请根据使用场景选择：
 
-**推荐方式：一键全局安装**
+#### 🎯 个人使用（推荐）
 ```bash
+# 安装pipx（如果没有）
+python3 -m pip install --user pipx
+python3 -m pipx ensurepath
+
+# 安装AIS
+pipx install ais-terminal
+
+# 设置shell集成
+ais setup-shell
+```
+> ✨ **最佳实践**：安全隔离，无需sudo，符合Python标准
+
+#### 🏢 多用户/运维环境
+```bash
+# 全局安装（所有用户可用）
 curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
 ```
+> 🔧 **适用于**：服务器、开发机、CI/CD环境
 
-**从源码安装**
+#### 🧪 开发/测试环境
 ```bash
-curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --from-source
-```
-
-**使用 Python 包管理器（需要手动配置）**
-```bash
+# 项目虚拟环境中
 pip install ais-terminal
 ```
 
-> 💡 **注意**：一键安装脚本会自动处理系统依赖、权限设置和环境配置，推荐使用。
+#### 📋 安装方式对比
+
+| 方式 | 安全性 | 多用户 | 管理难度 | 适用场景 |
+|------|--------|--------|----------|----------|
+| **pipx** | 🟢 高 | ❌ 否 | 🟢 简单 | 个人开发 |
+| **全局** | 🟡 中 | ✅ 是 | 🟡 中等 | 运维环境 |
+| **项目** | 🟢 高 | ❌ 否 | 🟢 简单 | 测试开发 |
 
 ### 使用
 

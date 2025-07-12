@@ -55,6 +55,27 @@ main() {
     echo "GitHub: https://github.com/$GITHUB_REPO"
     echo
     
+    # 智能安装建议
+    print_info "🧠 安装方式建议:"
+    if command_exists pipx; then
+        print_info "  ✨ 检测到pipx，推荐使用: pipx install ais-terminal"
+        print_info "  🔒 更安全的隔离安装，符合Python最佳实践"
+        echo
+        print_warning "⚠️  当前将进行全局安装，适用于多用户/运维环境"
+        echo "是否继续全局安装？(y/N)"
+        read -r response
+        if [[ ! "$response" =~ ^[Yy]$ ]]; then
+            print_info "💡 推荐使用pipx安装:"
+            print_info "   pipx install ais-terminal"
+            print_info "   ais setup-shell  # 设置shell集成"
+            exit 0
+        fi
+    elif [ "$EUID" -ne 0 ] && [ -z "$SUDO_USER" ]; then
+        print_info "  💡 个人使用推荐: pipx install ais-terminal"
+        print_info "  🏢 多用户环境推荐: 当前的全局安装"
+    fi
+    echo
+    
     # 检测安装方式 - 只支持全局安装
     if [ -f "pyproject.toml" ] && grep -q "ais" pyproject.toml 2>/dev/null; then
         INSTALL_MODE="local"
