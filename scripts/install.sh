@@ -241,9 +241,43 @@ main() {
     # AIS现在支持自动配置，首次运行时会自动设置所有必要的配置
     print_info "AIS 现在支持零配置安装！"
     print_info "首次运行任何 ais 命令时，将自动完成所有配置"
-    ais on >/dev/null 2>&1 || true
+    
+    # 运行 ais config 触发自动配置
+    ais config >/dev/null 2>&1 || true
     
     print_success "配置初始化完成"
+    
+    # 第5步：激活当前会话的shell集成
+    print_step 5 "激活当前会话集成"
+    
+    # 检查是否生成了集成脚本
+    if command_exists ais; then
+        # 动态查找集成脚本路径
+        integration_script=""
+        
+        # 使用 pipx 环境路径
+        pipx_base="$HOME/.local/share/pipx/venvs/ais-terminal/lib"
+        if [ -d "$pipx_base" ]; then
+            # 查找所有可能的Python版本
+            for python_dir in "$pipx_base"/python3.*/site-packages/ais/shell/integration.sh; do
+                if [ -f "$python_dir" ]; then
+                    integration_script="$python_dir"
+                    break
+                fi
+            done
+        fi
+        
+        # 如果找到集成脚本，在当前会话中加载
+        if [ -n "$integration_script" ] && [ -f "$integration_script" ]; then
+            print_info "在当前会话中激活自动错误分析功能..."
+            source "$integration_script" 2>/dev/null || true
+            print_success "当前会话集成已激活 ✅"
+            print_info "现在可以直接测试自动错误分析功能！"
+        else
+            print_warning "未找到集成脚本，新终端会话将自动生效"
+            print_info "或者运行: source ~/.bashrc"
+        fi
+    fi
     
     # 第6步：安装完成
     print_step 6 "安装完成"
@@ -251,12 +285,11 @@ main() {
     echo
     print_success "🎉 AIS 安装成功！"
     echo
-    print_info "🚀 立即体验 (零配置):"
-    print_info "  1. 运行任意命令触发自动配置: ais config"
-    print_info "  2. 重新加载Shell: source ~/.bashrc (或重启终端)"
-    print_info "  3. 测试自动分析: mkdirr /tmp/test  (故意输错)"
-    print_info "  4. 手动提问: ais ask \"如何使用 docker?\""
-    print_info "  5. 查看完整帮助: ais --help"
+    print_info "🚀 立即体验 (真正零配置):"
+    print_info "  1. 测试自动分析: mkdirr /tmp/test  (故意输错)"
+    print_info "  2. 手动提问: ais ask \"如何使用 docker?\""
+    print_info "  3. 查看完整帮助: ais --help"
+    print_info "  4. 查看配置状态: ais config"
     echo
     print_info "🔧 常用功能:"
     print_info "  ais config        - 查看当前配置"

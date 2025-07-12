@@ -177,12 +177,15 @@ api_key = "sk-97RxyS9R2dsqFTUxcUZOpZwhnbjQCSOaFboooKDeTv5nHJgg"
         # 显示一次性提示
         console.print("\n[green]🎉 AIS 已自动配置完成！[/green]")
         console.print(
-            "[yellow]💡 为了启用自动错误分析，请重新加载Shell配置：[/yellow]"
+            f"[green]✅ Shell集成配置已添加到:[/green] [dim]{config_file}[/dim]"
         )
-        console.print(f"[dim]   source {config_file}[/dim]")
-        console.print("[dim]   或者重新打开终端[/dim]")
         console.print(
-            "\n[green]✨ 之后当命令失败时，将自动显示AI分析！[/green]"
+            "[yellow]💡 注意: 当前会话需要重新加载配置才能启用自动分析[/yellow]"
+        )
+        console.print(f"[dim]   运行: source {config_file}[/dim]")
+        console.print("[dim]   或者: 重新打开终端[/dim]")
+        console.print(
+            "\n[green]✨ 配置完成后，命令失败时将自动显示AI分析！[/green]"
         )
 
     except Exception:
