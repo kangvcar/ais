@@ -47,14 +47,14 @@ def _format_command_choice(
     elif len(command) <= available_width // 2:
         desc_width = available_width - len(command) - 3
         middle = (
-            f"{command} - {description[:desc_width-3]}..."
+            f"{command} - {description[:desc_width - 3]}..."
             if len(description) > desc_width
             else f"{command} - {description}"
         )
     else:
         cmd_width = available_width - 10  # 预留给描述的最小空间
         middle = (
-            f"{command[:cmd_width-3]}..."
+            f"{command[:cmd_width - 3]}..."
             if len(command) > cmd_width
             else command
         )
