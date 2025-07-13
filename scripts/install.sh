@@ -152,15 +152,49 @@ setup_shell_integration_auto() {
         return 0
     fi
     
-    # 运行ais setup但不显示输出，然后自动添加集成
-    if ais setup >/dev/null 2>&1; then
-        # 获取AIS集成脚本路径
-        local ais_script_path
-        ais_script_path=$(python3 -c "import ais, os; print(os.path.join(os.path.dirname(ais.__file__), 'shell', 'integration.sh'))" 2>/dev/null)
+    # 获取AIS集成脚本路径（更可靠的方法）
+    local ais_script_path=""
+    
+    # 方法1：直接从pipx安装位置查找
+    if command_exists pipx; then
+        local pipx_venv_path
+        pipx_venv_path=$(pipx environment --value PIPX_LOCAL_VENVS 2>/dev/null || echo "$HOME/.local/share/pipx/venvs")
+        ais_script_path="$pipx_venv_path/ais-terminal/lib/python*/site-packages/ais/shell/integration.sh"
+        # 展开通配符
+        ais_script_path=$(echo $ais_script_path)
+    fi
+    
+    # 方法2：通过Python查找
+    if [ ! -f "$ais_script_path" ]; then
+        ais_script_path=$(python3 -c "
+try:
+    import ais, os
+    print(os.path.join(os.path.dirname(ais.__file__), 'shell', 'integration.sh'))
+except:
+    pass
+" 2>/dev/null)
+    fi
+    
+    # 方法3：如果仍然找不到，创建内联脚本
+    if [ ! -f "$ais_script_path" ]; then
+        # 先运行 ais setup 来创建脚本
+        ais setup >/dev/null 2>&1 || true
         
-        if [ -f "$ais_script_path" ]; then
-            # 自动添加到配置文件
-            cat >> "$config_file" << EOF
+        # 再次尝试获取路径
+        ais_script_path=$(python3 -c "
+try:
+    import ais, os
+    script_path = os.path.join(os.path.dirname(ais.__file__), 'shell', 'integration.sh')
+    if os.path.exists(script_path):
+        print(script_path)
+except:
+    pass
+" 2>/dev/null)
+    fi
+    
+    # 如果找到了脚本路径，添加到配置文件
+    if [ -n "$ais_script_path" ] && [ -f "$ais_script_path" ]; then
+        cat >> "$config_file" << EOF
 
 # START AIS INTEGRATION
 # AIS - AI 智能终端助手自动集成
@@ -169,12 +203,12 @@ if [ -f "$ais_script_path" ]; then
 fi
 # END AIS INTEGRATION
 EOF
-            print_success "已自动添加Shell集成到: $config_file"
-            return 0
-        fi
+        print_success "已自动添加Shell集成到: $config_file"
+        return 0
+    else
+        print_warning "无法找到AIS集成脚本，请稍后手动运行: ais setup"
+        return 1
     fi
-    
-    return 1
 }
 
 # 健康检查
