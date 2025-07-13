@@ -55,13 +55,18 @@ ais setup
 ```
 > ✨ **最佳实践**：安全隔离，无需sudo，符合Python标准
 
-#### 🌐 多用户环境 - pipx全局（推荐）
+#### 🌐 多用户环境 - 系统级安装（推荐）
 ```bash
-# 安装pipx（如果没有）
-sudo apt install pipx  # 或 sudo pip install pipx
+# 方法1: 使用系统包管理器安装pipx后再安装AIS
+sudo apt install pipx  # Ubuntu/Debian
+# sudo yum install pipx  # CentOS/RHEL
+# sudo brew install pipx  # macOS
 
-# 全局安装AIS（所有用户可用）
-sudo pipx install --global ais-terminal
+# 安装AIS到系统位置（所有用户可用）
+sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
+
+# 方法2: 使用我们的全局安装脚本（更简单）
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
 
 # 每个用户设置shell集成
 ais setup
@@ -86,7 +91,7 @@ pip install ais-terminal
 | 方式 | 安全性 | 多用户 | 管理难度 | 权限需求 | 适用场景 |
 |------|--------|--------|----------|----------|----------|
 | **pipx用户级** | 🟢 高 | ❌ 否 | 🟢 简单 | 普通用户 | 个人开发 |
-| **pipx全局** | 🟢 高 | ✅ 是 | 🟢 简单 | sudo | 多用户环境 |
+| **pipx系统级** | 🟢 高 | ✅ 是 | 🟡 中等 | sudo | 多用户环境 |
 | **系统全局** | 🟡 中 | ✅ 是 | 🟡 中等 | sudo | 运维环境 |
 | **项目级** | 🟢 高 | ❌ 否 | 🟢 简单 | 普通用户 | 测试开发 |
 

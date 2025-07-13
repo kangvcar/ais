@@ -60,7 +60,7 @@ main() {
     if command_exists pipx; then
         print_info "  ✨ 检测到pipx，有多种安装选择:"
         print_info "  1. pipx install ais-terminal           (仅当前用户)"
-        print_info "  2. sudo pipx install --global ais-terminal  (所有用户，推荐)"
+        print_info "  2. sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal  (所有用户，推荐)"
         print_info "  3. 继续当前的系统级安装                    (传统方式)"
         echo
         print_warning "📋 选择安装方式 (1-3)，或按回车使用pipx全局安装:"
@@ -76,12 +76,12 @@ main() {
             "2"|"")
                 print_info "🚀 使用pipx全局安装:"
                 if [ "$EUID" -eq 0 ]; then
-                    print_info "   正在执行: pipx install --global ais-terminal"
-                    pipx install --global ais-terminal
+                    print_info "   正在执行: PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal"
+                    PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
                     print_success "✅ pipx全局安装完成！所有用户都可以使用ais命令"
                     print_info "💡 用户可以运行: ais setup 来设置shell集成"
                 else
-                    print_info "   sudo pipx install --global ais-terminal"
+                    print_info "   sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal"
                     print_info "   ais setup"
                 fi
                 exit 0
