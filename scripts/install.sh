@@ -43,7 +43,6 @@ print_error() {
     echo -e "${RED}❌ $1${NC}"
 }
 
-
 # 检查命令是否存在
 command_exists() {
     command -v "$1" >/dev/null 2>&1
@@ -134,8 +133,78 @@ health_check() {
     return 0
 }
 
+# 用户级安装
+install_user_mode() {
+    print_info "👤 开始用户级pipx安装..."
+    
+    # 安装pipx
+    install_pipx || exit 1
+    
+    # 安装AIS
+    print_info "📦 安装ais-terminal..."
+    pipx install ais-terminal
+    
+    # 设置shell集成
+    print_info "🔧 设置shell集成..."
+    ais setup >/dev/null 2>&1 || print_warning "shell集成设置可能需要手动完成"
+    
+    print_success "✅ 用户级安装完成！"
+    print_info "💡 如需为其他用户安装，请使用: $0 --system"
+}
 
+# 系统级安装
+install_system_mode() {
+    print_info "🏢 开始系统级pipx安装..."
+    
+    # 安装pipx
+    install_pipx || exit 1
+    
+    # 创建系统级pipx环境
+    export PIPX_HOME=/opt/pipx
+    export PIPX_BIN_DIR=/usr/local/bin
+    
+    # 安装AIS
+    print_info "📦 安装ais-terminal到系统位置..."
+    if [ "$(detect_environment)" = "user" ]; then
+        sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
+    else
+        pipx install ais-terminal
+    fi
+    
+    # 确保所有用户可访问
+    if [ "$(detect_environment)" = "user" ]; then
+        sudo chmod +x /usr/local/bin/ais 2>/dev/null || true
+    else
+        chmod +x /usr/local/bin/ais 2>/dev/null || true
+    fi
+    
+    print_success "✅ 系统级安装完成！所有用户都可以使用ais命令"
+    print_info "💡 用户可以运行: ais setup 来设置shell集成"
+}
 
+# 容器化安装
+install_container_mode() {
+    print_info "🐳 开始容器化安装..."
+    
+    # 在容器中使用简单的pip安装
+    print_info "📦 在容器中安装ais-terminal..."
+    python3 -m pip install --break-system-packages ais-terminal
+    
+    # 创建全局可用的ais命令
+    if [ -w "/usr/local/bin" ]; then
+        cat > /usr/local/bin/ais << 'EOF'
+#!/usr/bin/env python3
+import sys
+from ais.cli.main import main
+if __name__ == '__main__':
+    sys.exit(main())
+EOF
+        chmod +x /usr/local/bin/ais
+    fi
+    
+    print_success "✅ 容器化安装完成！"
+    print_info "💡 容器内直接使用: ais --version"
+}
 
 # 主安装函数
 main() {
@@ -192,176 +261,6 @@ main() {
             print_info "  测试: ais ask 'hello'"
         }
     fi
-}
-
-# 用户级安装
-install_user_mode() {
-    print_info "👤 开始用户级pipx安装..."
-    
-    # 安装pipx
-    install_pipx || exit 1
-    
-    # 安装AIS
-    print_info "📦 安装ais-terminal..."
-    pipx install ais-terminal
-    
-    # 设置shell集成
-    print_info "🔧 设置shell集成..."
-    ais setup >/dev/null 2>&1 || print_warning "shell集成设置可能需要手动完成"
-    
-    print_success "✅ 用户级安装完成！"
-    print_info "💡 如需为其他用户安装，请使用: $0 --system"
-}
-
-# 系统级安装
-install_system_mode() {
-    print_info "🏢 开始系统级pipx安装..."
-    
-    # 安装pipx
-    install_pipx || exit 1
-    
-    # 创建系统级pipx环境
-    export PIPX_HOME=/opt/pipx
-    export PIPX_BIN_DIR=/usr/local/bin
-    
-    # 安装AIS
-    print_info "📦 安装ais-terminal到系统位置..."
-    if [ "$(detect_environment)" = "user" ]; then
-        sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
-    else
-        pipx install ais-terminal
-    fi
-    
-    # 确保所有用户可访问
-    if [ "$(detect_environment)" = "user" ]; then
-        sudo chmod +x /usr/local/bin/ais
-    else
-        chmod +x /usr/local/bin/ais
-    fi
-    
-    print_success "✅ 系统级安装完成！所有用户都可以使用ais命令"
-    print_info "💡 用户可以运行: ais setup 来设置shell集成"
-}
-
-# 容器化安装
-install_container_mode() {
-    print_info "🐳 开始容器化安装..."
-    
-    # 在容器中使用简单的pip安装
-    print_info "📦 在容器中安装ais-terminal..."
-    python3 -m pip install --break-system-packages ais-terminal
-    
-    # 创建全局可用的ais命令
-    if [ -w "/usr/local/bin" ]; then
-        cat > /usr/local/bin/ais << 'EOF'
-#!/usr/bin/env python3
-import sys
-from ais.cli.main import main
-if __name__ == '__main__':
-    sys.exit(main())
-EOF
-        chmod +x /usr/local/bin/ais
-    fi
-    
-    print_success "✅ 容器化安装完成！"
-    print_info "💡 容器内直接使用: ais --version"
-}
-    
-    # 检测安装方式 - 只支持全局安装
-    if [ -f "pyproject.toml" ] && grep -q "ais" pyproject.toml 2>/dev/null; then
-        INSTALL_MODE="local"
-        # 开发环境下的CI测试，直接使用pipx安装
-        if [[ "$NON_INTERACTIVE" == "1" ]] || [[ "$CI" == "true" ]] || [[ "$GITHUB_ACTIONS" == "true" ]]; then
-            print_info "🤖 CI环境检测到开发目录，使用pipx直接安装发布版本"
-            
-            # 确保pipx可用
-            if ! command_exists pipx; then
-                print_info "📦 安装pipx依赖..."
-                # 安装python3-venv依赖
-                if command_exists apt; then
-                    if [ "$EUID" -eq 0 ]; then
-                        apt update && apt install -y python3-venv
-                    else
-                        sudo apt update && sudo apt install -y python3-venv
-                    fi
-                fi
-                
-                print_info "📦 安装pipx..."
-                if [ "$EUID" -eq 0 ]; then
-                    python3 -m pip install --break-system-packages pipx
-                else
-                    sudo python3 -m pip install --break-system-packages pipx
-                fi
-            fi
-            if [ "$EUID" -eq 0 ]; then
-                PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
-                print_success "✅ pipx全局安装完成！"
-            else
-                print_info "执行: sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal"
-                sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
-                print_success "✅ pipx全局安装完成！"
-            fi
-            exit 0
-        fi
-        print_info "检测到开发环境，将从当前目录全局安装"
-    elif [[ "$1" == "--from-source" ]]; then
-        INSTALL_MODE="source"
-        print_info "将从 GitHub 源码全局安装"
-    elif [[ "$1" == "--global-exec" ]]; then
-        # 内部执行全局安装（已有sudo权限）
-        shift  # 移除 --global-exec 参数
-        INSTALL_MODE="global"
-        print_info "执行全局安装..."
-    else
-        # 默认全局安装模式
-        INSTALL_MODE="global"
-        print_info "全局安装模式：为所有用户安装 AIS"
-        
-        # 检查权限
-        if [[ "$EUID" != "0" ]] && [[ -z "$SUDO_USER" ]]; then
-            print_warning "全局安装需要管理员权限"
-            
-            # 非交互模式或CI环境自动继续
-            if [[ "$NON_INTERACTIVE" == "1" ]] || [[ "$CI" == "true" ]] || [[ "$GITHUB_ACTIONS" == "true" ]] || [[ ! -t 0 ]]; then
-                print_info "🤖 非交互环境，自动继续安装"
-            else
-                echo "继续安装吗？(Y/n)"
-                read -r response
-                if [[ "$response" =~ ^[Nn]$ ]]; then
-                    print_info "已取消安装。"
-                    exit 0
-                fi
-            fi
-        fi
-        
-        # 执行全局安装
-        exec sudo bash "$0" --global-exec "$@"
-    fi
-    
-    # 所有安装模式都使用全局安装脚本
-    if [[ "$INSTALL_MODE" == "global" ]]; then
-        # 下载并执行全局安装脚本
-        temp_script=$(mktemp)
-        curl -sSL "https://raw.githubusercontent.com/$GITHUB_REPO/main/scripts/install_global.sh" -o "$temp_script"
-        chmod +x "$temp_script"
-        exec "$temp_script" "$@"
-    elif [[ "$INSTALL_MODE" == "local" ]]; then
-        # 开发环境也使用全局安装
-        temp_script=$(mktemp)
-        curl -sSL "https://raw.githubusercontent.com/$GITHUB_REPO/main/scripts/install_global.sh" -o "$temp_script"
-        chmod +x "$temp_script"
-        exec "$temp_script" "$@"
-    elif [[ "$INSTALL_MODE" == "source" ]]; then
-        # 源码安装也使用全局安装
-        temp_script=$(mktemp)
-        curl -sSL "https://raw.githubusercontent.com/$GITHUB_REPO/main/scripts/install_global.sh" -o "$temp_script"
-        chmod +x "$temp_script"
-        exec "$temp_script" --from-source "$@"
-    fi
-    
-    # 如果到达这里说明有错误
-    print_error "未知的安装模式: $INSTALL_MODE"
-    exit 1
 }
 
 # 处理命令行参数
