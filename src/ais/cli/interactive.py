@@ -9,6 +9,7 @@ from rich.console import Console
 from rich.markdown import Markdown
 from rich.table import Table
 from rich.panel import Panel
+from ..ui.panels import panels
 
 
 def _get_risk_display(risk_level: str) -> Tuple[str, str, str]:
@@ -827,9 +828,26 @@ def _create_suggestions_table(suggestions: List[Dict[str, Any]]) -> Table:
 
 def execute_command(command: str) -> bool:
     """执行命令并显示结果。"""
+    from rich.console import Console
+    from rich.panel import Panel
+
+    console = Console()
+
     try:
-        print(f"\n🚀 执行命令: {command}")
-        print("─" * 50)
+        # 显示命令执行面板
+        exec_panel = Panel(
+            f"[bold cyan]🚀 正在执行: [/bold cyan]"
+            f"[bold white]{command}[/bold white]",
+            title="[bold blue]⚡ 命令执行[/bold blue]",
+            border_style="blue",
+            padding=(
+                0,
+                1),
+            expand=False)
+        console.print(exec_panel)
+
+        # 分隔线
+        console.print("─" * 50)
 
         result = subprocess.run(
             command,
@@ -838,16 +856,38 @@ def execute_command(command: str) -> bool:
             text=True,  # 让输出直接显示给用户
         )
 
-        print("─" * 50)
+        console.print("─" * 50)
+
+        # 显示执行结果面板
         if result.returncode == 0:
-            print("✅ 命令执行成功")
+            result_panel = Panel(
+                "[green]✅ 命令执行成功[/green]",
+                title="[bold green]🎉 执行结果[/bold green]",
+                border_style="green",
+                padding=(0, 1),
+                expand=False
+            )
         else:
-            print(f"❌ 命令执行失败，退出码: {result.returncode}")
+            result_panel = Panel(
+                f"[red]❌ 命令执行失败，退出码: {result.returncode}[/red]",
+                title="[bold red]💥 执行失败[/bold red]",
+                border_style="red",
+                padding=(0, 1),
+                expand=False
+            )
+        console.print(result_panel)
 
         return result.returncode == 0
 
     except Exception as e:
-        print(f"❌ 执行命令时出错: {e}")
+        error_panel = Panel(
+            f"[red]❌ 执行命令时出错: {e}[/red]",
+            title="[bold red]🚨 系统错误[/bold red]",
+            border_style="red",
+            padding=(0, 1),
+            expand=False
+        )
+        console.print(error_panel)
         return False
 
 
@@ -1111,13 +1151,12 @@ def ask_follow_up_question(
         )
 
         if response:
-            console.print("\n[bold green]🤖 AI 回答:[/bold green]")
-            console.print(Markdown(response))
+            panels.ai_analysis(Markdown(response), "🤖 AI 回答")
         else:
-            console.print("[red]❌ 无法获取 AI 回答[/red]")
+            panels.error("无法获取 AI 回答")
 
     except Exception as e:
-        console.print(f"[red]❌ 处理问题时出错: {e}[/red]")
+        panels.error(f"处理问题时出错: {e}")
 
 
 def edit_command(command: str) -> str:
@@ -1150,17 +1189,29 @@ def show_interactive_menu(
 
     # 显示项目类型信息（移除技能级别显示）
     if user_context.get("project_type"):
-        console.print(
-            f"[dim]🧠 智能分析: 🚀 {user_context['project_type']}项目[/dim]"
+        from rich.panel import Panel
+        context_panel = Panel(
+            f"[cyan]🚀 检测到: {user_context['project_type']}项目环境[/cyan]",
+            title="[bold magenta]🧠 智能分析[/bold magenta]",
+            border_style="magenta",
+            padding=(0, 2),
+            expand=False
         )
+        console.print(context_panel)
 
     while True:
         # 显示建议命令表格（在菜单上方）
         if suggestions:
-            console.print("\n[bold blue]💡 AI 建议的解决方案:[/bold blue]")
+            from rich.panel import Panel
             suggestions_table = _create_suggestions_table(suggestions)
-            console.print(suggestions_table)
-            console.print()  # 空行分隔
+            suggestions_panel = Panel(
+                suggestions_table,
+                title="[bold green]💡 AI 建议的解决方案[/bold green]",
+                border_style="green",
+                padding=(1, 1),
+                expand=False
+            )
+            console.print(suggestions_panel)
 
         # 构建增强的菜单选项
         terminal_width = console.size.width if hasattr(console, "size") else 80
@@ -1174,20 +1225,31 @@ def show_interactive_menu(
         if user_context and any(
             choice.get("score", 0) > 1.5 for choice in choices
         ):
-            console.print(
-                "[dim]🧠 已启用智能排序: 基于你的使用习惯和当前环境[/dim]"
+            from rich.panel import Panel
+            smart_panel = Panel(
+                "[cyan]🧠 智能排序已启用: 基于你的使用习惯和当前环境[/cyan]",
+                title="[bold blue]✨ 个性化推荐[/bold blue]",
+                border_style="blue",
+                padding=(0, 1),
+                expand=False
             )
+            console.print(smart_panel)
 
         # 移除分割线，界面更简洁
 
         # 不需要添加固定选项，直接通过输入处理
 
         # 显示快捷键提示（更简洁的提示）
-        console.print(
-            "[dim]💡 输入选项: 1-{0}选择建议, e=编辑, q=提问, x=退出[/dim]".format(
-                len(suggestions)
-            )
+        from rich.panel import Panel
+        help_panel = Panel(
+            f"[yellow]💡 输入选项: 1-{len(suggestions)}选择建议, "
+            f"e=编辑, q=提问, x=退出[/yellow]",
+            title="[bold yellow]🔍 操作指南[/bold yellow]",
+            border_style="yellow",
+            padding=(0, 1),
+            expand=False
         )
+        console.print(help_panel)
 
         # 显示菜单（增加错误处理）
         try:

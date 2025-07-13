@@ -7,6 +7,7 @@ from rich.panel import Panel
 
 from ..core.config import get_config, set_config
 from ..core.ai import ask_ai
+from ..ui.panels import panels
 
 console = Console()
 
@@ -176,18 +177,16 @@ api_key = "sk-97RxyS9R2dsqFTUxcUZOpZwhnbjQCSOaFboooKDeTv5nHJgg"
         marker_file.write_text("auto setup completed")
 
         # 显示一次性提示
-        console.print("\n[green]🎉 AIS 已自动配置完成！[/green]")
-        console.print(
-            f"[green]✅ Shell集成配置已添加到:[/green] [dim]{config_file}[/dim]"
-        )
-        console.print(
-            "[yellow]💡 注意: 当前会话需要重新加载配置才能启用自动分析[/yellow]"
-        )
-        console.print(f"[dim]   运行: source {config_file}[/dim]")
-        console.print("[dim]   或者: 重新打开终端[/dim]")
-        console.print(
-            "\n[green]✨ 配置完成后，命令失败时将自动显示AI分析！[/green]"
-        )
+        setup_message = f"""[green]🎉 AIS 已自动配置完成！[/green]
+
+[green]✅ Shell集成配置已添加到:[/green] [dim]{config_file}[/dim]
+
+[yellow]💡 注意: 当前会话需要重新加载配置才能启用自动分析[/yellow]
+[dim]   运行: source {config_file}[/dim]
+[dim]   或者: 重新打开终端[/dim]
+
+[green]✨ 配置完成后，命令失败时将自动显示AI分析！[/green]"""
+        panels.success(setup_message, "🎉 AIS 自动配置完成")
 
     except Exception:
         # 静默失败，不影响正常使用
@@ -221,7 +220,7 @@ def _handle_error(error_msg: str) -> None:
         title="[bold red]❌ 错误信息[/bold red]",
         border_style="red",
         padding=(1, 2),
-        expand=False
+        expand=False,
     )
     console.print(error_panel)
 
@@ -232,39 +231,40 @@ def _handle_error(error_msg: str) -> None:
 def ask(question, help_detail):
     """Ask AI a question."""
     if help_detail:
-        console.print("[green]ais ask 命令详细使用说明:[/green]")
-        console.print()
-        console.print("[bold]功能:[/bold]")
-        console.print("  快速问答模式，立即获得具体问题的答案")
-        console.print("  适合解决当前遇到的具体问题或疑惑")
-        console.print()
-        console.print("[bold]用法:[/bold]")
-        console.print("  ais ask <问题>")
-        console.print()
-        console.print("[bold]适用场景:[/bold]")
-        console.print('  • 解释概念："什么是Docker容器？"')
-        console.print('  • 快速答疑："Git冲突是什么意思？"')
-        console.print('  • 概念查询："Linux权限755代表什么？"')
-        console.print('  • 故障诊断："为什么命令执行失败？"')
-        console.print()
-        console.print("[bold]vs 其他命令:[/bold]")
-        console.print("  • 想系统学习主题 → 使用 ais learn")
-        console.print()
-        console.print("[bold]提示:[/bold]")
-        console.print("  • 问题用引号包围，避免 shell 解析问题")
-        console.print("  • 可以问任何编程、运维、工具使用相关问题")
-        console.print("  • AI 会提供中文回答和实用建议")
-        console.print("  • 回答基于当前配置的 AI 服务提供商")
-        console.print()
-        console.print("[bold]相关命令:[/bold]")
-        console.print("  ais config --list-providers - 查看可用的 AI 服务商")
-        console.print("  ais learn <主题>            - 学习特定主题知识")
+        help_content = """[bold]功能:[/bold]
+  快速问答模式，立即获得具体问题的答案
+  适合解决当前遇到的具体问题或疑惑
+
+[bold]用法:[/bold]
+  ais ask <问题>
+
+[bold]适用场景:[/bold]
+  • 解释概念："什么是Docker容器？"
+  • 快速答疑："Git冲突是什么意思？"
+  • 概念查询："Linux权限755代表什么？"
+  • 故障诊断："为什么命令执行失败？"
+
+[bold]vs 其他命令:[/bold]
+  • 想系统学习主题 → 使用 ais learn
+
+[bold]提示:[/bold]
+  • 问题用引号包围，避免 shell 解析问题
+  • 可以问任何编程、运维、工具使用相关问题
+  • AI 会提供中文回答和实用建议
+  • 回答基于当前配置的 AI 服务提供商
+
+[bold]相关命令:[/bold]
+  ais config --list-providers - 查看可用的 AI 服务商
+  ais learn <主题>            - 学习特定主题知识"""
+        panels.info(help_content, "📚 ais ask 命令详细使用说明")
         return
 
     if not question:
-        console.print("[red]错误: 请提供要询问的问题[/red]")
-        console.print('[dim]用法: ais ask "你的问题"[/dim]')
-        console.print("[dim]帮助: ais ask --help-detail[/dim]")
+        error_message = """错误: 请提供要询问的问题
+
+用法: ais ask "你的问题"
+帮助: ais ask --help-detail"""
+        panels.error(error_message, "❌ 参数错误")
         return
 
     try:
@@ -272,9 +272,9 @@ def ask(question, help_detail):
         response = ask_ai(question, config)
 
         if response:
-            console.print(Markdown(response))
+            panels.ai_analysis(Markdown(response), "🤖 AI 回答")
         else:
-            console.print("[red]Failed to get AI response[/red]")
+            panels.error("Failed to get AI response")
     except Exception as e:
         _handle_error(str(e))
 
@@ -348,67 +348,46 @@ def config(set_key, get_key, list_providers, help_context):
 
         elif help_context:
             # 显示上下文配置帮助
-            console.print("[green]上下文收集级别配置帮助:[/green]")
-            console.print()
-            console.print("[bold]可用级别:[/bold]")
-            console.print(
-                "  • [blue]minimal[/blue]  - 只收集基本信息（命令、退出码、目录）"
-            )
-            console.print(
-                "  • [blue]standard[/blue] - 收集标准信息"
-                "（+ 命令历史、文件列表、Git状态）[dim]（默认）[/dim]"
-            )
-            console.print(
-                "  • [blue]detailed[/blue] - 收集详细信息"
-                "（+ 系统信息、环境变量、完整目录）"
-            )
-            console.print()
-            console.print("[bold]设置方法:[/bold]")
-            console.print("  ais config --set context_level=minimal")
-            console.print("  ais config --set context_level=standard")
-            console.print("  ais config --set context_level=detailed")
-            console.print()
-            console.print("[bold]其他配置项:[/bold]")
-            console.print(
-                "  auto_analysis=true/false    - 开启/关闭自动错误分析"
-            )
-            console.print(
-                "  default_provider=name       - 设置默认AI服务提供商"
-            )
-            console.print()
-            console.print("[dim]查看当前配置: ais config[/dim]")
+            help_content = """[bold]可用级别:[/bold]
+  • [blue]minimal[/blue]  - 只收集基本信息（命令、退出码、目录）
+  • [blue]standard[/blue] - 收集标准信息（+ 命令历史、文件列表、Git状态）[dim]（默认）[/dim]
+  • [blue]detailed[/blue] - 收集详细信息（+ 系统信息、环境变量、完整目录）
+
+[bold]设置方法:[/bold]
+  ais config --set context_level=minimal
+  ais config --set context_level=standard
+  ais config --set context_level=detailed
+
+[bold]其他配置项:[/bold]
+  auto_analysis=true/false    - 开启/关闭自动错误分析
+  default_provider=name       - 设置默认AI服务提供商
+
+[dim]查看当前配置: ais config[/dim]"""
+            panels.config(help_content, "⚙️ 上下文收集级别配置帮助")
 
         else:
             # 显示当前配置
-            console.print("[green]当前配置:[/green]")
-            console.print(
-                f"默认提供商: {config.get('default_provider', 'default_free')}"
-            )
-
             auto_analysis = config.get("auto_analysis", True)
             auto_status = "✅ 开启" if auto_analysis else "❌ 关闭"
-            console.print(f"自动分析: {auto_status}")
-
             context_level = config.get("context_level", "standard")
-            console.print(f"上下文级别: {context_level}")
-
             sensitive_count = len(config.get("sensitive_dirs", []))
-            console.print(f"敏感目录: {sensitive_count} 个")
 
-            console.print()
-            console.print("[dim]💡 提示:[/dim]")
-            console.print(
-                "[dim]  ais config --help-context  - 查看上下文配置帮助[/dim]"
-            )
-            console.print(
-                "[dim]  ais config --list-providers - 查看AI服务提供商[/dim]"
-            )
-            console.print(
-                "[dim]  ais config --set key=value  - 修改配置[/dim]"
-            )
+            config_content = f"""默认提供商: {
+                config.get(
+                    'default_provider',
+                    'default_free')}
+自动分析: {auto_status}
+上下文级别: {context_level}
+敏感目录: {sensitive_count} 个
+
+[dim]💡 提示:[/dim]
+[dim]  ais config --help-context  - 查看上下文配置帮助[/dim]
+[dim]  ais config --list-providers - 查看AI服务提供商[/dim]
+[dim]  ais config --set key=value  - 修改配置[/dim]"""
+            panels.config(config_content, "⚙️ 当前配置")
 
     except Exception as e:
-        console.print(f"[red]配置错误: {e}[/red]")
+        panels.error(f"配置错误: {e}")
 
 
 def _toggle_auto_analysis(enabled: bool) -> None:
@@ -416,8 +395,11 @@ def _toggle_auto_analysis(enabled: bool) -> None:
     try:
         set_config("auto_analysis", enabled)
         status = "已开启" if enabled else "已关闭"
-        color = "green" if enabled else "yellow"
-        console.print(f"[{color}]✓ 自动错误分析{status}[/{color}]")
+        message = f"✓ 自动错误分析{status}"
+        if enabled:
+            panels.success(message)
+        else:
+            panels.warning(message)
     except Exception as e:
         _handle_error(str(e))
 
@@ -440,9 +422,9 @@ def _handle_provider_operation(
     """处理提供商操作的通用函数。"""
     try:
         operation(name, *args)
-        console.print(f"[green]✓ {success_msg}: {name}[/green]")
+        panels.success(f"✓ {success_msg}: {name}")
     except Exception as e:
-        console.print(f"[red]{error_prefix}失败: {e}[/red]")
+        panels.error(f"{error_prefix}失败: {e}")
 
 
 @main.command("provider-add")
@@ -456,66 +438,52 @@ def _handle_provider_operation(
 def add_provider_cmd(name, url, model, key, help_detail):
     """添加新的 AI 服务商。"""
     if help_detail:
-        console.print("[green]ais provider-add 命令详细使用说明:[/green]")
-        console.print()
-        console.print("[bold]功能:[/bold]")
-        console.print("  添加新的 AI 服务提供商配置，支持自定义 API 服务")
-        console.print()
-        console.print("[bold]用法:[/bold]")
-        console.print(
-            "  ais provider-add <名称> --url <API地址> --model <模型名> [--key <密钥>]"
-        )
-        console.print()
-        console.print("[bold]参数:[/bold]")
-        console.print("  名称       提供商的唯一标识名称")
-        console.print("  --url      API 基础 URL 地址")
-        console.print("  --model    使用的模型名称")
-        console.print("  --key      API 密钥（可选，某些服务需要）")
-        console.print()
-        console.print("[bold]示例:[/bold]")
-        console.print("  # 添加 OpenAI 服务")
-        console.print("  ais provider-add openai \\")
-        console.print(
-            "    --url https://api.openai.com/v1/chat/completions \\"
-        )
-        console.print("    --model gpt-4 \\")
-        console.print("    --key your_api_key")
-        console.print()
-        console.print("  # 添加本地 Ollama 服务")
-        console.print("  ais provider-add ollama \\")
-        console.print(
-            "    --url http://localhost:11434/v1/chat/completions \\"
-        )
-        console.print("    --model llama3")
-        console.print()
-        console.print("[bold]常用服务配置:[/bold]")
-        console.print("  • OpenAI: https://api.openai.com/v1/chat/completions")
-        console.print(
-            "  • Azure OpenAI: https://your-resource.openai.azure.com/"
-            "openai/deployments/your-deployment/chat/completions"
-            "?api-version=2023-05-15"
-        )
-        console.print("  • Ollama: http://localhost:11434/v1/chat/completions")
-        console.print(
-            "  • Claude (Anthropic): https://api.anthropic.com/v1/messages"
-        )
-        console.print()
-        console.print("[bold]相关命令:[/bold]")
-        console.print("  ais provider-list         - 查看所有配置的提供商")
-        console.print("  ais provider-use <名称>   - 切换默认提供商")
-        console.print("  ais provider-remove <名称> - 删除提供商配置")
-        console.print()
-        console.print(
-            "[dim]💡 提示: 添加后使用 'ais provider-use <名称>' 切换到新提供商[/dim]"
-        )
+        help_content = """[bold]功能:[/bold]
+  添加新的 AI 服务提供商配置，支持自定义 API 服务
+
+[bold]用法:[/bold]
+  ais provider-add <名称> --url <API地址> --model <模型名> [--key <密钥>]
+
+[bold]参数:[/bold]
+  名称       提供商的唯一标识名称
+  --url      API 基础 URL 地址
+  --model    使用的模型名称
+  --key      API 密钥（可选，某些服务需要）
+
+[bold]示例:[/bold]
+  # 添加 OpenAI 服务
+  ais provider-add openai \\
+    --url https://api.openai.com/v1/chat/completions \\
+    --model gpt-4 \\
+    --key your_api_key
+
+  # 添加本地 Ollama 服务
+  ais provider-add ollama \\
+    --url http://localhost:11434/v1/chat/completions \\
+    --model llama3
+
+[bold]常用服务配置:[/bold]
+  • OpenAI: https://api.openai.com/v1/chat/completions
+  • Azure OpenAI: https://your-resource.openai.azure.com/
+    openai/deployments/your-deployment/chat/completions?api-version=2023-05-15
+  • Ollama: http://localhost:11434/v1/chat/completions
+  • Claude (Anthropic): https://api.anthropic.com/v1/messages
+
+[bold]相关命令:[/bold]
+  ais provider-list         - 查看所有配置的提供商
+  ais provider-use <名称>   - 切换默认提供商
+  ais provider-remove <名称> - 删除提供商配置
+
+[dim]💡 提示: 添加后使用 'ais provider-use <名称>' 切换到新提供商[/dim]"""
+        panels.info(help_content, "📚 ais provider-add 命令详细使用说明")
         return
 
     if not name or not url or not model:
-        console.print("[red]错误: 缺少必需参数[/red]")
-        console.print(
-            "[dim]用法: ais provider-add <名称> --url <地址> --model <模型>[/dim]"
-        )
-        console.print("[dim]帮助: ais provider-add --help-detail[/dim]")
+        error_message = """错误: 缺少必需参数
+
+用法: ais provider-add <名称> --url <地址> --model <模型>
+帮助: ais provider-add --help-detail"""
+        panels.error(error_message, "❌ 参数错误")
         return
 
     from ..core.config import add_provider
@@ -554,43 +522,35 @@ def use_provider_cmd(name):
 def list_provider(help_detail):
     """列出所有可用的 AI 服务商。"""
     if help_detail:
-        console.print("[green]ais provider-list 命令详细使用说明:[/green]")
-        console.print()
-        console.print("[bold]功能:[/bold]")
-        console.print("  列出所有已配置的 AI 服务提供商及其详细信息")
-        console.print()
-        console.print("[bold]用法:[/bold]")
-        console.print("  ais provider-list")
-        console.print()
-        console.print("[bold]显示信息:[/bold]")
-        console.print("  • 提供商名称和当前状态（✓ 表示当前使用）")
-        console.print("  • 使用的模型名称")
-        console.print("  • API 端点地址")
-        console.print("  • 是否配置了 API 密钥（🔑 图标表示）")
-        console.print()
-        console.print("[bold]状态说明:[/bold]")
-        console.print("  ✓ 当前正在使用的默认提供商")
-        console.print("  🔑 已配置 API 密钥")
-        console.print("     无图标表示无需密钥或未配置密钥")
-        console.print()
-        console.print("[bold]示例输出:[/bold]")
-        console.print("  [green]可用的 AI 服务商:[/green]")
-        console.print(
-            "  ✓ default_free: gpt-4o-mini "
-            "(https://api.deepbricks.ai/v1/chat/completions) 🔑"
-        )
-        console.print(
-            "    ollama: llama3 (http://localhost:11434/v1/chat/completions)"
-        )
-        console.print(
-            "    openai: gpt-4 (https://api.openai.com/v1/chat/completions) 🔑"
-        )
-        console.print()
-        console.print("[bold]相关命令:[/bold]")
-        console.print("  ais provider-use <名称>    - 切换到指定提供商")
-        console.print("  ais provider-add ...       - 添加新的提供商")
-        console.print("  ais provider-remove <名称> - 删除提供商")
-        console.print("  ais config                 - 查看当前配置状态")
+        help_content = """[bold]功能:[/bold]
+  列出所有已配置的 AI 服务提供商及其详细信息
+
+[bold]用法:[/bold]
+  ais provider-list
+
+[bold]显示信息:[/bold]
+  • 提供商名称和当前状态（✓ 表示当前使用）
+  • 使用的模型名称
+  • API 端点地址
+  • 是否配置了 API 密钥（🔑 图标表示）
+
+[bold]状态说明:[/bold]
+  ✓ 当前正在使用的默认提供商
+  🔑 已配置 API 密钥
+     无图标表示无需密钥或未配置密钥
+
+[bold]示例输出:[/bold]
+  可用的 AI 服务商:
+  ✓ default_free: gpt-4o-mini (https://api.deepbricks.ai/v1/chat/completions) 🔑
+    ollama: llama3 (http://localhost:11434/v1/chat/completions)
+    openai: gpt-4 (https://api.openai.com/v1/chat/completions) 🔑
+
+[bold]相关命令:[/bold]
+  ais provider-use <名称>    - 切换到指定提供商
+  ais provider-add ...       - 添加新的提供商
+  ais provider-remove <名称> - 删除提供商
+  ais config                 - 查看当前配置状态"""
+        panels.info(help_content, "📚 ais provider-list 命令详细使用说明")
         return
 
     try:
@@ -598,21 +558,24 @@ def list_provider(help_detail):
         providers = config.get("providers", {})
 
         if not providers:
-            console.print("[yellow]没有配置任何 AI 服务商[/yellow]")
+            panels.warning("没有配置任何 AI 服务商")
             return
 
-        console.print("[green]可用的 AI 服务商:[/green]")
+        provider_list = []
         for name, provider in providers.items():
             # 显示当前使用的提供商
             current = "✓" if name == config.get("default_provider") else " "
             model = provider.get("model_name", "N/A")
             url = provider.get("base_url", "N/A")
             has_key = "🔑" if provider.get("api_key") else "  "
+            provider_list.append(
+                f"{current} {name}: {model} ({url}) {has_key}")
 
-            console.print(f"{current} {name}: {model} ({url}) {has_key}")
+        content = "\n".join(provider_list)
+        panels.config(content, "🔧 可用的 AI 服务商")
 
     except Exception as e:
-        console.print(f"[red]列出提供商失败: {e}[/red]")
+        panels.error(f"列出提供商失败: {e}")
 
 
 @main.command("analyze")
@@ -679,7 +642,7 @@ def analyze_error(exit_code, command, stderr):
                 title="[bold blue]🤖 AI 错误分析[/bold blue]",
                 border_style="blue",
                 padding=(1, 2),
-                expand=False
+                expand=False,
             )
             console.print(analysis_panel)
         elif analysis:
@@ -690,7 +653,7 @@ def analyze_error(exit_code, command, stderr):
                 title="[bold red]❌ 数据格式错误[/bold red]",
                 border_style="red",
                 padding=(1, 2),
-                expand=False
+                expand=False,
             )
             console.print(error_panel)
             console.print(f"[dim]调试信息: {type(analysis)}[/dim]")
