@@ -917,7 +917,7 @@ def show_command_details(
     try:
         # 安全验证输入参数
         if not isinstance(suggestion, dict):
-            console.print("[red]❌ 无效的建议数据[/red]")
+            panels.error("无效的建议数据")
             return
 
         if not console:
@@ -1073,7 +1073,7 @@ def show_command_details(
 
     except Exception as e:
         # 如果显示详情失败，显示简化版本
-        console.print(f"[red]❌ 显示命令详情时出错: {e}[/red]")
+        panels.error(f"显示命令详情时出错: {e}")
 
         # 安全地获取和显示基本信息
         try:
@@ -1094,27 +1094,25 @@ def show_command_details(
                 str(description_text)
             )
 
-            console.print(f"[yellow]命令: {safe_command_text}[/yellow]")
-            console.print(f"[dim]描述: {safe_description_text}[/dim]")
+            panels.warning(
+                f"命令: {safe_command_text}\n描述: {safe_description_text}")
         except Exception as fallback_error:
-            console.print(
-                f"[red]❌ 严重错误，无法显示命令信息: {fallback_error}[/red]"
-            )
-            console.print(f"[dim]原始错误: {e}[/dim]")
+            panels.error(f"严重错误，无法显示命令信息: {fallback_error}\n原始错误: {e}")
 
 
 def ask_follow_up_question(
     console: Console, predefined_questions: List[str] = None
 ) -> None:
     """询问后续问题，支持预设问题选择。"""
-    console.print("\n[bold blue]💬 后续问题[/bold blue]")
-
     # 如果有预设问题，先显示选项
     if predefined_questions:
-        console.print("\n[bold cyan]AI 建议的学习问题:[/bold cyan]")
+        questions_list = []
         for i, q in enumerate(predefined_questions, 1):
-            console.print(f"  {i}. {q}")
-        console.print(f"  {len(predefined_questions) + 1}. 自定义问题")
+            questions_list.append(f"  {i}. {q}")
+        questions_list.append(f"  {len(predefined_questions) + 1}. 自定义问题")
+
+        content = "\n".join(questions_list)
+        panels.info(content, "💬 AI 建议的学习问题")
 
         try:
             choice = input(
@@ -1131,10 +1129,10 @@ def ask_follow_up_question(
                 if not question:
                     return
             else:
-                console.print("[yellow]无效选择[/yellow]")
+                panels.warning("无效选择")
                 return
         except ValueError:
-            console.print("[yellow]无效输入[/yellow]")
+            panels.warning("无效输入")
             return
     else:
         question = input("请输入你的问题（按回车跳过）: ").strip()
@@ -1289,13 +1287,12 @@ def show_interactive_menu(
                     )
                     continue
         except Exception as e:
-            console.print(f"[red]菜单显示错误: {e}[/red]")
-            console.print("[yellow]回退到简单模式[/yellow]")
+            panels.error(f"菜单显示错误: {e}\n回退到简单模式")
             show_simple_menu(suggestions, console, follow_up_questions)
             return
 
         if not action or action == "exit":
-            console.print("[yellow]👋 再见！[/yellow]")
+            panels.warning("👋 再见！")
             break
         elif action.startswith("execute_"):
             # 执行命令（增强错误处理）
@@ -1306,7 +1303,7 @@ def show_interactive_menu(
 
                     # 安全验证suggestion数据
                     if not isinstance(suggestion, dict):
-                        console.print("[red]❌ 无效的建议数据格式[/red]")
+                        panels.error("无效的建议数据格式")
                         continue
 
                     command = suggestion.get("command", "")
@@ -1314,7 +1311,7 @@ def show_interactive_menu(
 
                     # 验证command不为空
                     if not command or not isinstance(command, str):
-                        console.print("[red]❌ 无效的命令数据[/red]")
+                        panels.error("无效的命令数据")
                         continue
 
                     # 跳过显示命令详情，直接执行命令
@@ -1329,15 +1326,13 @@ def show_interactive_menu(
 
                     # 智能后续操作
                     if success:
-                        console.print("\n[green]🎉 命令执行成功！[/green]")
+                        panels.success("🎉 命令执行成功！")
                         # 对于安全命令，自动继续；对于危险命令，询问
                         if risk_level == "safe":
-                            console.print("[dim]继续查看其他建议...[/dim]")
+                            panels.info("继续查看其他建议...")
                             continue
                     else:
-                        console.print(
-                            "\n[yellow]🤔 命令执行失败，建议尝试其他方案[/yellow]"
-                        )
+                        panels.warning("🤔 命令执行失败，建议尝试其他方案")
 
                     # 询问是否继续（仅对非安全命令或失败情况）
                     if not questionary.confirm(
@@ -1346,18 +1341,15 @@ def show_interactive_menu(
                         break
 
                 else:
-                    console.print("[red]❌ 无效的选择索引[/red]")
+                    panels.error("无效的选择索引")
                     continue
             except (ValueError, IndexError, KeyError) as e:
-                console.print(f"[red]❌ 处理选择时出错: {e}[/red]")
+                panels.error(f"处理选择时出错: {e}")
                 continue
             except Exception as e:
-                console.print(f"[red]❌ 执行操作时发生未知错误: {e}[/red]")
-                # 添加详细的调试信息
-                debug_info = (
-                    f"action={action}, suggestions_count={len(suggestions)}"
-                )
-                console.print(f"[dim]调试信息: {debug_info}[/dim]")
+                debug_info = f"action={action}, suggestions_count={
+                    len(suggestions)}"
+                panels.error(f"执行操作时发生未知错误: {e}\n调试信息: {debug_info}")
                 continue
 
         elif action == "edit":
