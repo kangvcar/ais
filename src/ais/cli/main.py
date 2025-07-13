@@ -106,93 +106,93 @@ def _create_powershell_integration_script(script_path: str):
     # 如果不存在，创建内联版本
     with open(script_path, "w", encoding="utf-8") as f:
         f.write(
-            '# AIS PowerShell 集成脚本\n'
-            '# 功能：自动捕获命令执行错误并调用 AIS 进行分析\n\n'
-            'function Test-AisAvailability {\n'
-            '    try {\n'
-            '        $null = Get-Command ais -ErrorAction Stop\n'
-            '        return $true\n'
-            '    } catch {\n'
-            '        return $false\n'
-            '    }\n'
-            '}\n\n'
-            'function Test-AisAutoAnalysis {\n'
-            '    if (-not (Test-AisAvailability)) { return $false }\n'
-            '    \n'
-            '    $configFile = Join-Path $env:USERPROFILE '
+            "# AIS PowerShell 集成脚本\n"
+            "# 功能：自动捕获命令执行错误并调用 AIS 进行分析\n\n"
+            "function Test-AisAvailability {\n"
+            "    try {\n"
+            "        $null = Get-Command ais -ErrorAction Stop\n"
+            "        return $true\n"
+            "    } catch {\n"
+            "        return $false\n"
+            "    }\n"
+            "}\n\n"
+            "function Test-AisAutoAnalysis {\n"
+            "    if (-not (Test-AisAvailability)) { return $false }\n"
+            "    \n"
+            "    $configFile = Join-Path $env:USERPROFILE "
             '".config\\ais\\config.toml"\n'
-            '    if (Test-Path $configFile) {\n'
-            '        try {\n'
-            '            $content = Get-Content $configFile -Raw\n'
+            "    if (Test-Path $configFile) {\n"
+            "        try {\n"
+            "            $content = Get-Content $configFile -Raw\n"
             '            return $content -match "auto_analysis\\s*=\\s*true"\n'
-            '        } catch {\n'
-            '            return $false\n'
-            '        }\n'
-            '    }\n'
-            '    return $false\n'
-            '}\n\n'
-            'function Invoke-AisErrorAnalysis {\n'
-            '    param([string]$Command, [int]$ExitCode, '
+            "        } catch {\n"
+            "            return $false\n"
+            "        }\n"
+            "    }\n"
+            "    return $false\n"
+            "}\n\n"
+            "function Invoke-AisErrorAnalysis {\n"
+            "    param([string]$Command, [int]$ExitCode, "
             '[string]$ErrorOutput = "")\n'
-            '    \n'
+            "    \n"
             '    if ($Command -match "_ais_|ais_|Get-History|Test-|Invoke-") '
-            '{ return }\n'
-            '    \n'
-            '    try {\n'
+            "{ return }\n"
+            "    \n"
+            "    try {\n"
             '        Write-Host ""\n'
             '        $arguments = @("analyze", "--exit-code", $ExitCode, '
             '"--command", $Command)\n'
             '        if ($ErrorOutput) { $arguments += "--stderr", '
-            '$ErrorOutput }\n'
-            '        & ais @arguments\n'
-            '    } catch {\n'
-            '        # 静默失败\n'
-            '    }\n'
-            '}\n\n'
-            '# PowerShell 提示符集成\n'
-            'function prompt {\n'
-            '    if (-not $Global:OriginalPrompt) {\n'
-            '        $Global:OriginalPrompt = $function:prompt\n'
-            '    }\n'
-            '    \n'
-            '    if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne $null '
-            '-and (Test-AisAutoAnalysis)) {\n'
-            '        $history = Get-History -Count 1 '
-            '-ErrorAction SilentlyContinue\n'
-            '        if ($history) {\n'
-            '            Start-Job -ScriptBlock {\n'
-            '                param($cmd, $exitCode)\n'
-            '                try {\n'
-            '                    & ais analyze --exit-code $exitCode '
-            '--command $cmd\n'
-            '                } catch {\n'
-            '                    # 静默失败\n'
-            '                }\n'
-            '            } -ArgumentList $history.CommandLine, '
-            '$LASTEXITCODE | Out-Null\n'
-            '        }\n'
-            '    }\n'
-            '    \n'
-            '    if ($Global:OriginalPrompt -and $Global:OriginalPrompt '
-            '-ne $function:prompt) {\n'
-            '        & $Global:OriginalPrompt\n'
-            '    } else {\n'
+            "$ErrorOutput }\n"
+            "        & ais @arguments\n"
+            "    } catch {\n"
+            "        # 静默失败\n"
+            "    }\n"
+            "}\n\n"
+            "# PowerShell 提示符集成\n"
+            "function prompt {\n"
+            "    if (-not $Global:OriginalPrompt) {\n"
+            "        $Global:OriginalPrompt = $function:prompt\n"
+            "    }\n"
+            "    \n"
+            "    if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne $null "
+            "-and (Test-AisAutoAnalysis)) {\n"
+            "        $history = Get-History -Count 1 "
+            "-ErrorAction SilentlyContinue\n"
+            "        if ($history) {\n"
+            "            Start-Job -ScriptBlock {\n"
+            "                param($cmd, $exitCode)\n"
+            "                try {\n"
+            "                    & ais analyze --exit-code $exitCode "
+            "--command $cmd\n"
+            "                } catch {\n"
+            "                    # 静默失败\n"
+            "                }\n"
+            "            } -ArgumentList $history.CommandLine, "
+            "$LASTEXITCODE | Out-Null\n"
+            "        }\n"
+            "    }\n"
+            "    \n"
+            "    if ($Global:OriginalPrompt -and $Global:OriginalPrompt "
+            "-ne $function:prompt) {\n"
+            "        & $Global:OriginalPrompt\n"
+            "    } else {\n"
             '        "PS $($executionContext.SessionState.Path.'
-            'CurrentLocation)$(\'>\' * ($nestedPromptLevel + 1)) "\n'
-            '    }\n'
-            '}\n\n'
-            '# Windows Terminal 集成\n'
-            'if ($env:WT_SESSION) {\n'
+            "CurrentLocation)$('>' * ($nestedPromptLevel + 1)) \"\n"
+            "    }\n"
+            "}\n\n"
+            "# Windows Terminal 集成\n"
+            "if ($env:WT_SESSION) {\n"
             '    $Host.UI.RawUI.WindowTitle = "PowerShell - AIS Enabled"\n'
-            '}\n\n'
-            '# 启动消息\n'
-            'if (Test-AisAvailability -and Test-AisAutoAnalysis) {\n'
-            '    if (-not $Global:AisWelcomeShown) {\n'
+            "}\n\n"
+            "# 启动消息\n"
+            "if (Test-AisAvailability -and Test-AisAutoAnalysis) {\n"
+            "    if (-not $Global:AisWelcomeShown) {\n"
             '        Write-Host "🤖 AIS PowerShell 集成已启用" '
-            '-ForegroundColor Green\n'
-            '        $Global:AisWelcomeShown = $true\n'
-            '    }\n'
-            '}\n'
+            "-ForegroundColor Green\n"
+            "        $Global:AisWelcomeShown = $true\n"
+            "    }\n"
+            "}\n"
         )
 
     # 设置可执行权限（Windows 上通常不需要，但保持一致性）
