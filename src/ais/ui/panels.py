@@ -1,41 +1,44 @@
 """AIS UI面板组件模块 - 统一的美观输出样式。"""
 
-from typing import Optional, Union
+from typing import Union
 from rich.console import Console
 from rich.panel import Panel
 from rich.markdown import Markdown
 from rich.table import Table
-from rich.text import Text
 
 
 class AISPanels:
     """AIS专用的美观面板组件集合。"""
-    
+
     def __init__(self, console: Console):
         self.console = console
-    
-    def ai_analysis(self, content: Union[str, Markdown], title: str = "🤖 AI 错误分析") -> None:
+
+    def ai_analysis(
+        self, content: Union[str, Markdown], title: str = "🤖 AI 错误分析"
+    ) -> None:
         """显示AI分析结果面板。"""
         panel = Panel(
             content,
             title=f"[bold blue]{title}[/bold blue]",
             border_style="blue",
             padding=(1, 2),
-            expand=False
+            expand=False,
         )
         self.console.print(panel)
-    
-    def suggestions(self, table: Table, title: str = "💡 AI 建议的解决方案") -> None:
+
+    def suggestions(
+        self, table: Table, title: str = "💡 AI 建议的解决方案"
+    ) -> None:
         """显示建议命令面板。"""
         panel = Panel(
             table,
             title=f"[bold green]{title}[/bold green]",
             border_style="green",
             padding=(1, 1),
-            expand=False
+            expand=False,
         )
         self.console.print(panel)
-    
+
     def success(self, message: str, title: str = "✅ 操作成功") -> None:
         """显示成功消息面板。"""
         panel = Panel(
@@ -43,10 +46,10 @@ class AISPanels:
             title=f"[bold green]{title}[/bold green]",
             border_style="green",
             padding=(1, 2),
-            expand=False
+            expand=False,
         )
         self.console.print(panel)
-    
+
     def warning(self, message: str, title: str = "⚠️ 警告信息") -> None:
         """显示警告消息面板。"""
         panel = Panel(
@@ -54,10 +57,10 @@ class AISPanels:
             title=f"[bold yellow]{title}[/bold yellow]",
             border_style="yellow",
             padding=(1, 2),
-            expand=False
+            expand=False,
         )
         self.console.print(panel)
-    
+
     def error(self, message: str, title: str = "❌ 错误信息") -> None:
         """显示错误消息面板。"""
         panel = Panel(
@@ -65,10 +68,10 @@ class AISPanels:
             title=f"[bold red]{title}[/bold red]",
             border_style="red",
             padding=(1, 2),
-            expand=False
+            expand=False,
         )
         self.console.print(panel)
-    
+
     def info(self, content: Union[str, Table], title: str = "ℹ️ 信息") -> None:
         """显示信息面板。"""
         panel = Panel(
@@ -76,49 +79,55 @@ class AISPanels:
             title=f"[bold cyan]{title}[/bold cyan]",
             border_style="cyan",
             padding=(1, 2),
-            expand=False
+            expand=False,
         )
         self.console.print(panel)
-    
-    def config(self, content: Union[str, Table], title: str = "⚙️ 配置信息") -> None:
+
+    def config(
+        self, content: Union[str, Table], title: str = "⚙️ 配置信息"
+    ) -> None:
         """显示配置信息面板。"""
         panel = Panel(
             content,
             title=f"[bold magenta]{title}[/bold magenta]",
             border_style="magenta",
             padding=(1, 2),
-            expand=False
+            expand=False,
         )
         self.console.print(panel)
-    
+
     def command_result(self, command: str, success: bool = True) -> None:
         """显示命令执行结果面板。"""
         if success:
-            content = f"[green]🚀 命令执行成功:[/green]\n[bold]{command}[/bold]"
+            content = (
+                f"[green]🚀 命令执行成功:[/green]\n[bold]{command}[/bold]"
+            )
             border_style = "green"
             title = "✅ 命令执行成功"
         else:
             content = f"[red]❌ 命令执行失败:[/red]\n[bold]{command}[/bold]"
             border_style = "red"
             title = "❌ 命令执行失败"
-        
+
         panel = Panel(
             content,
             title=f"[bold]{title}[/bold]",
             border_style=border_style,
             padding=(1, 2),
-            expand=False
+            expand=False,
         )
         self.console.print(panel)
-    
-    def learning_content(self, content: Union[str, Markdown], topic: str) -> None:
+
+    def learning_content(
+        self, content: Union[str, Markdown], topic: str
+    ) -> None:
         """显示学习内容面板。"""
         panel = Panel(
             content,
             title=f"[bold blue]📚 学习内容: {topic}[/bold blue]",
             border_style="blue",
             padding=(1, 2),
-            expand=False
+            expand=False,
         )
         self.console.print(panel)
 
