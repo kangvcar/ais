@@ -848,7 +848,7 @@ def execute_command(command: str) -> bool:
     """执行命令并显示结果。"""
     try:
         print(f"\n🚀 执行命令: {command}")
-        print("=" * 50)
+        print("─" * 50)
 
         result = subprocess.run(
             command,
@@ -857,7 +857,7 @@ def execute_command(command: str) -> bool:
             text=True,  # 让输出直接显示给用户
         )
 
-        print("=" * 50)
+        print("─" * 50)
         if result.returncode == 0:
             print("✅ 命令执行成功")
         else:
@@ -1278,30 +1278,8 @@ def show_interactive_menu(
                     # 用户反馈：详情信息在菜单选项中已展示，此处重复显示没有必要
                     # show_command_details(suggestion, console, user_context)
 
-                    # 智能确认流程（基于用户上下文）
-                    should_skip = _should_skip_confirmation(
-                        command, risk_level, user_context
-                    )
-
-                    if not should_skip and risk_level in [
-                            "dangerous", "moderate"]:
-                        # 简化的确认流程
-                        if risk_level == "dangerous":
-                            cmd_display = (
-                                command[:30] + "..."
-                                if len(command) > 30 else command
-                            )
-                            confirm_text = f"⚠️  确认执行危险命令: {cmd_display}？"
-                        else:
-                            cmd_display = (
-                                command[:30] + "..."
-                                if len(command) > 30 else command
-                            )
-                            confirm_text = f"确认执行: {cmd_display}？"
-
-                        if not questionary.confirm(confirm_text).ask():
-                            console.print("[yellow]❌ 已取消执行[/yellow]")
-                            continue
+                    # 移除风险确认流程
+                    # 用户反馈：风险等级已在菜单选项中显示，无需额外确认
 
                     # 执行命令
                     success = execute_command(command)
