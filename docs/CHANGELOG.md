@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - 🔧 **Shell集成脚本缺失问题** - 修复 `ais setup` 命令找不到集成脚本的问题
 - 📦 **pipx安装命令兼容性** - 完全移除项目中所有`--global`参数引用，更新为使用PIPX_HOME和PIPX_BIN_DIR环境变量的系统级安装方法
+- 🤖 **CI/CD自动化支持** - 安装脚本新增`--non-interactive`参数和CI环境自动检测，解决GitHub Actions等CI环境中的交互式安装问题
 - 📁 **包安装路径错误** - 改进脚本路径查找逻辑，支持多种安装场景
 - 🌐 **全局安装方案** - 新增 `install_global.sh` 脚本，实现真正的系统级全局安装
 - 🔄 **自动错误分析触发** - 修复在某些环境下自动错误分析不工作的问题

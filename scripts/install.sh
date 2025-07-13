@@ -13,6 +13,9 @@ set -e  # 遇到错误立即退出
 AIS_VERSION="latest"
 GITHUB_REPO="kangvcar/ais"
 
+# 安装选项
+NON_INTERACTIVE=0
+
 # 颜色定义
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -63,8 +66,14 @@ main() {
         print_info "  2. sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal  (所有用户，推荐)"
         print_info "  3. 继续当前的系统级安装                    (传统方式)"
         echo
-        print_warning "📋 选择安装方式 (1-3)，或按回车使用pipx全局安装:"
-        read -r choice
+        # 检查是否为非交互模式或CI环境
+        if [[ "$NON_INTERACTIVE" == "1" ]] || [[ "$CI" == "true" ]] || [[ "$GITHUB_ACTIONS" == "true" ]] || [[ ! -t 0 ]]; then
+            print_info "🤖 检测到非交互环境，使用pipx全局安装 (选项2)"
+            choice="2"
+        else
+            print_warning "📋 选择安装方式 (1-3)，或按回车使用pipx全局安装:"
+            read -r choice
+        fi
         
         case "$choice" in
             "1")
@@ -102,6 +111,39 @@ main() {
     # 检测安装方式 - 只支持全局安装
     if [ -f "pyproject.toml" ] && grep -q "ais" pyproject.toml 2>/dev/null; then
         INSTALL_MODE="local"
+        # 开发环境下的CI测试，直接使用pipx安装
+        if [[ "$NON_INTERACTIVE" == "1" ]] || [[ "$CI" == "true" ]] || [[ "$GITHUB_ACTIONS" == "true" ]]; then
+            print_info "🤖 CI环境检测到开发目录，使用pipx直接安装发布版本"
+            
+            # 确保pipx可用
+            if ! command_exists pipx; then
+                print_info "📦 安装pipx依赖..."
+                # 安装python3-venv依赖
+                if command_exists apt; then
+                    if [ "$EUID" -eq 0 ]; then
+                        apt update && apt install -y python3-venv
+                    else
+                        sudo apt update && sudo apt install -y python3-venv
+                    fi
+                fi
+                
+                print_info "📦 安装pipx..."
+                if [ "$EUID" -eq 0 ]; then
+                    python3 -m pip install --break-system-packages pipx
+                else
+                    sudo python3 -m pip install --break-system-packages pipx
+                fi
+            fi
+            if [ "$EUID" -eq 0 ]; then
+                PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
+                print_success "✅ pipx全局安装完成！"
+            else
+                print_info "执行: sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal"
+                sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
+                print_success "✅ pipx全局安装完成！"
+            fi
+            exit 0
+        fi
         print_info "检测到开发环境，将从当前目录全局安装"
     elif [[ "$1" == "--from-source" ]]; then
         INSTALL_MODE="source"
@@ -119,11 +161,17 @@ main() {
         # 检查权限
         if [[ "$EUID" != "0" ]] && [[ -z "$SUDO_USER" ]]; then
             print_warning "全局安装需要管理员权限"
-            echo "继续安装吗？(Y/n)"
-            read -r response
-            if [[ "$response" =~ ^[Nn]$ ]]; then
-                print_info "已取消安装。"
-                exit 0
+            
+            # 非交互模式或CI环境自动继续
+            if [[ "$NON_INTERACTIVE" == "1" ]] || [[ "$CI" == "true" ]] || [[ "$GITHUB_ACTIONS" == "true" ]] || [[ ! -t 0 ]]; then
+                print_info "🤖 非交互环境，自动继续安装"
+            else
+                echo "继续安装吗？(Y/n)"
+                read -r response
+                if [[ "$response" =~ ^[Nn]$ ]]; then
+                    print_info "已取消安装。"
+                    exit 0
+                fi
             fi
         fi
         
@@ -164,6 +212,10 @@ while [[ $# -gt 0 ]]; do
             FROM_SOURCE=1
             shift
             ;;
+        --non-interactive)
+            NON_INTERACTIVE=1
+            shift
+            ;;
         --global-exec)
             GLOBAL_EXEC=1
             shift
@@ -174,8 +226,9 @@ while [[ $# -gt 0 ]]; do
             echo "用法: $0 [选项]"
             echo
             echo "选项:"
-            echo "  --from-source    从 GitHub 源码安装"
-            echo "  --help          显示此帮助信息"
+            echo "  --from-source      从 GitHub 源码安装"
+            echo "  --non-interactive  非交互模式，适用于CI/CD环境"
+            echo "  --help            显示此帮助信息"
             echo
             echo "安装方式:"
             echo "  默认全局安装（所有用户可用）:"
