@@ -97,12 +97,84 @@ install_pipx() {
     # 确保pipx在PATH中
     python3 -m pipx ensurepath >/dev/null 2>&1 || true
     
+    # 立即更新当前会话的PATH，使pipx可用
+    export PATH="$HOME/.local/bin:$PATH"
+    
     if command_exists pipx; then
         print_success "pipx安装成功"
     else
         print_error "pipx安装失败"
         return 1
     fi
+}
+
+# 自动设置Shell集成
+setup_shell_integration_auto() {
+    # 检测当前Shell
+    local shell_name=""
+    if [ -n "$ZSH_VERSION" ]; then
+        shell_name="zsh"
+    elif [ -n "$BASH_VERSION" ]; then
+        shell_name="bash"
+    else
+        # 从SHELL环境变量推断
+        case "$SHELL" in
+            */zsh) shell_name="zsh" ;;
+            */bash) shell_name="bash" ;;
+            *) shell_name="bash" ;;  # 默认使用bash
+        esac
+    fi
+    
+    # 确定配置文件
+    local config_file=""
+    case "$shell_name" in
+        "zsh")
+            config_file="$HOME/.zshrc"
+            ;;
+        "bash")
+            # 优先选择.bashrc，如果不存在则使用.bash_profile
+            if [ -f "$HOME/.bashrc" ]; then
+                config_file="$HOME/.bashrc"
+            else
+                config_file="$HOME/.bash_profile"
+            fi
+            ;;
+    esac
+    
+    # 创建配置文件如果不存在
+    if [ ! -f "$config_file" ]; then
+        touch "$config_file"
+    fi
+    
+    # 检查是否已经添加了AIS集成
+    if grep -q "# START AIS INTEGRATION" "$config_file" 2>/dev/null; then
+        print_info "Shell集成已存在，跳过设置"
+        return 0
+    fi
+    
+    # 运行ais setup但不显示输出，然后自动添加集成
+    if ais setup >/dev/null 2>&1; then
+        # 获取AIS集成脚本路径
+        local ais_script_path
+        ais_script_path=$(python3 -c "import ais, os; print(os.path.join(os.path.dirname(ais.__file__), 'shell', 'integration.sh'))" 2>/dev/null)
+        
+        if [ -f "$ais_script_path" ]; then
+            # 自动添加到配置文件
+            cat >> "$config_file" << EOF
+
+# START AIS INTEGRATION
+# AIS - AI 智能终端助手自动集成
+if [ -f "$ais_script_path" ]; then
+    source "$ais_script_path"
+fi
+# END AIS INTEGRATION
+EOF
+            print_success "已自动添加Shell集成到: $config_file"
+            return 0
+        fi
+    fi
+    
+    return 1
 }
 
 # 健康检查
@@ -130,6 +202,13 @@ health_check() {
         print_warning "基本功能测试失败，但安装可能仍然成功"
     fi
     
+    # 检查配置文件是否存在
+    if [ -f "$HOME/.config/ais/config.toml" ]; then
+        print_success "配置文件已生成"
+    else
+        print_info "首次运行时将自动生成配置文件"
+    fi
+    
     return 0
 }
 
@@ -144,12 +223,71 @@ install_user_mode() {
     print_info "📦 安装ais-terminal..."
     pipx install ais-terminal
     
-    # 设置shell集成
-    print_info "🔧 设置shell集成..."
-    ais setup >/dev/null 2>&1 || print_warning "shell集成设置可能需要手动完成"
+    # 立即更新当前会话的PATH
+    print_info "🔄 更新当前会话PATH..."
+    export PATH="$HOME/.local/bin:$PATH"
     
-    print_success "✅ 用户级安装完成！"
-    print_info "💡 如需为其他用户安装，请使用: $0 --system"
+    # 验证ais命令可用
+    if ! command_exists ais; then
+        print_error "安装后ais命令仍不可用，请检查安装"
+        exit 1
+    fi
+    
+    # 自动设置shell集成
+    print_info "🔧 自动设置shell集成..."
+    if setup_shell_integration_auto; then
+        print_success "Shell集成设置完成"
+    else
+        print_warning "Shell集成自动设置失败，稍后运行: ais setup"
+    fi
+    
+    # 执行健康检查
+    print_info "🏥 执行完整健康检查..."
+    if health_check; then
+        print_success "✅ 用户级安装完成！AIS已就绪可用"
+        print_info "💡 现在可以直接使用AIS，命令失败时将自动显示AI分析"
+        print_info "💡 如需为其他用户安装，请使用: $0 --system"
+        
+        # 显示使用提示
+        echo
+        print_info "🚀 快速开始:"
+        print_info "  测试安装: ais --version"
+        print_info "  AI对话: ais ask '你好'"
+        print_info "  获取帮助: ais --help"
+        echo
+        print_warning "⚠️  注意: 新开的终端会话将自动加载AIS集成"
+        print_info "   当前会话中可以立即使用ais命令，如需启用自动分析:"
+        
+        # 检测配置文件并给出精确指令
+        local config_file=""
+        if [ -n "$ZSH_VERSION" ] && [ -f "$HOME/.zshrc" ]; then
+            config_file="$HOME/.zshrc"
+        elif [ -n "$BASH_VERSION" ] && [ -f "$HOME/.bashrc" ]; then
+            config_file="$HOME/.bashrc"
+        elif [ -f "$HOME/.bashrc" ]; then
+            config_file="$HOME/.bashrc"
+        elif [ -f "$HOME/.bash_profile" ]; then
+            config_file="$HOME/.bash_profile"
+        fi
+        
+        if [ -n "$config_file" ]; then
+            print_warning "   运行: source $config_file"
+            echo
+            print_info "🔄 想要立即在当前会话启用自动分析吗？(y/N)"
+            if [ "${NON_INTERACTIVE:-}" != "1" ]; then
+                read -r response
+                if [[ "$response" =~ ^[Yy]$ ]]; then
+                    print_info "正在激活当前会话的AIS集成..."
+                    # shellcheck source=/dev/null
+                    source "$config_file" 2>/dev/null || print_warning "自动激活失败，请手动运行: source $config_file"
+                    print_success "✅ 当前会话AIS集成已激活！"
+                fi
+            fi
+        fi
+    else
+        print_error "健康检查失败，安装可能存在问题"
+        exit 1
+    fi
 }
 
 # 系统级安装
