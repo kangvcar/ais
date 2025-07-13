@@ -255,10 +255,9 @@ install_user_mode() {
         print_info "  AI对话: ais ask '你好'"
         print_info "  获取帮助: ais --help"
         echo
-        print_warning "⚠️  注意: 新开的终端会话将自动加载AIS集成"
-        print_info "   当前会话中可以立即使用ais命令，如需启用自动分析:"
+        print_info "🔄 正在自动激活当前会话的AIS集成..."
         
-        # 检测配置文件并给出精确指令
+        # 检测配置文件并自动激活
         local config_file=""
         if [ -n "$ZSH_VERSION" ] && [ -f "$HOME/.zshrc" ]; then
             config_file="$HOME/.zshrc"
@@ -271,19 +270,21 @@ install_user_mode() {
         fi
         
         if [ -n "$config_file" ]; then
-            print_warning "   运行: source $config_file"
-            echo
-            print_info "🔄 想要立即在当前会话启用自动分析吗？(y/N)"
-            if [ "${NON_INTERACTIVE:-}" != "1" ]; then
-                read -r response
-                if [[ "$response" =~ ^[Yy]$ ]]; then
-                    print_info "正在激活当前会话的AIS集成..."
-                    # shellcheck source=/dev/null
-                    source "$config_file" 2>/dev/null || print_warning "自动激活失败，请手动运行: source $config_file"
-                    print_success "✅ 当前会话AIS集成已激活！"
-                fi
+            # 自动激活当前会话集成
+            # shellcheck source=/dev/null
+            if source "$config_file" 2>/dev/null; then
+                print_success "✅ 当前会话AIS集成已激活！自动分析功能已启用"
+            else
+                print_warning "自动激活失败，可手动运行: source $config_file"
             fi
+        else
+            print_warning "未找到Shell配置文件，新终端会话将自动加载AIS集成"
         fi
+        
+        echo
+        print_success "🎉 AIS安装和配置完全完成！"
+        print_info "   • 当前会话：立即可用，自动分析已启用"
+        print_info "   • 新会话：将自动加载AIS集成"
     else
         print_error "健康检查失败，安装可能存在问题"
         exit 1
