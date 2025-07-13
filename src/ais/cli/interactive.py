@@ -163,25 +163,6 @@ def _should_skip_confirmation(
     if not user_context:
         return False
 
-    # 基于用户技能水平的确认策略
-    skill_level = user_context.get("skill_level", "intermediate")
-
-    # 新手用户：更多确认
-    if skill_level == "beginner":
-        return False
-
-    # 高级用户：可以跳过一些中等风险命令
-    if skill_level == "advanced" and risk_level == "moderate":
-        # 检查是否为常见的中等风险操作
-        moderate_safe_patterns = [
-            "chmod",
-            "chown",
-            "systemctl status",
-            "service status",
-        ]
-        if any(pattern in command for pattern in moderate_safe_patterns):
-            return True
-
     # 环境基础的确认策略
     environment = user_context.get("environment", "development")
     if environment == "production":
@@ -212,6 +193,19 @@ def _should_skip_confirmation(
     recent_commands = user_context.get("recent_commands", [])
     if command in recent_commands[-5:]:
         return True
+
+    # 基于命令复杂度的智能判断
+    command_parts = command.split()
+    if len(command_parts) <= 2 and risk_level == "moderate":
+        # 简单的中等风险命令可以跳过
+        moderate_safe_patterns = [
+            "chmod",
+            "chown",
+            "systemctl status",
+            "service status",
+        ]
+        if any(pattern in command for pattern in moderate_safe_patterns):
+            return True
 
     return False
 
@@ -249,16 +243,17 @@ def _calculate_personalized_score(
         if any(keyword in command.lower() for keyword in preferred_keywords):
             score += 0.3
 
-    # 基于用户技能水平的调整
-    skill_level = user_context.get("skill_level", "intermediate")
-    if skill_level == "beginner":
-        # 新手用户偏好简单命令
-        if len(command.split()) <= 3:
-            score += 0.2
-    elif skill_level == "advanced":
-        # 高级用户可以处理复杂命令
-        if len(command.split()) > 3:
-            score += 0.1
+    # 基于命令复杂度的智能调整（替代技能级别）
+    command_parts = command.split()
+
+    # 优先简洁明了的命令
+    if len(command_parts) <= 3:
+        score += 0.15
+
+    # 对包含常用模式的命令给予额外权重
+    common_patterns = ["git", "ls", "cd", "mkdir", "touch", "cp", "mv"]
+    if any(pattern in command.lower() for pattern in common_patterns):
+        score += 0.1
 
     return score
 
@@ -376,21 +371,7 @@ def _collect_user_context() -> Dict[str, Any]:
             except Exception:
                 context["git_info"] = {"in_repo": True}
 
-        # 用户技能水平推断（基于环境变量和工具）
-        skill_indicators = {
-            "advanced": ["TERM", "TMUX", "VIM", "EDITOR"],
-            "beginner": [],
-        }
-
-        advanced_count = sum(
-            1 for var in skill_indicators["advanced"] if os.getenv(var)
-        )
-        if advanced_count >= 2:
-            context["skill_level"] = "advanced"
-        elif advanced_count == 1:
-            context["skill_level"] = "intermediate"
-        else:
-            context["skill_level"] = "beginner"
+        # 移除技能级别评估，改为基于具体上下文的智能判断
 
         # 检查是否为生产环境
         prod_indicators = ["PRODUCTION", "PROD", "LIVE"]
@@ -431,19 +412,13 @@ def _calculate_intelligent_risk_adjustment(
     command = suggestion.get("command", "")
     risk_level = suggestion.get("risk_level", "safe")
 
-    # 基于用户经验的风险调整
-    skill_level = user_context.get("skill_level", "intermediate")
-
-    if skill_level == "beginner":
-        # 新手用户：大幅降低危险命令的评分
-        if risk_level == "dangerous":
-            score -= 0.5
-        elif risk_level == "moderate":
-            score -= 0.2
-    elif skill_level == "advanced":
-        # 高级用户：适当提高复杂命令的评分
-        if risk_level == "moderate":
-            score += 0.1
+    # 基于风险级别的智能调整（移除技能级别依赖）
+    if risk_level == "dangerous":
+        # 危险命令降低权重，但不完全排除
+        score -= 0.3
+    elif risk_level == "safe":
+        # 安全命令获得额外权重
+        score += 0.2
 
     # 环境安全性检查
     is_production = user_context.get("environment") == "production"
@@ -710,27 +685,35 @@ def _enhanced_risk_assessment(
         if original_risk == "moderate":
             risk_assessment["level"] = "dangerous"
 
-    # 2. 用户经验基础的风险调整
-    skill_level = user_context.get("skill_level", "intermediate")
+    # 2. 基于命令特征的智能风险调整（移除技能级别依赖）
+    # 检查复杂命令模式
+    if len(
+        command.split()) > 5 or any(
+        char in command for char in [
+            "|",
+            ">",
+            ";"]):
+        if original_risk == "safe":
+            risk_assessment["level"] = "moderate"
+            risk_assessment["factors"].append("复杂命令模式，提升风险等级")
+        elif original_risk == "moderate":
+            risk_assessment["level"] = "dangerous"
+            risk_assessment["factors"].append("复杂危险命令，需要谨慎操作")
 
-    if skill_level == "beginner":
-        # 新手用户：更保守的风险评估
-        if original_risk == "moderate":
-            # 检查是否为复杂命令
-            if len(command.split()) > 5 or any(
-                char in command for char in ["|", ">", ";"]
-            ):
-                risk_assessment["level"] = "dangerous"
-                risk_assessment["factors"].append("复杂命令，建议新手谨慎操作")
-
-    elif skill_level == "advanced":
-        # 高级用户：更灵活的风险评估
+    # 检查安全措施
+    safe_indicators = [
+        "--backup",
+        "--dry-run",
+        "--interactive",
+        "-i",
+        "--help"]
+    if any(indicator in command for indicator in safe_indicators):
         if original_risk == "dangerous":
-            # 检查是否有安全措施
-            safe_indicators = ["--backup", "--dry-run", "--interactive", "-i"]
-            if any(indicator in command for indicator in safe_indicators):
-                risk_assessment["level"] = "moderate"
-                risk_assessment["factors"].append("命令含有安全参数")
+            risk_assessment["level"] = "moderate"
+            risk_assessment["factors"].append("包含安全措施，降低风险等级")
+        elif original_risk == "moderate":
+            risk_assessment["level"] = "safe"
+            risk_assessment["factors"].append("安全选项，降低操作风险")
 
     # 3. 环境基础的风险调整
     environment = user_context.get("environment", "development")
@@ -1167,24 +1150,11 @@ def show_interactive_menu(
     # 收集用户上下文信息用于个性化推荐
     user_context = _collect_user_context()
 
-    # 显示个性化信息（可选）
-    if user_context.get("project_type") or user_context.get("skill_level"):
-        context_info = []
-        if user_context.get("project_type"):
-            context_info.append(f"🚀 {user_context['project_type']}项目")
-        if user_context.get("skill_level"):
-            level_icons = {
-                "beginner": "🌱",
-                "intermediate": "💻",
-                "advanced": "⭐",
-            }
-            icon = level_icons.get(user_context["skill_level"], "💻")
-            context_info.append(f"{icon} {user_context['skill_level']}级别")
-
-        if context_info:
-            console.print(
-                f"[dim]🧠 智能分析: {' | '.join(context_info)}[/dim]"
-            )
+    # 显示项目类型信息（移除技能级别显示）
+    if user_context.get("project_type"):
+        console.print(
+            f"[dim]🧠 智能分析: 🚀 {user_context['project_type']}项目[/dim]"
+        )
 
     while True:
         # 显示建议命令表格（在菜单上方）
@@ -1239,10 +1209,31 @@ def show_interactive_menu(
 
         # 显示菜单（增加错误处理）
         try:
+            # 实现自定义快捷键处理
+            from questionary import Choice
+
+            formatted_choices = []
+            shortcut_to_value = {}
+
+            for choice in choices:
+                if "shortcut" in choice:
+                    shortcut_to_value[choice["shortcut"]] = choice["value"]
+                    formatted_choices.append(
+                        Choice(
+                            title=choice["name"],
+                            value=choice["value"],
+                            shortcut_key=choice["shortcut"],
+                        )
+                    )
+                else:
+                    formatted_choices.append(
+                        Choice(title=choice["name"], value=choice["value"])
+                    )
+
             action = questionary.select(
                 "Select an action:",
-                choices=choices,
-                instruction="",
+                choices=formatted_choices,
+                instruction="(使用方向键选择，或直接按数字/字母键)",
                 use_shortcuts=True,
             ).ask()
         except Exception as e:

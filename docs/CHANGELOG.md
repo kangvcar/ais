@@ -41,6 +41,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - 保持完全相同的功能和行为
     - 更新所有文档和帮助信息
     - 提升命令行界面的简洁性
+  - **移除技能级别评估系统**: 完全删除用户技能级别检测功能，改为更智能的上下文驱动排序
+    - 删除基于环境变量的简单技能级别判断逻辑（TERM、TMUX、VIM等）
+    - 移除 `🧠 智能分析: 💻 intermediate级别` 显示，改为项目类型显示
+    - 基于命令复杂度、项目类型、使用历史和环境特征进行智能评分
+    - 提供更准确和个性化的命令建议排序
   - **重组Provider管理命令**: 统一provider相关命令的命名规范，提升一致性
     - `ais add-provider` → `ais provider-add`
     - `ais remove-provider` → `ais provider-remove`
@@ -62,6 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 📋 **默认配置生成** - 自动创建带有最佳默认设置的配置文件
 - 🎨 **交互式用户体验优化** - 全面重构交互式菜单，包含智能评分、风险评估和个性化建议
 - 🧠 **智能建议排序** - 基于风险级别、命令复杂度和用户上下文的多维度评分算法
+- 🔄 **上下文驱动的命令排序** - 完全移除技能级别评估，改为基于项目类型、命令复杂度、历史使用模式和环境特征的智能排序系统
 
 ### Planned
 - Windows support via WSL

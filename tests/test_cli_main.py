@@ -15,7 +15,7 @@ from ais.cli.main import (
     list_provider,
     analyze_error,
     show_history,
-    show_history_detail,
+    show_history_detail_content,
     learn_command,
     setup_shell,
     test_integration,
@@ -528,7 +528,7 @@ class TestHistoryCommands:
         mock_log.ai_suggestions_json = '[{"command": "test"}]'
 
         with patch("ais.cli.main.get_recent_logs", return_value=[mock_log]):
-            result = runner.invoke(show_history_detail, ["1"])
+            result = runner.invoke(show_history_detail_content, ["1"])
 
             assert result.exit_code == 0
             assert "命令详细信息" in result.output
@@ -538,7 +538,7 @@ class TestHistoryCommands:
         runner = CliRunner()
 
         with patch("ais.cli.main.get_recent_logs", return_value=[]):
-            result = runner.invoke(show_history_detail, ["999"])
+            result = runner.invoke(show_history_detail_content, ["999"])
 
             assert result.exit_code == 0
             assert "索引超出范围" in result.output
