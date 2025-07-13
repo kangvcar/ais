@@ -3,6 +3,7 @@
 import click
 from rich.console import Console
 from rich.markdown import Markdown
+from rich.panel import Panel
 
 from ..core.config import get_config, set_config
 from ..core.ai import ask_ai
@@ -215,7 +216,14 @@ def main(ctx):
 
 def _handle_error(error_msg: str) -> None:
     """统一的错误处理函数。"""
-    console.print(f"[red]错误: {error_msg}[/red]")
+    error_panel = Panel(
+        f"[red]{error_msg}[/red]",
+        title="[bold red]❌ 错误信息[/bold red]",
+        border_style="red",
+        padding=(1, 2),
+        expand=False
+    )
+    console.print(error_panel)
 
 
 @main.command()
@@ -665,14 +673,26 @@ def analyze_error(exit_code, command, stderr):
             and isinstance(analysis, dict)
             and analysis.get("explanation")
         ):
-            console.print("\n[bold blue]🤖 AI 错误分析[/bold blue]")
-            console.print()
-            console.print(Markdown(analysis["explanation"]))
+            # 使用Panel美化AI分析结果输出
+            analysis_panel = Panel(
+                Markdown(analysis["explanation"]),
+                title="[bold blue]🤖 AI 错误分析[/bold blue]",
+                border_style="blue",
+                padding=(1, 2),
+                expand=False
+            )
+            console.print(analysis_panel)
         elif analysis:
             # 如果analysis不是字典格式，显示调试信息
-            console.print("\n[bold blue]🤖 AI 错误分析[/bold blue]")
-            console.print()
-            console.print("[red]⚠️  AI返回了非预期格式的数据[/red]")
+            # 使用Panel美化错误信息输出
+            error_panel = Panel(
+                "[red]⚠️  AI返回了非预期格式的数据[/red]",
+                title="[bold red]❌ 数据格式错误[/bold red]",
+                border_style="red",
+                padding=(1, 2),
+                expand=False
+            )
+            console.print(error_panel)
             console.print(f"[dim]调试信息: {type(analysis)}[/dim]")
             if isinstance(analysis, str):
                 # 尝试解析字符串中的JSON
