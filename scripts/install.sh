@@ -84,14 +84,38 @@ main() {
                 ;;
             "2"|"")
                 print_info "🚀 使用pipx全局安装:"
-                if [ "$EUID" -eq 0 ]; then
-                    print_info "   正在执行: PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal"
-                    PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
+                
+                # 在CI环境中实际执行安装，否则只显示提示
+                if [[ "$NON_INTERACTIVE" == "1" ]] || [[ "$CI" == "true" ]] || [[ "$GITHUB_ACTIONS" == "true" ]]; then
+                    # CI环境下直接执行安装
+                    print_info "🤖 CI环境：实际执行pipx全局安装..."
+                    
+                    # 确保pipx可用
+                    if ! command_exists pipx; then
+                        print_info "📦 安装pipx依赖..."
+                        if command_exists apt; then
+                            sudo apt update && sudo apt install -y python3-venv
+                        fi
+                        print_info "📦 安装pipx..."
+                        sudo python3 -m pip install --break-system-packages pipx
+                    fi
+                    
+                    # 执行pipx全局安装
+                    print_info "正在执行: sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal"
+                    sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
                     print_success "✅ pipx全局安装完成！所有用户都可以使用ais命令"
                     print_info "💡 用户可以运行: ais setup 来设置shell集成"
                 else
-                    print_info "   sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal"
-                    print_info "   ais setup"
+                    # 非CI环境，根据权限显示提示或执行
+                    if [ "$EUID" -eq 0 ]; then
+                        print_info "   正在执行: PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal"
+                        PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
+                        print_success "✅ pipx全局安装完成！所有用户都可以使用ais命令"
+                        print_info "💡 用户可以运行: ais setup 来设置shell集成"
+                    else
+                        print_info "   sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal"
+                        print_info "   ais setup"
+                    fi
                 fi
                 exit 0
                 ;;
