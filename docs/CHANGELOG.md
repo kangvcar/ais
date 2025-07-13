@@ -47,6 +47,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `ais use-provider` → `ais provider-use`
     - `ais list-provider` → `ais provider-list`
     - 遵循现代CLI设计原则，相关功能命令统一前缀
+  - **精简命令集合**: 移除使用率极低的命令，专注核心功能
+    - 移除 `ais suggest` 命令 - 功能与 `ais ask` 重叠，使用率较低
+    - 移除 `ais which` 命令 - 帮助功能已整合到主帮助系统
+    - 简化用户选择，专注核心AI助手功能
 
 ### Added
 - 📄 **内联集成脚本** - 当找不到外部脚本时自动创建内联版本
@@ -82,7 +86,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ais analyze` - 手动分析命令错误
 - `ais history` - 查看命令历史记录
 - `ais learn` - 学习命令行知识和技巧
-- `ais suggest` - 根据任务描述获取命令建议
 - `ais config` - 配置管理
 - `ais on/off` - 开启/关闭自动错误分析
 - `ais provider-add` - 添加自定义AI服务商

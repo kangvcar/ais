@@ -59,7 +59,6 @@ test_installation() {
     run_test "列出服务商" "ais provider-list"
     run_test "查看历史记录" "ais history"
     run_test "学习命令可用" "ais learn --help"
-    run_test "建议命令可用" "ais suggest --help"
     
     # 配置测试
     run_test "配置设置" "ais config --set test_key=test_value"

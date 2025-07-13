@@ -16,11 +16,9 @@ from ais.cli.main import (
     analyze_error,
     show_history,
     show_history_detail,
-    suggest_command,
     learn_command,
     setup_shell,
     test_integration,
-    which_command,
     help_all,
     _handle_error,
     _toggle_auto_analysis,
@@ -546,40 +544,6 @@ class TestHistoryCommands:
             assert "索引超出范围" in result.output
 
 
-class TestSuggestCommand:
-    """Test suggest command."""
-
-    def test_suggest_command_success(self):
-        """Test suggest command success."""
-        runner = CliRunner()
-
-        with patch("ais.cli.main.get_config") as mock_config:
-            with patch("ais.cli.main.ask_ai") as mock_ask:
-                mock_config.return_value = {"test": "config"}
-                mock_ask.return_value = "Suggestion response"
-
-                result = runner.invoke(suggest_command, ["compress files"])
-
-                assert result.exit_code == 0
-                mock_ask.assert_called_once()
-
-    def test_suggest_command_no_task(self):
-        """Test suggest command without task."""
-        runner = CliRunner()
-        result = runner.invoke(suggest_command, [])
-
-        assert result.exit_code == 0
-        assert "错误: 请提供任务描述" in result.output
-
-    def test_suggest_command_help_detail(self):
-        """Test suggest command help detail."""
-        runner = CliRunner()
-        result = runner.invoke(suggest_command, ["--help-detail"])
-
-        assert result.exit_code == 0
-        assert "ais suggest 命令详细使用说明" in result.output
-
-
 class TestLearnCommand:
     """Test learn command."""
 
@@ -645,14 +609,6 @@ class TestUtilityCommands:
                         result = runner.invoke(test_integration, [])
 
                         assert result.exit_code == 0
-
-    def test_which_command(self):
-        """Test which command."""
-        runner = CliRunner()
-        result = runner.invoke(which_command, [])
-
-        assert result.exit_code == 0
-        assert "不知道用哪个命令？" in result.output
 
     def test_help_all_command(self):
         """Test help all command."""

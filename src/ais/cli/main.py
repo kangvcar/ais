@@ -240,7 +240,6 @@ def ask(question, help_detail):
         console.print('  • 故障诊断："为什么命令执行失败？"')
         console.print()
         console.print("[bold]vs 其他命令:[/bold]")
-        console.print("  • 需要具体操作步骤 → 使用 ais suggest")
         console.print("  • 想系统学习主题 → 使用 ais learn")
         console.print()
         console.print("[bold]提示:[/bold]")
@@ -251,7 +250,6 @@ def ask(question, help_detail):
         console.print()
         console.print("[bold]相关命令:[/bold]")
         console.print("  ais config --list-providers - 查看可用的 AI 服务商")
-        console.print("  ais suggest <任务>          - 获取任务相关的命令建议")
         console.print("  ais learn <主题>            - 学习特定主题知识")
         return
 
@@ -888,94 +886,6 @@ def show_history_detail_content(index):
         console.print(f"[red]获取详细信息失败: {e}[/red]")
 
 
-@main.command("suggest")
-@click.argument("task", required=False)
-@click.option(
-    "--help-detail", is_flag=True, help="显示suggest命令详细使用说明"
-)
-def suggest_command(task, help_detail):
-    """根据任务描述建议命令。"""
-    if help_detail:
-        console.print("[green]ais suggest 命令详细使用说明:[/green]")
-        console.print()
-        console.print("[bold]功能:[/bold]")
-        console.print("  任务导向模式，提供完成具体任务的命令方案")
-        console.print("  重点关注操作步骤、安全性和最佳实践")
-        console.print()
-        console.print("[bold]用法:[/bold]")
-        console.print("  ais suggest <任务描述>")
-        console.print()
-        console.print("[bold]适用场景:[/bold]")
-        console.print('  • 需要完成具体任务："压缩文件夹"')
-        console.print('  • 寻找操作方法："批量重命名文件"')
-        console.print('  • 系统管理任务："监控系统资源"')
-        console.print('  • 数据处理任务："备份数据库"')
-        console.print()
-        console.print("[bold]vs 其他命令:[/bold]")
-        console.print("  • 只想了解概念 → 使用 ais ask")
-        console.print("  • 想深入学习主题 → 使用 ais learn")
-        console.print()
-        console.print("[bold]建议内容包括:[/bold]")
-        console.print("  • 推荐命令（按安全性排序）")
-        console.print("  • 每个命令的详细解释")
-        console.print("  • 使用注意事项和风险提示")
-        console.print("  • 相关学习资源和延伸知识")
-        console.print("  • 最佳实践建议")
-        console.print()
-        console.print("[bold]安全特性:[/bold]")
-        console.print("  • 命令按安全等级排序")
-        console.print("  • 危险操作会特别标注")
-        console.print("  • 提供风险评估和预防措施")
-        console.print()
-        console.print("[bold]适用场景:[/bold]")
-        console.print("  • 不确定如何完成某个任务")
-        console.print("  • 寻找更好的命令替代方案")
-        console.print("  • 学习任务相关的工具和技巧")
-        console.print("  • 了解操作的安全性和风险")
-        console.print()
-        console.print("[bold]相关命令:[/bold]")
-        console.print("  ais ask <问题>         - 直接提问具体问题")
-        console.print("  ais learn <主题>       - 学习特定主题知识")
-        console.print()
-        console.print("[dim]💡 提示: 任务描述越具体，建议越准确[/dim]")
-        return
-
-    if not task:
-        console.print("[red]错误: 请提供任务描述[/red]")
-        console.print('[dim]用法: ais suggest "你要完成的任务"[/dim]')
-        console.print("[dim]帮助: ais suggest --help-detail[/dim]")
-        return
-
-    try:
-        from ..core.ai import ask_ai
-
-        config = get_config()
-
-        suggestion_prompt = f"""
-        用户想要完成这个任务："{task}"
-
-        请提供：
-        1. 推荐的命令（按安全性排序）
-        2. 每个命令的详细解释
-        3. 使用注意事项和风险提示
-        4. 相关的学习资源或延伸知识
-
-        请用中文回答，使用 Markdown 格式。重点关注安全性和最佳实践。
-        """
-
-        response = ask_ai(suggestion_prompt, config)
-
-        if response:
-            console.print(f"\n[bold blue]💡 任务建议: {task}[/bold blue]")
-            console.print()
-            console.print(Markdown(response))
-        else:
-            console.print("[red]无法获取建议，请检查网络连接[/red]")
-
-    except Exception as e:
-        console.print(f"[red]建议功能出错: {e}[/red]")
-
-
 @main.command("learn")
 @click.argument("topic", required=False)
 @click.option("--help-detail", is_flag=True, help="显示learn命令详细使用说明")
@@ -1011,7 +921,6 @@ def learn_command(topic, help_detail):
         console.print()
         console.print("[bold]vs 其他命令:[/bold]")
         console.print("  • 快速解答问题 → 使用 ais ask")
-        console.print("  • 完成具体任务 → 使用 ais suggest")
         console.print()
         console.print("[bold]学习内容包括:[/bold]")
         console.print("  • 概念介绍和重要性说明")
@@ -1022,7 +931,6 @@ def learn_command(topic, help_detail):
         console.print()
         console.print("[bold]相关命令:[/bold]")
         console.print("  ais ask <问题>         - 直接提问具体问题")
-        console.print("  ais suggest <任务>     - 获取任务相关命令建议")
         console.print()
         console.print(
             "[dim]💡 提示: 可以学习任何主题，即使不在内置列表中[/dim]"
@@ -1218,48 +1126,6 @@ def test_integration():
         console.print(f"[red]❌ 测试失败: {e}[/red]")
 
 
-@main.command("which")
-def which_command():
-    """帮助选择合适的命令类型。"""
-    console.print(
-        "[bold green]🤔 不知道用哪个命令？让我来帮你选择！[/bold green]"
-    )
-    console.print()
-    console.print("[bold blue]📊 命令选择指南：[/bold blue]")
-    console.print()
-
-    console.print(
-        "[bold yellow]🔍 ais ask[/bold yellow] - [blue]快速问答模式[/blue]"
-    )
-    console.print("  适用：想了解概念、快速解答疑问")
-    console.print('  示例："什么是Docker？" "Git冲突怎么回事？"')
-    console.print()
-
-    console.print(
-        "[bold yellow]💡 ais suggest[/bold yellow] - [blue]任务解决模式[/blue]"
-    )
-    console.print("  适用：需要完成具体任务、寻找操作方法")
-    console.print('  示例："压缩文件夹" "批量重命名文件"')
-    console.print()
-
-    console.print(
-        "[bold yellow]📚 ais learn[/bold yellow] - [blue]系统学习模式[/blue]"
-    )
-    console.print("  适用：从头学习工具、深入掌握概念")
-    console.print('  示例："git" "docker" "vim"')
-    console.print()
-
-    console.print("[bold green]🎯 快速决策树：[/bold green]")
-    console.print("  ❓ 不懂概念/原理 → [yellow]ais ask[/yellow]")
-    console.print("  🎯 要完成具体任务 → [yellow]ais suggest[/yellow]")
-    console.print("  📖 想系统性学习 → [yellow]ais learn[/yellow]")
-    console.print()
-
-    console.print(
-        "[dim]💡 提示：还可以用 ais help-all 查看所有命令详细说明[/dim]"
-    )
-
-
 @main.command("help-all")
 def help_all():
     """显示所有命令的详细帮助汇总。"""
@@ -1269,7 +1135,6 @@ def help_all():
     console.print()
     console.print("[bold]核心功能命令:[/bold]")
     console.print("  ais ask --help-detail       - AI 问答功能详细说明")
-    console.print("  ais suggest --help-detail   - 任务建议功能详细说明")
     console.print("  ais learn --help-detail     - 学习功能详细说明")
     console.print()
     console.print("[bold]配置管理命令:[/bold]")
