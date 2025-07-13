@@ -771,12 +771,13 @@ def show_history(limit, failed_only, command_filter, help_detail):
 
         # 创建表格
         table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("索引", style="cyan", width=6, justify="center")
         table.add_column("时间", style="dim", width=16)
         table.add_column("命令", style="bold", min_width=20)
         table.add_column("状态", justify="center", width=8)
         table.add_column("分析", width=20)
 
-        for log in logs:
+        for index, log in enumerate(logs, 1):
             # 格式化时间
             time_str = log.timestamp.strftime("%m-%d %H:%M")
 
@@ -794,7 +795,9 @@ def show_history(limit, failed_only, command_filter, help_detail):
             # 是否有 AI 分析
             has_analysis = "🤖 已分析" if log.ai_explanation else ""
 
-            table.add_row(time_str, cmd_display, status, has_analysis)
+            table.add_row(
+                str(index), time_str, cmd_display, status, has_analysis
+            )
 
         console.print(table)
 
