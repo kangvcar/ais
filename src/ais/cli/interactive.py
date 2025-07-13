@@ -1325,8 +1325,10 @@ def show_interactive_menu(
                 panels.error(f"处理选择时出错: {e}")
                 continue
             except Exception as e:
-                debug_info = f"action={action}, suggestions_count={
-                    len(suggestions)}"
+                debug_info = (
+                    f"action={action}, "
+                    f"suggestions_count={len(suggestions)}"
+                )
                 panels.error(
                     f"执行操作时发生未知错误: {e}\n调试信息: {debug_info}"
                 )
