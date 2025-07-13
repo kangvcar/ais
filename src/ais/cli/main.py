@@ -569,7 +569,8 @@ def list_provider(help_detail):
             url = provider.get("base_url", "N/A")
             has_key = "🔑" if provider.get("api_key") else "  "
             provider_list.append(
-                f"{current} {name}: {model} ({url}) {has_key}")
+                f"{current} {name}: {model} ({url}) {has_key}"
+            )
 
         content = "\n".join(provider_list)
         panels.config(content, "🔧 可用的 AI 服务商")

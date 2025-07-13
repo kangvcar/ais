@@ -841,10 +841,9 @@ def execute_command(command: str) -> bool:
             title="[bold blue]⚡ 命令执行[/bold blue]",
             title_align="left",
             border_style="blue",
-            padding=(
-                0,
-                1),
-            expand=False)
+            padding=(0, 1),
+            expand=False,
+        )
         console.print(exec_panel)
 
         # 分隔线
@@ -867,7 +866,7 @@ def execute_command(command: str) -> bool:
                 title_align="left",
                 border_style="green",
                 padding=(0, 1),
-                expand=False
+                expand=False,
             )
         else:
             result_panel = Panel(
@@ -876,7 +875,7 @@ def execute_command(command: str) -> bool:
                 title_align="left",
                 border_style="red",
                 padding=(0, 1),
-                expand=False
+                expand=False,
             )
         console.print(result_panel)
 
@@ -889,7 +888,7 @@ def execute_command(command: str) -> bool:
             title_align="left",
             border_style="red",
             padding=(0, 1),
-            expand=False
+            expand=False,
         )
         console.print(error_panel)
         return False
@@ -1101,9 +1100,12 @@ def show_command_details(
             )
 
             panels.warning(
-                f"命令: {safe_command_text}\n描述: {safe_description_text}")
+                f"命令: {safe_command_text}\n描述: {safe_description_text}"
+            )
         except Exception as fallback_error:
-            panels.error(f"严重错误，无法显示命令信息: {fallback_error}\n原始错误: {e}")
+            panels.error(
+                f"严重错误，无法显示命令信息: {fallback_error}\n原始错误: {e}"
+            )
 
 
 def ask_follow_up_question(
@@ -1197,6 +1199,7 @@ def show_interactive_menu(
         # 显示建议命令表格（在菜单上方）
         if suggestions:
             from rich.panel import Panel
+
             suggestions_table = _create_suggestions_table(suggestions)
             suggestions_panel = Panel(
                 suggestions_table,
@@ -1204,7 +1207,7 @@ def show_interactive_menu(
                 title_align="left",
                 border_style="green",
                 padding=(1, 1),
-                expand=False
+                expand=False,
             )
             console.print(suggestions_panel)
 
@@ -1324,7 +1327,9 @@ def show_interactive_menu(
             except Exception as e:
                 debug_info = f"action={action}, suggestions_count={
                     len(suggestions)}"
-                panels.error(f"执行操作时发生未知错误: {e}\n调试信息: {debug_info}")
+                panels.error(
+                    f"执行操作时发生未知错误: {e}\n调试信息: {debug_info}"
+                )
                 continue
 
         elif action == "edit":
