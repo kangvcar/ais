@@ -1017,9 +1017,8 @@ def show_command_details(
             )
             console.print(main_panel)
         except Exception:
-            # 如果面板显示失败，直接显示表格
-            console.print("📖 命令详细说明")
-            console.print(details_table)
+            # 如果面板显示失败，使用简化的Panel显示
+            panels.info(details_table, "📖 命令详细说明")
 
         # 增强型风险警告（仅对危险和中等风险命令）
         if risk_level in ["dangerous", "moderate"]:
@@ -1159,7 +1158,7 @@ def ask_follow_up_question(
 
 def edit_command(command: str) -> str:
     """让用户编辑命令。"""
-    print(f"\n✏️  当前命令: {command}")
+    panels.info(f"✏️  当前命令: {command}", "🔧 命令编辑")
     new_command = input("请输入修改后的命令: ").strip()
     return new_command if new_command else command
 
@@ -1185,17 +1184,7 @@ def show_interactive_menu(
     # 收集用户上下文信息用于个性化推荐
     user_context = _collect_user_context()
 
-    # 显示项目类型信息（移除技能级别显示）
-    if user_context.get("project_type"):
-        from rich.panel import Panel
-        context_panel = Panel(
-            f"[cyan]🚀 检测到: {user_context['project_type']}项目环境[/cyan]",
-            title="[bold magenta]🧠 智能分析[/bold magenta]",
-            border_style="magenta",
-            padding=(0, 2),
-            expand=False
-        )
-        console.print(context_panel)
+    # 移除项目类型显示，简化界面
 
     while True:
         # 显示建议命令表格（在菜单上方）
@@ -1204,7 +1193,7 @@ def show_interactive_menu(
             suggestions_table = _create_suggestions_table(suggestions)
             suggestions_panel = Panel(
                 suggestions_table,
-                title="[bold green]💡 AI 建议的解决方案[/bold green]",
+                title="[bold green]💡 AI 基于你的使用习惯和当前环境推荐[/bold green]",
                 border_style="green",
                 padding=(1, 1),
                 expand=False
@@ -1219,35 +1208,13 @@ def show_interactive_menu(
             suggestions, terminal_width, user_context
         )
 
-        # 显示智能排序提示
-        if user_context and any(
-            choice.get("score", 0) > 1.5 for choice in choices
-        ):
-            from rich.panel import Panel
-            smart_panel = Panel(
-                "[cyan]🧠 智能排序已启用: 基于你的使用习惯和当前环境[/cyan]",
-                title="[bold blue]✨ 个性化推荐[/bold blue]",
-                border_style="blue",
-                padding=(0, 1),
-                expand=False
-            )
-            console.print(smart_panel)
+        # 移除智能排序提示，简化界面
 
         # 移除分割线，界面更简洁
 
         # 不需要添加固定选项，直接通过输入处理
 
-        # 显示快捷键提示（更简洁的提示）
-        from rich.panel import Panel
-        help_panel = Panel(
-            f"[yellow]💡 输入选项: 1-{len(suggestions)}选择建议, "
-            f"e=编辑, q=提问, x=退出[/yellow]",
-            title="[bold yellow]🔍 操作指南[/bold yellow]",
-            border_style="yellow",
-            padding=(0, 1),
-            expand=False
-        )
-        console.print(help_panel)
+        # 移除操作指南，简化界面
 
         # 显示菜单（增加错误处理）
         try:
