@@ -1,0 +1,74 @@
+# Git相关
+.git
+.gitignore
+.github/
+
+# Python相关
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 虚拟环境
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 测试
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# 文档
+docs/_build/
+docs/build/
+
+# 日志
+*.log
+
+# 临时文件
+.tmp/
+tmp/
+*.tmp
+*.bak
+
+# OS相关
+.DS_Store
+Thumbs.db
+
+# AIS特定
+workspace/
+*.db
+.ais/

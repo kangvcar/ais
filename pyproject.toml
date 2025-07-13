@@ -48,6 +48,8 @@ dependencies = [
 
 [project.scripts]
 ais = "ais.cli.main:main"
+ais-doctor = "ais.cli.main:doctor"
+ais-setup = "ais.cli.main:setup"
 
 
 
@@ -67,6 +69,13 @@ dev = [
     "mypy>=1.0.0",
     "pre-commit>=3.0.0",
 ]
+docker = [
+    "docker>=6.0.0",
+    "docker-compose>=1.29.0",
+]
+all = [
+    "ais-terminal[dev,docker]",
+]
 
 [tool.hatch.version]
 path = "src/ais/__init__.py"
@@ -78,9 +87,18 @@ packages = ["src/ais"]
 include = [
     "src/ais/",
     "scripts/",
-    "docs/README.md",
+    "docs/",
     "LICENSE",
     "pyproject.toml",
+    "Dockerfile",
+    "docker-compose.yml",
+    ".dockerignore",
+]
+exclude = [
+    "docs/INSTALLATION_OLD.md",
+    "*.tmp",
+    "*.log",
+    ".git/",
 ]
 
 

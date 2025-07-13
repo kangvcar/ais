@@ -1,21 +1,28 @@
 # AIS 安装指南
 
-本文档提供了AIS（AI-powered terminal assistant）的详细安装指南，涵盖所有安装方式和使用场景。
+本文档按用户类型提供 AIS（AI-powered terminal assistant）的最佳安装方式。
 
 ## 系统要求
 
-- **Python**: 3.8 或更高版本
+- **Python**: 3.8+ （推荐 3.11+）
 - **操作系统**: Linux, macOS, Windows
 - **网络**: 需要网络连接以下载依赖和AI服务
+- **空间**: 至少 100MB 可用空间
 
-## 🎯 推荐安装方式
+## 👤 按用户类型选择安装方式
 
-### 个人使用（最佳实践）
+### 👨‍💻 个人开发者（最佳实践）
 
-使用pipx进行用户级安装，安全且符合Python最佳实践：
+**特点**: 只需要个人使用，注重安全性和简单性
+
+**推荐安装方式**: pipx 用户级安装
 
 ```bash
-# 1. 安装pipx（如果没有）
+# 一键安装（智能检测）
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
+
+# 或手动安装
+# 1. 安装pipx
 python3 -m pip install --user pipx
 python3 -m pipx ensurepath
 
@@ -26,202 +33,317 @@ pipx install ais-terminal
 ais setup
 ```
 
-**优势：**
-- ✅ 安全隔离，独立虚拟环境
+**优势**:
+- ✅ 最高安全性，独立虚拟环境
 - ✅ 无需sudo权限
-- ✅ 版本管理简单
-- ✅ 符合Python生态标准
+- ✅ 简单升级和卸载
+- ✅ 不影响系统环境
 
-### 多用户环境（推荐）
+### 🏢 团队/企业环境（推荐）
 
-使用pipx全局安装，兼顾安全性和多用户支持：
+**特点**: 多人使用，需要统一管理
+
+**推荐安装方式**: pipx 全局安装
 
 ```bash
-# 1. 安装pipx（如果没有）
+# 一键安装（管理员执行）
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --system
+
+# 或手动安装
+# 1. 安装pipx
 sudo apt install pipx  # Ubuntu/Debian
 # 或 sudo yum install python3-pipx  # CentOS/RHEL
-# 或 sudo pip install pipx  # 通用方式
 
 # 2. 全局安装AIS
 sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
 
-# 3. 每个用户设置shell集成
-ais setup
+# 3. 用户设置shell集成
+ais setup  # 每个用户都需要执行
 ```
 
-**优势：**
-- ✅ 所有用户都可以使用
-- ✅ 保持虚拟环境隔离
-- ✅ 比系统级安装更安全
-- ✅ 管理和升级简单
+**优势**:
+- ✅ 所有用户可用
+- ✅ 保持安全隔离
+- ✅ 集中管理和更新
+- ✅ 版本一致性
 
-## 🔧 其他安装方式
+### 🐳 容器/云环境
 
-### 智能安装脚本
+**特点**: Docker容器、K8s集群或云平台
 
-自动检测环境并提供最佳安装选择：
+**推荐安装方式**: Docker 容器化部署
 
 ```bash
-# 运行智能安装脚本
-curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
+# Docker 安装
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/docker-install.sh | bash
 
-# 脚本会检测pipx并提供选择：
-# 1. pipx用户级安装
-# 2. pipx全局安装（推荐）
-# 3. 传统系统级安装
+# 或直接使用Docker
+docker run -it --rm ais-terminal:latest
+
+# Docker Compose
+wget https://raw.githubusercontent.com/kangvcar/ais/main/docker-compose.yml
+docker-compose up -d ais
 ```
 
-### 系统级安装（运维环境）
+**优势**:
+- ✅ 环境一致性
+- ✅ 快速部署
+- ✅ 易于扩展
+- ✅ 完全隔离
 
-适用于深度系统集成的场景：
+### 🔧 开发者/贡献者
 
-```bash
-# 全局安装脚本（传统方式）
-curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --system-install
-```
+**特点**: 需要修改代码或测试新功能
 
-### 开发环境安装
-
-在项目虚拟环境中安装：
-
-```bash
-# 在已激活的虚拟环境中
-pip install ais-terminal
-```
-
-### 从源码安装
-
-开发者或需要最新功能：
+**推荐安装方式**: 源码安装
 
 ```bash
 # 克隆仓库
 git clone https://github.com/kangvcar/ais.git
 cd ais
 
-# 使用pipx安装
+# 使用pipx开发模式安装
 pipx install -e .
 
-# 或在虚拟环境中安装
+# 或使用虚拟环境
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
-# 或 venv\Scripts\activate  # Windows
 pip install -e .
+
+# 设置开发环境
+pip install -e ".[dev]"
+pre-commit install
+```
+
+**优势**:
+- ✅ 实时修改效果
+- ✅ 完整开发工具链
+- ✅ 代码质量检查
+- ✅ 易于调试
+
+## 🚀 快速开始
+
+### 一键智能安装（推荐）
+
+自动检测环境并选择最佳安装方式：
+
+```bash
+# 智能安装（推荐）
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
+```
+
+该脚本会：
+- 🔍 检测当前环境（用户/管理员/容器）
+- 🎯 自动选择最佳安装方式
+- 🛠️ 安装pipx（如果需要）
+- 📦 安装AIS
+- 🔧 设置shell集成
+- 🔍 执行健康检查
+
+### 手动指定安装模式
+
+```bash
+# 用户级安装
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --user
+
+# 系统级安装
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --system
+
+# 容器安装
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/docker-install.sh | bash
 ```
 
 ## 📊 安装方式对比
 
-| 安装方式 | 安全性 | 多用户 | 管理难度 | 权限需求 | 推荐度 | 适用场景 |
-|---------|-------|-------|---------|---------|--------|----------|
-| **pipx用户级** | 🟢 最高 | ❌ 否 | 🟢 最简单 | 普通用户 | ⭐⭐⭐⭐⭐ | 个人开发 |
-| **pipx全局** | 🟢 高 | ✅ 是 | 🟢 简单 | sudo | ⭐⭐⭐⭐⭐ | 多用户环境 |
-| **系统全局** | 🟡 中等 | ✅ 是 | 🟡 中等 | sudo | ⭐⭐⭐ | 运维环境 |
-| **项目级** | 🟢 高 | ❌ 否 | 🟢 简单 | 普通用户 | ⭐⭐⭐ | 开发测试 |
-| **源码安装** | 🟡 中等 | 看情况 | 🟡 复杂 | 看情况 | ⭐⭐ | 开发贡献 |
+| 用户类型 | 推荐方式 | 安全性 | 简单度 | 权限需求 | 推荐指数 |
+|---------|---------|-------|-------|---------|----------|
+| 👨‍💻 **个人开发者** | pipx用户级 | 🟢 最高 | 🟢 最简单 | 普通用户 | ⭐⭐⭐⭐⭐ |
+| 🏢 **团队企业** | pipx全局 | 🟢 高 | 🟢 简单 | sudo | ⭐⭐⭐⭐⭐ |
+| 🐳 **容器部署** | Docker | 🟢 高 | 🟢 简单 | docker | ⭐⭐⭐⭐⭐ |
+| 🔧 **开发贡献** | 源码安装 | 🟡 中等 | 🟡 中等 | 看情况 | ⭐⭐⭐⭐ |
+| 🛠️ **运维管理** | 系统全局 | 🟡 中等 | 🟡 中等 | root | ⭐⭐⭐ |
 
 ## 🔧 安装后配置
 
+### 健康检查
+
+安装脚本会自动执行健康检查，也可手动验证：
+
+```bash
+# 检查AIS是否正常安装
+ais --version
+
+# 测试基本功能
+ais config --help
+ais ask "Hello AIS"
+
+# 测试自动错误分析
+mkdirr /tmp/test  # 故意输错命令
+```
+
 ### Shell集成设置
 
-无论使用哪种安装方式，都建议设置shell集成以启用自动错误分析：
+大多数安装方式会自动设置shell集成，如需手动设置：
 
 ```bash
 # 自动设置shell集成
 ais setup
 
-# 手动加载（可选）
+# 立即生效（可选）
 source ~/.bashrc  # Bash
 source ~/.zshrc   # Zsh
+
+# 或重新打开终端
 ```
 
-### 验证安装
+### 初始配置
 
 ```bash
-# 检查版本
-ais --version
+# 查看当前配置
+ais config
 
-# 测试基本功能
-ais ask "Hello"
+# 初始化配置（可选）
+ais config init
 
-# 测试自动错误分析
-mkdirr /tmp/test  # 故意输错命令
+# 设置API提供商（可选）
+ais config set provider openai
 ```
 
 ## 🛠️ 故障排除
 
 ### 常见问题
 
-#### 1. pipx命令不存在
+#### 1. 安装失败
 ```bash
-# 安装pipx
-python3 -m pip install --user pipx
+# 检查Python版本
+python3 --version  # 需要 >= 3.8
+
+# 检查网络连接
+curl -I https://pypi.org/simple/ais-terminal/
+
+# 重新安装pipx
+python3 -m pip install --user --force-reinstall pipx
 python3 -m pipx ensurepath
+```
 
-# 重新加载shell配置
+#### 2. 命令找不到
+```bash
+# 检查ais是否安装
+which ais
+pipx list | grep ais
+
+# 重新加载PATH
 source ~/.bashrc
+# 或重新打开终端
+
+# 手动添加到PATH
+export PATH="$HOME/.local/bin:$PATH"  # pipx用户级
+export PATH="/usr/local/bin:$PATH"    # pipx全局
 ```
 
-#### 2. ais命令找不到
+#### 3. 容器问题
 ```bash
-# 检查PATH
-echo $PATH
+# 检查Docker环境
+docker --version
+docker info
 
-# pipx用户级安装
-export PATH="$HOME/.local/bin:$PATH"
+# 重新构建镜像
+docker build -t ais-terminal:latest .
 
-# pipx全局安装
-echo $PATH | grep "/usr/local/bin"
+# 检查容器日志
+docker logs <container_id>
 ```
 
-#### 3. 权限问题
+#### 4. 权限问题
 ```bash
-# 避免使用sudo pip
-# 使用pipx或--user参数
-python3 -m pip install --user ais-terminal
+# Docker权限
+sudo usermod -aG docker $USER
+# 重新登录或执行: newgrp docker
+
+# 系统安装权限
+sudo -v  # 检查sudo权限
 ```
 
-#### 4. 依赖冲突
-```bash
-# 使用pipx解决依赖冲突
-pipx install ais-terminal
+### 诊断命令
 
-# 或创建独立虚拟环境
-python3 -m venv ais-env
-source ais-env/bin/activate
-pip install ais-terminal
+```bash
+# 全面诊断
+ais --debug --version
+
+# 检查配置
+ais config show
+
+# 检查环境
+echo "Python: $(python3 --version)"
+echo "pipx: $(pipx --version 2>/dev/null || echo 'Not installed')"
+echo "Docker: $(docker --version 2>/dev/null || echo 'Not installed')"
+echo "PATH: $PATH"
+```
+
+### 重新安装
+
+```bash
+# 完全清理并重新安装
+# 1. 卸载
+pipx uninstall ais-terminal  # 或使用其他卸载方式
+
+# 2. 清理配置
+rm -rf ~/.config/ais
+
+# 3. 重新安装
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
 ```
 
 ### 卸载
 
-#### pipx安装的卸载
 ```bash
-# 用户级
-pipx uninstall ais-terminal
+# pipx安装的卸载
+pipx uninstall ais-terminal  # 用户级
+sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx uninstall ais-terminal  # 全局
 
-# 全局级
-sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx uninstall ais-terminal
-```
+# Docker卸载
+docker stop ais-daemon && docker rm ais-daemon
+docker rmi ais-terminal:latest
 
-#### 系统级安装的卸载
-```bash
-# 使用卸载脚本
+# 系统级安装卸载
+# （使用专用卸载脚本）
 curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/uninstall.sh | bash
 ```
 
 ## 📚 更多资源
 
-- [pipx安装详细指南](PIPX_INSTALLATION_GUIDE.md)
-- [安装策略分析](INSTALLATION_STRATEGY.md)
-- [多用户配置](../README.md#多用户环境)
-- [开发环境设置](../CONTRIBUTING.md)
+- [🐳 Docker部署指南](DOCKER_GUIDE.md)
+- [🛠️ 开发环境设置](DEVELOPMENT.md)
+- [🏢 企业部署指南](DEPLOYMENT_GUIDE.md)
+- [🔧 配置指南](CONFIGURATION.md)
+- [📊 性能优化](PERFORMANCE.md)
 
 ## 🆘 获得帮助
 
-如果遇到安装问题：
+### 自助诊断
+```bash
+# 一键诊断
+ais doctor  # 自动检查常见问题
 
-1. 查看 [GitHub Issues](https://github.com/kangvcar/ais/issues)
-2. 运行 `ais --debug` 获取诊断信息
-3. 提交issue时请包含：
-   - 操作系统和版本
-   - Python版本
-   - 安装方式
-   - 错误信息
+# 详细诊断
+ais --debug --version
+ais config doctor
+```
+
+### 社区支持
+1. 💬 [GitHub Discussions](https://github.com/kangvcar/ais/discussions) - 交流和问答
+2. 🐛 [GitHub Issues](https://github.com/kangvcar/ais/issues) - 报告bug
+3. 📚 [Wiki](https://github.com/kangvcar/ais/wiki) - 详细文档
+4. 📧 [Email Support](mailto:ais@example.com) - 直接联系
+
+### 报告问题时请提供
+- 操作系统和版本
+- Python版本 (`python3 --version`)
+- AIS版本 (`ais --version`)
+- 安装方式（pipx/Docker/源码）
+- 完整错误信息
+- 复现步骤
+
+---
+
+🎉 **快乐使用 AIS！** 如果觉得有用，请给我们点个⭐️！

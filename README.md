@@ -37,104 +37,105 @@ AIS（AI-powered terminal assistant）是一个革命性的命令行工具，通
 
 ## 🚀 快速开始
 
-### 安装方式
+### ⚡ 一键安装（推荐）
 
-AIS 提供多种安装方式，请根据使用场景选择：
-
-#### 🎯 个人使用（推荐）
 ```bash
-# 安装pipx（如果没有）
-python3 -m pip install --user pipx
-python3 -m pipx ensurepath
+# 智能安装 - 自动检测环境并选择最佳方式
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
+```
 
-# 安装AIS（仅当前用户可用）
+**安装脚本会自动：**
+- 🔍 检测当前环境（个人/团队/容器）
+- 🎯 选择最佳安装方式（pipx用户级/系统级/容器化）
+- 📦 安装pipx和AIS
+- 🔧 配置shell集成
+- ✅ 执行健康检查
+
+### 🎯 按需求选择安装方式
+
+#### 👨‍💻 个人开发者
+```bash
+# 用户级安装（最安全）
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --user
+
+# 或手动安装
 pipx install ais-terminal
-
-# 设置shell集成
 ais setup
 ```
-> ✨ **最佳实践**：安全隔离，无需sudo，符合Python标准
 
-#### 🌐 多用户环境 - 系统级安装（推荐）
+#### 🏢 团队/企业环境
 ```bash
-# 方法1: 使用系统包管理器安装pipx后再安装AIS
-sudo apt install pipx  # Ubuntu/Debian
-# sudo yum install pipx  # CentOS/RHEL
-# sudo brew install pipx  # macOS
-
-# 安装AIS到系统位置（所有用户可用）
-sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
-
-# 方法2: 使用我们的全局安装脚本（更简单）
-curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
-
-# 每个用户设置shell集成
-ais setup
-```
-> 🎯 **推荐**：既有pipx的隔离优势，又支持多用户
-
-#### 🏢 多用户/运维环境
-```bash
-# 全局安装（所有用户可用）
-curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
-```
-> 🔧 **适用于**：服务器、开发机、CI/CD环境
-
-#### 🧪 开发/测试环境
-```bash
-# 项目虚拟环境中
-pip install ais-terminal
+# 系统级安装（所有用户可用）
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --system
 ```
 
-#### 📋 安装方式对比
+#### 🐳 容器/云环境
+```bash
+# Docker容器化安装
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/docker-install.sh | bash
 
-| 方式 | 安全性 | 多用户 | 管理难度 | 权限需求 | 适用场景 |
-|------|--------|--------|----------|----------|----------|
-| **pipx用户级** | 🟢 高 | ❌ 否 | 🟢 简单 | 普通用户 | 个人开发 |
-| **pipx系统级** | 🟢 高 | ✅ 是 | 🟡 中等 | sudo | 多用户环境 |
-| **系统全局** | 🟡 中 | ✅ 是 | 🟡 中等 | sudo | 运维环境 |
-| **项目级** | 🟢 高 | ❌ 否 | 🟢 简单 | 普通用户 | 测试开发 |
-
-### 智能安装脚本
-curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
-
-# Windows PowerShell 安装
-iwr -useb https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.ps1 | iex
+# 或直接运行
+docker run -it --rm ais-terminal:latest
 ```
 
-### 快速配置
+#### 🔧 开发者/贡献者
+```bash
+# 源码安装
+git clone https://github.com/kangvcar/ais.git
+cd ais
+pipx install -e .
+```
+
+### 📊 安装方式对比
+
+| 用户类型 | 推荐方式 | 安全性 | 简单度 | 权限需求 | 推荐指数 |
+|---------|---------|-------|-------|---------|----------|
+| 👨‍💻 **个人开发者** | pipx用户级 | 🟢 最高 | 🟢 最简单 | 普通用户 | ⭐⭐⭐⭐⭐ |
+| 🏢 **团队企业** | pipx全局 | 🟢 高 | 🟢 简单 | sudo | ⭐⭐⭐⭐⭐ |
+| 🐳 **容器部署** | Docker | 🟢 高 | 🟢 简单 | docker | ⭐⭐⭐⭐⭐ |
+| 🔧 **开发贡献** | 源码安装 | 🟡 中等 | 🟡 中等 | 看情况 | ⭐⭐⭐⭐ |
+
+### ✅ 验证安装
 
 ```bash
-# 查看配置选项
+# 检查版本
+ais --version
+
+# 测试基本功能
+ais ask "你好，AIS！"
+
+# 测试自动错误分析（故意输错命令）
+mkdirr /tmp/test
+```
+
+### ⚙️ 基础配置
+
+```bash
+# 查看当前配置
 ais config
 
-# 添加AI服务商（以OpenAI为例）
-ais provider-add openai \
-  --url https://api.openai.com/v1/chat/completions \
-  --model gpt-4 \
-  --key your_api_key
+# 设置API提供商（可选）
+ais config set provider openai
+ais config set api_key "your-api-key"
 
-# 设置默认提供商
-ais provider-use openai
-
-# 设置Shell集成
-ais setup
+# 调整分析级别
+ais config set analysis_level detailed
 ```
 
-### 立即体验
+### 🎮 立即体验
 
 ```bash
-# 向AI提问
-ais ask "什么是Docker容器？"
+# AI对话
+ais ask "如何查看系统内存使用情况？"
+ais ask "Docker容器如何挂载目录？"
 
-# 学习Git知识
-ais learn git
+# 智能错误分析
+pytho --version        # 拼写错误
+ls /not/exist         # 路径不存在
+git statuss           # 命令错误
 
-# 学习命令行知识
-ais learn "git"
-
-# 故意输入错误命令体验自动分析
-nonexistent_command
+# 命令建议
+ais suggest "我想压缩一个文件夹"
 ```
 
 ## 📖 详细功能
@@ -264,18 +265,22 @@ git clone https://github.com/kangvcar/ais.git
 cd ais
 
 # 创建虚拟环境
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 
-# 安装开发版本
-pip install -e .
+# 安装开发版本和依赖
+pip install -e ".[dev]"
+
+# 设置pre-commit
+pre-commit install
 
 # 运行测试
 python -m pytest tests/ -v
 
-# 代码格式化
-black src/ tests/
-flake8 src/ tests/
+# 代码质量检查
+source .venv/bin/activate && black src/ tests/
+source .venv/bin/activate && flake8 src/ tests/ --max-line-length=79
+source .venv/bin/activate && autopep8 --in-place --aggressive --aggressive --max-line-length=79 src/ tests/ -r
 ```
 
 ### 运行测试
@@ -314,12 +319,31 @@ pytest tests/test_ai.py -v
 
 本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
 
+## 📚 文档导航
+
+- 📖 [快速开始指南](docs/QUICK_START.md) - 5分钟上手
+- 🛠️ [完整安装指南](docs/INSTALLATION.md) - 详细安装说明
+- 🐳 [Docker部署指南](docs/DOCKER_GUIDE.md) - 容器化部署
+- 🏢 [企业部署指南](docs/DEPLOYMENT_GUIDE.md) - 生产环境
+- 🔧 [配置指南](docs/CONFIGURATION.md) - 高级配置
+- 👨‍💻 [开发指南](docs/DEVELOPMENT.md) - 贡献代码
+
 ## 🆘 获取帮助
 
-- 📚 [文档](docs/)
-- 🐛 [问题反馈](https://github.com/kangvcar/ais/issues)
-- 💬 [讨论区](https://github.com/kangvcar/ais/discussions)
-- 📧 联系我们：ais@example.com
+### 自助资源
+```bash
+# 一键诊断
+ais doctor
+
+# 详细调试
+ais --debug --version
+```
+
+### 社区支持
+- 📚 [完整文档](docs/)
+- 💬 [GitHub Discussions](https://github.com/kangvcar/ais/discussions) - 交流讨论
+- 🐛 [GitHub Issues](https://github.com/kangvcar/ais/issues) - 问题反馈
+- 📧 [邮件支持](mailto:ais@example.com) - 直接联系
 
 ## 🎉 鸣谢
 
@@ -327,4 +351,11 @@ pytest tests/test_ai.py -v
 
 ---
 
-**让AI成为你的终端伙伴，让命令行学习变得简单而有趣！** 🚀
+---
+
+🎉 **让AI成为你的终端伙伴，让命令行学习变得简单而有趣！**
+
+如果觉得有用，请给我们点个 ⭐️ 支持！
+
+[![Stars](https://img.shields.io/github/stars/kangvcar/ais?style=social)](https://github.com/kangvcar/ais/stargazers)
+[![Forks](https://img.shields.io/github/forks/kangvcar/ais?style=social)](https://github.com/kangvcar/ais/network/members)

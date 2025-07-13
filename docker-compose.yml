@@ -1,0 +1,73 @@
+# AIS Docker Compose 配置
+version: '3.8'
+
+services:
+  # AIS 基础服务
+  ais:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ais-terminal:latest
+    container_name: ais-assistant
+    restart: unless-stopped
+    environment:
+      - AIS_CONTAINER=1
+      - AIS_CONFIG_PATH=/app/config
+    volumes:
+      # 配置文件持久化
+      - ais-config:/home/ais/.config/ais
+      # 可选：挂载主机目录进行文件分析
+      - ./workspace:/workspace:ro
+    working_dir: /home/ais
+    command: ["tail", "-f", "/dev/null"]  # 保持容器运行
+    
+  # AIS 开发环境
+  ais-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    image: ais-terminal:dev
+    container_name: ais-dev
+    restart: unless-stopped
+    environment:
+      - AIS_CONTAINER=1
+      - AIS_DEV_MODE=1
+    volumes:
+      - .:/app:rw
+      - ais-dev-config:/home/ais/.config/ais
+    working_dir: /app
+    command: ["bash"]
+    stdin_open: true
+    tty: true
+
+  # AIS Web界面（可选扩展）
+  ais-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ais-terminal:web
+    container_name: ais-web
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - AIS_CONTAINER=1
+      - AIS_WEB_MODE=1
+      - AIS_WEB_PORT=8080
+    volumes:
+      - ais-web-config:/home/ais/.config/ais
+    command: ["ais", "web", "--host", "0.0.0.0", "--port", "8080"]
+    profiles: ["web"]  # 可选服务，需要明确启用
+
+volumes:
+  ais-config:
+    driver: local
+  ais-dev-config:
+    driver: local
+  ais-web-config:
+    driver: local
+
+networks:
+  default:
+    name: ais-network
