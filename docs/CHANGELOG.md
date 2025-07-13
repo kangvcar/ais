@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 添加全面的异常捕获和降级显示方案，即使部分组件失败也能正常显示基本信息
   - 修复命令选择格式化中的 None 值处理问题
   - 解决Rich Panel和Table组件内部模板处理导致的substitute错误
+  - **优化用户体验**: 移除选择菜单选项后的重复命令详情显示，直接执行命令，避免信息冗余
 
 ### Added
 - 📄 **内联集成脚本** - 当找不到外部脚本时自动创建内联版本

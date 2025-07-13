@@ -1274,8 +1274,56 @@ def show_interactive_menu(
                         console.print("[red]❌ 无效的命令数据[/red]")
                         continue
 
-                    # 显示命令详情（传入用户上下文）
-                    show_command_details(suggestion, console, user_context)
+                    # 跳过显示命令详情，直接执行命令
+                    # 用户反馈：详情信息在菜单选项中已展示，此处重复显示没有必要
+                    # show_command_details(suggestion, console, user_context)
+
+                    # 智能确认流程（基于用户上下文）
+                    should_skip = _should_skip_confirmation(
+                        command, risk_level, user_context
+                    )
+
+                    if not should_skip and risk_level in [
+                            "dangerous", "moderate"]:
+                        # 简化的确认流程
+                        if risk_level == "dangerous":
+                            cmd_display = (
+                                command[:30] + "..."
+                                if len(command) > 30 else command
+                            )
+                            confirm_text = f"⚠️  确认执行危险命令: {cmd_display}？"
+                        else:
+                            cmd_display = (
+                                command[:30] + "..."
+                                if len(command) > 30 else command
+                            )
+                            confirm_text = f"确认执行: {cmd_display}？"
+
+                        if not questionary.confirm(confirm_text).ask():
+                            console.print("[yellow]❌ 已取消执行[/yellow]")
+                            continue
+
+                    # 执行命令
+                    success = execute_command(command)
+
+                    # 智能后续操作
+                    if success:
+                        console.print("\n[green]🎉 命令执行成功！[/green]")
+                        # 对于安全命令，自动继续；对于危险命令，询问
+                        if risk_level == "safe":
+                            console.print("[dim]继续查看其他建议...[/dim]")
+                            continue
+                    else:
+                        console.print(
+                            "\n[yellow]🤔 命令执行失败，建议尝试其他方案[/yellow]"
+                        )
+
+                    # 询问是否继续（仅对非安全命令或失败情况）
+                    if not questionary.confirm(
+                        "继续查看其他建议？", default=True
+                    ).ask():
+                        break
+
                 else:
                     console.print("[red]❌ 无效的选择索引[/red]")
                     continue
@@ -1290,49 +1338,6 @@ def show_interactive_menu(
                 )
                 console.print(f"[dim]调试信息: {debug_info}[/dim]")
                 continue
-
-            # 智能确认流程（基于用户上下文）
-            should_skip = _should_skip_confirmation(
-                command, risk_level, user_context
-            )
-
-            if not should_skip and risk_level in ["dangerous", "moderate"]:
-                # 简化的确认流程
-                if risk_level == "dangerous":
-                    cmd_display = (
-                        command[:30] + "..." if len(command) > 30 else command
-                    )
-                    confirm_text = f"⚠️  确认执行危险命令: {cmd_display}？"
-                else:
-                    cmd_display = (
-                        command[:30] + "..." if len(command) > 30 else command
-                    )
-                    confirm_text = f"确认执行: {cmd_display}？"
-
-                if not questionary.confirm(confirm_text).ask():
-                    console.print("[yellow]❌ 已取消执行[/yellow]")
-                    continue
-
-            # 执行命令
-            success = execute_command(command)
-
-            # 智能后续操作
-            if success:
-                console.print("\n[green]🎉 命令执行成功！[/green]")
-                # 对于安全命令，自动继续；对于危险命令，询问
-                if risk_level == "safe":
-                    console.print("[dim]继续查看其他建议...[/dim]")
-                    continue
-            else:
-                console.print(
-                    "\n[yellow]🤔 命令执行失败，建议尝试其他方案[/yellow]"
-                )
-
-            # 询问是否继续（仅对非安全命令或失败情况）
-            if not questionary.confirm(
-                "继续查看其他建议？", default=True
-            ).ask():
-                break
 
         elif action == "details":
             # 查看详情
