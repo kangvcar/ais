@@ -1,354 +1,332 @@
-# AIS Windows PowerShell 安装脚本
-# AIS Windows PowerShell Installation Script
+# AIS Windows PowerShell 智能安装脚本
+# AIS Windows PowerShell Intelligent Installation Script
 
 param(
-    [string]$InstallMethod = "pipx",  # pipx, pip, source, local
+    [ValidateSet("auto", "user", "system", "container")]
+    [string]$InstallMode = "auto",
+    
     [string]$PythonCommand = "python",
-    [switch]$NoShellIntegration,
-    [switch]$GlobalInstall,
+    [switch]$SkipShellIntegration,
+    [switch]$SkipChecks,
     [switch]$Help
 )
 
-# 颜色定义
-function Write-Info { param($Message) Write-Host "ℹ️  $Message" -ForegroundColor Blue }
-function Write-Success { param($Message) Write-Host "✅ $Message" -ForegroundColor Green }
-function Write-Warning { param($Message) Write-Host "⚠️  $Message" -ForegroundColor Yellow }
-function Write-Error { param($Message) Write-Host "❌ $Message" -ForegroundColor Red }
+# 颜色定义和辅助函数
+function Write-Info { 
+    param($Message) 
+    Write-Host "ℹ️  $Message" -ForegroundColor Blue 
+}
+
+function Write-Success { 
+    param($Message) 
+    Write-Host "✅ $Message" -ForegroundColor Green 
+}
+
+function Write-Warning { 
+    param($Message) 
+    Write-Host "⚠️  $Message" -ForegroundColor Yellow 
+}
+
+function Write-ErrorMsg { 
+    param($Message) 
+    Write-Host "❌ $Message" -ForegroundColor Red 
+}
 
 # 显示帮助信息
 function Show-Help {
     Write-Host @"
-AIS Windows 安装脚本
+AIS Windows 智能安装脚本
 
 用法: .\install.ps1 [选项]
 
-选项:
-  -InstallMethod <method>    安装方式: pipx, pip, source, local (默认: pipx)
+安装模式:
+  -InstallMode <mode>        安装模式: auto, user, system, container (默认: auto)
+    auto                     自动检测环境并选择最佳方式
+    user                     用户级pipx安装 (推荐个人使用)
+    system                   系统级pipx安装 (推荐多用户环境)
+    container                容器化安装
+
+其他选项:
   -PythonCommand <command>   Python命令 (默认: python)
-  -NoShellIntegration        跳过Shell集成
-  -GlobalInstall             全局安装
-  -Help                      显示此帮助
+  -SkipShellIntegration      跳过Shell集成设置
+  -SkipChecks               跳过安装后健康检查
+  -Help                     显示此帮助信息
 
-示例:
-  .\install.ps1                           # 使用pipx安装（推荐）
-  .\install.ps1 -InstallMethod pip        # 使用pip安装
-  .\install.ps1 -InstallMethod source     # 从源码安装
-  .\install.ps1 -GlobalInstall           # 全局安装
+安装示例:
+  个人安装: .\install.ps1
+  系统安装: .\install.ps1 -InstallMode system
+  跳过集成: .\install.ps1 -SkipShellIntegration
+
+💡 推荐使用pipx进行安装，提供最佳的安全性和可维护性
 "@
+    exit 0
 }
 
-# 检查管理员权限
-function Test-IsAdmin {
-    $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
-    $principal = New-Object Security.Principal.WindowsPrincipal($currentUser)
-    return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-}
-
-# 检查Python环境
-function Test-Python {
-    Write-Info "检查Python环境..."
-    
+# 检查命令是否存在
+function Test-CommandExists {
+    param($Command)
     try {
-        $pythonVersion = & $PythonCommand --version 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "Python未安装或不可用"
-            Write-Info "请访问 https://www.python.org/downloads/ 安装Python"
-            return $false
-        }
-        
-        $versionMatch = $pythonVersion -match "Python (\d+)\.(\d+)\.(\d+)"
-        if ($versionMatch) {
-            $major = [int]$matches[1]
-            $minor = [int]$matches[2]
-            
-            if ($major -lt 3 -or ($major -eq 3 -and $minor -lt 8)) {
-                Write-Error "Python版本过低，需要Python 3.8或更高版本"
-                Write-Info "当前版本: $pythonVersion"
-                return $false
-            }
-        }
-        
-        Write-Success "Python环境检查通过: $pythonVersion"
+        Get-Command $Command -ErrorAction Stop | Out-Null
         return $true
     }
     catch {
-        Write-Error "检查Python环境时出错: $_"
         return $false
     }
 }
 
-# 检查pip环境
-function Test-Pip {
-    Write-Info "检查pip环境..."
+# 检测环境
+function Get-Environment {
+    if ($env:CONTAINER -or $env:container) {
+        return "container"
+    }
+    elseif (([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+        return "admin"
+    }
+    else {
+        return "user"
+    }
+}
+
+# 安装pipx
+function Install-Pipx {
+    Write-Info "📦 安装pipx..."
     
-    try {
-        $pipVersion = & $PythonCommand -m pip --version 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "pip不可用"
-            Write-Info "尝试安装pip..."
-            & $PythonCommand -m ensurepip --upgrade
-            if ($LASTEXITCODE -ne 0) {
-                Write-Error "pip安装失败"
-                return $false
-            }
-        }
-        
-        Write-Success "pip环境检查通过: $pipVersion"
+    if (Test-CommandExists "pipx") {
+        Write-Success "pipx已安装"
         return $true
-    }
-    catch {
-        Write-Error "检查pip环境时出错: $_"
-        return $false
-    }
-}
-
-# 从PyPI安装
-function Install-FromPyPI {
-    Write-Info "从PyPI安装AIS..."
-    
-    try {
-        if ($GlobalInstall) {
-            & $PythonCommand -m pip install --upgrade ais-terminal
-        } else {
-            & $PythonCommand -m pip install --user --upgrade ais-terminal
-        }
-        
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "从PyPI安装失败"
-            return $false
-        }
-        
-        Write-Success "从PyPI安装成功"
-        return $true
-    }
-    catch {
-        Write-Error "安装过程中出错: $_"
-        return $false
-    }
-}
-
-# 从源码安装
-function Install-FromSource {
-    Write-Info "从GitHub源码安装AIS..."
-    
-    try {
-        $tempDir = New-TemporaryFile | ForEach-Object { Remove-Item $_; New-Item -ItemType Directory -Path $_ }
-        Set-Location $tempDir
-        
-        Write-Info "克隆仓库..."
-        git clone https://github.com/kangvcar/ais.git
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "克隆仓库失败"
-            return $false
-        }
-        
-        Set-Location ais
-        
-        Write-Info "安装依赖并构建..."
-        & $PythonCommand -m pip install --upgrade build
-        & $PythonCommand -m build
-        
-        if ($GlobalInstall) {
-            & $PythonCommand -m pip install dist/*.whl
-        } else {
-            & $PythonCommand -m pip install --user dist/*.whl
-        }
-        
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "从源码安装失败"
-            return $false
-        }
-        
-        Write-Success "从源码安装成功"
-        return $true
-    }
-    catch {
-        Write-Error "安装过程中出错: $_"
-        return $false
-    }
-    finally {
-        Set-Location $env:USERPROFILE
-        if (Test-Path $tempDir) {
-            Remove-Item -Recurse -Force $tempDir
-        }
-    }
-}
-
-# 本地安装
-function Install-Local {
-    Write-Info "本地安装AIS..."
-    
-    if (-not (Test-Path "pyproject.toml")) {
-        Write-Error "未找到pyproject.toml文件，请确保在项目根目录下运行"
-        return $false
     }
     
     try {
-        & $PythonCommand -m pip install --upgrade build
-        & $PythonCommand -m build
+        # 尝试使用pip安装pipx
+        & $PythonCommand -m pip install --user pipx
         
-        if ($GlobalInstall) {
-            & $PythonCommand -m pip install dist/*.whl
-        } else {
-            & $PythonCommand -m pip install --user dist/*.whl
+        # 确保pipx在PATH中
+        & $PythonCommand -m pipx ensurepath
+        
+        # 刷新环境变量
+        $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
+        
+        if (Test-CommandExists "pipx") {
+            Write-Success "pipx安装成功"
+            return $true
         }
-        
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "本地安装失败"
+        else {
+            Write-ErrorMsg "pipx安装失败"
             return $false
         }
-        
-        Write-Success "本地安装成功"
-        return $true
     }
     catch {
-        Write-Error "安装过程中出错: $_"
+        Write-ErrorMsg "pipx安装失败: $($_.Exception.Message)"
         return $false
     }
 }
 
-# 测试安装
+# 健康检查
 function Test-Installation {
-    Write-Info "测试安装..."
+    Write-Info "🔍 执行安装后健康检查..."
     
-    try {
-        $aisVersion = & ais --version 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "AIS命令不可用"
-            return $false
-        }
-        
-        Write-Success "安装测试通过: $aisVersion"
-        return $true
-    }
-    catch {
-        Write-Error "测试安装时出错: $_"
+    # 检查ais命令
+    if (-not (Test-CommandExists "ais")) {
+        Write-ErrorMsg "ais命令未找到"
         return $false
     }
-}
-
-# PowerShell集成
-function Install-PowerShellIntegration {
-    Write-Info "配置PowerShell集成..."
     
+    # 检查版本
     try {
-        $profilePath = $PROFILE.CurrentUserCurrentHost
-        if (-not (Test-Path $profilePath)) {
-            New-Item -ItemType File -Path $profilePath -Force | Out-Null
-        }
-        
-        $integrationCode = @"
-
-# AIS PowerShell 集成
-function Invoke-AISOnError {
-    if (`$LASTEXITCODE -ne 0 -and `$LASTEXITCODE -ne `$null) {
-        `$lastCommand = Get-History -Count 1 | Select-Object -ExpandProperty CommandLine
-        if (`$lastCommand -and `$lastCommand -notmatch "^(ais|cd|ls|dir|Get-|Set-|New-|Remove-)") {
-            Write-Host "检测到命令执行失败，正在分析..." -ForegroundColor Yellow
-            & ais analyze "`$lastCommand" --exit-code `$LASTEXITCODE
-        }
-    }
-}
-
-# 为每个命令添加错误检查
-`$ExecutionContext.InvokeCommand.PostCommandLookupAction = {
-    param(`$commandName, `$lookupEventArgs)
-    if (`$commandName -ne "ais") {
-        `$lookupEventArgs.CommandScriptBlock = {
-            & @args
-            Invoke-AISOnError
-        }.GetNewClosure()
-    }
-}
-"@
-        
-        if (-not (Get-Content $profilePath -Raw).Contains("AIS PowerShell 集成")) {
-            Add-Content -Path $profilePath -Value $integrationCode
-            Write-Success "PowerShell集成配置完成"
-            Write-Info "请重新启动PowerShell或运行: . `$PROFILE"
-        } else {
-            Write-Info "PowerShell集成已存在"
-        }
-        
-        return $true
+        $version = & ais --version 2>$null | Select-Object -First 1
+        Write-Success "ais命令可用: $version"
     }
     catch {
-        Write-Error "配置PowerShell集成时出错: $_"
+        Write-ErrorMsg "无法获取ais版本信息"
         return $false
+    }
+    
+    # 测试基本功能
+    try {
+        & ais config --help | Out-Null
+        Write-Success "基本功能测试通过"
+    }
+    catch {
+        Write-Warning "基本功能测试失败，但安装可能仍然成功"
+    }
+    
+    return $true
+}
+
+# 用户级安装
+function Install-UserMode {
+    Write-Info "👤 开始用户级pipx安装..."
+    
+    # 安装pipx
+    if (-not (Install-Pipx)) {
+        exit 1
+    }
+    
+    # 安装AIS
+    Write-Info "📦 安装ais-terminal..."
+    try {
+        & pipx install ais-terminal
+        Write-Success "✅ 用户级安装完成！"
+        Write-Info "💡 如需为其他用户安装，请以管理员身份运行: .\install.ps1 -InstallMode system"
+    }
+    catch {
+        Write-ErrorMsg "AIS安装失败: $($_.Exception.Message)"
+        exit 1
+    }
+    
+    # 设置shell集成
+    if (-not $SkipShellIntegration) {
+        Write-Info "🔧 设置shell集成..."
+        try {
+            & ais setup | Out-Null
+        }
+        catch {
+            Write-Warning "shell集成设置可能需要手动完成"
+        }
     }
 }
 
-# 主函数
-function Main {
-    Write-Host "================================================" -ForegroundColor Cyan
-    Write-Host "         AIS Windows 安装工具" -ForegroundColor Cyan
-    Write-Host "================================================" -ForegroundColor Cyan
+# 系统级安装
+function Install-SystemMode {
+    Write-Info "🏢 开始系统级pipx安装..."
+    
+    # 检查管理员权限
+    if ((Get-Environment) -ne "admin") {
+        Write-ErrorMsg "系统级安装需要管理员权限"
+        Write-Info "请以管理员身份重新运行PowerShell"
+        exit 1
+    }
+    
+    # 安装pipx
+    if (-not (Install-Pipx)) {
+        exit 1
+    }
+    
+    # 设置系统级pipx环境
+    $env:PIPX_HOME = "C:\ProgramData\pipx"
+    $env:PIPX_BIN_DIR = "C:\Program Files\pipx\bin"
+    
+    # 安装AIS
+    Write-Info "📦 安装ais-terminal到系统位置..."
+    try {
+        & pipx install ais-terminal
+        
+        # 确保系统PATH包含pipx bin目录
+        $systemPath = [Environment]::GetEnvironmentVariable("PATH", "Machine")
+        if ($systemPath -notlike "*$($env:PIPX_BIN_DIR)*") {
+            [Environment]::SetEnvironmentVariable("PATH", "$systemPath;$($env:PIPX_BIN_DIR)", "Machine")
+        }
+        
+        Write-Success "✅ 系统级安装完成！所有用户都可以使用ais命令"
+        Write-Info "💡 用户可以运行: ais setup 来设置shell集成"
+    }
+    catch {
+        Write-ErrorMsg "AIS系统级安装失败: $($_.Exception.Message)"
+        exit 1
+    }
+}
+
+# 容器化安装
+function Install-ContainerMode {
+    Write-Info "🐳 开始容器化安装..."
+    
+    # 在容器中使用简单的pip安装
+    Write-Info "📦 在容器中安装ais-terminal..."
+    try {
+        & $PythonCommand -m pip install ais-terminal
+        Write-Success "✅ 容器化安装完成！"
+        Write-Info "💡 容器内直接使用: ais --version"
+    }
+    catch {
+        Write-ErrorMsg "容器化安装失败: $($_.Exception.Message)"
+        exit 1
+    }
+}
+
+# 主安装函数
+function Start-Installation {
+    Write-Host "================================================"
+    Write-Host "         AIS - AI 智能终端助手 安装器"
+    Write-Host "================================================"
+    Write-Host "版本: latest"
+    Write-Host "GitHub: https://github.com/kangvcar/ais"
     Write-Host ""
     
-    if ($Help) {
-        Show-Help
-        return
-    }
+    $env = Get-Environment
+    Write-Info "🔍 检测到环境: $env"
     
-    # 检查管理员权限（如果需要全局安装）
-    if ($GlobalInstall -and -not (Test-IsAdmin)) {
-        Write-Warning "全局安装需要管理员权限"
-        Write-Info "请以管理员身份运行PowerShell"
-        return
-    }
-    
-    # 检查Python环境
-    if (-not (Test-Python)) {
-        return
-    }
-    
-    # 检查pip环境
-    if (-not (Test-Pip)) {
-        return
-    }
-    
-    # 根据安装方式执行安装
-    $installSuccess = $false
-    switch ($InstallMethod.ToLower()) {
-        "pip" {
-            $installSuccess = Install-FromPyPI
+    # 自动选择最佳安装模式
+    if ($InstallMode -eq "auto") {
+        switch ($env) {
+            "container" {
+                $InstallMode = "container"
+                Write-Info "🐳 容器环境：使用容器化安装"
+            }
+            "admin" {
+                $InstallMode = "system"
+                Write-Info "🏢 管理员环境：使用系统级pipx安装"
+            }
+            "user" {
+                $InstallMode = "user"
+                Write-Info "👤 用户环境：使用用户级pipx安装"
+            }
         }
-        "source" {
-            $installSuccess = Install-FromSource
+    }
+    
+    # 检查Python
+    if (-not (Test-CommandExists $PythonCommand)) {
+        Write-ErrorMsg "Python命令 '$PythonCommand' 未找到"
+        Write-Info "请安装Python或指定正确的Python命令"
+        exit 1
+    }
+    
+    # 执行对应的安装模式
+    switch ($InstallMode) {
+        "user" {
+            Install-UserMode
         }
-        "local" {
-            $installSuccess = Install-Local
+        "system" {
+            Install-SystemMode
+        }
+        "container" {
+            Install-ContainerMode
         }
         default {
-            Write-Error "不支持的安装方式: $InstallMethod"
-            Show-Help
-            return
+            Write-ErrorMsg "未知的安装模式: $InstallMode"
+            exit 1
         }
     }
     
-    if (-not $installSuccess) {
-        Write-Error "安装失败"
-        return
+    # 执行健康检查
+    if (-not $SkipChecks) {
+        if (-not (Test-Installation)) {
+            Write-Warning "健康检查失败，但安装可能成功。请手动验证:"
+            Write-Info "  运行: ais --version"
+            Write-Info "  测试: ais ask 'hello'"
+        }
     }
     
-    # 测试安装
-    if (-not (Test-Installation)) {
-        return
-    }
-    
-    # 配置Shell集成
-    if (-not $NoShellIntegration) {
-        Install-PowerShellIntegration
-    }
-    
+    Write-Host ""
     Write-Success "🎉 AIS安装完成！"
-    Write-Info "使用方法:"
-    Write-Info "  ais --help              # 查看帮助"
-    Write-Info "  ais ask '如何使用git'    # 向AI提问"
-    Write-Info "  ais config              # 配置设置"
-    Write-Info ""
-    Write-Info "PowerShell集成已启用，命令执行失败时将自动调用AIS分析"
+    Write-Info "💡 快速开始:"
+    Write-Info "  测试安装: ais --version"
+    Write-Info "  AI对话: ais ask '你好'"
+    Write-Info "  获取帮助: ais --help"
 }
 
-# 运行主函数
-Main
+# 主程序入口
+if ($Help) {
+    Show-Help
+}
+
+# 错误处理
+$ErrorActionPreference = "Stop"
+
+try {
+    Start-Installation
+}
+catch {
+    Write-ErrorMsg "安装过程中发生错误: $($_.Exception.Message)"
+    Write-Info "💡 如需帮助，请访问: https://github.com/kangvcar/ais/issues"
+    exit 1
+}
