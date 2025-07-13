@@ -22,10 +22,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 📝 **JSON解析增强** - 改进AI返回内容的解析逻辑，支持各种格式的AI响应
 - 🗂️ **交互式菜单 substitute 错误** - 彻底修复选择AI建议时的 'NoneType' object has no attribute 'substitute' 错误
   - 添加 `_safe_escape_for_questionary` 函数，安全转义特殊字符（{}、$）
-  - 增强 questionary.Separator 的错误处理机制
-  - 完善所有用户输入的验证和转义
-  - 添加全面的异常捕获和降级显示方案
+  - 新增 `_safe_escape_for_rich` 函数，专门处理Rich库的标记语法转义
+  - 增强 `show_command_details` 函数的错误处理，为每个Rich组件添加独立的异常捕获
+  - 完善所有用户输入的验证和转义，确保None值安全处理
+  - 添加全面的异常捕获和降级显示方案，即使部分组件失败也能正常显示基本信息
   - 修复命令选择格式化中的 None 值处理问题
+  - 解决Rich Panel和Table组件内部模板处理导致的substitute错误
 
 ### Added
 - 📄 **内联集成脚本** - 当找不到外部脚本时自动创建内联版本

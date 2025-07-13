@@ -39,6 +39,21 @@ def _safe_escape_for_questionary(text: str) -> str:
     return text
 
 
+def _safe_escape_for_rich(text: str) -> str:
+    """安全转义文本，避免Rich库内部模板替换错误。"""
+    if not isinstance(text, str):
+        text = str(text) if text is not None else ""
+
+    # Rich库的标记语法转义
+    text = text.replace("[", "\\[").replace("]", "\\]")
+
+    # 确保没有None或空字符串
+    if not text or text.isspace():
+        return "N/A"
+
+    return text
+
+
 def _format_command_choice(
     index: int,
     command: str,
@@ -888,9 +903,18 @@ def show_command_details(
             print("❌ 控制台对象无效")
             return
 
-        command = suggestion.get("command", "N/A")
-        if not command:
+        # 确保所有必需字段存在且有效
+        command = suggestion.get("command")
+        if not command or not isinstance(command, str):
             command = "N/A"
+
+        description = suggestion.get("description")
+        if not description or not isinstance(description, str):
+            description = "无描述"
+
+        explanation = suggestion.get("explanation")
+        if explanation and not isinstance(explanation, str):
+            explanation = str(explanation)
 
         # 使用增强型风险评估（安全包装）
         try:
@@ -913,20 +937,27 @@ def show_command_details(
         console.print()
 
         # 风险等级横幅
-        risk_banner_style = f"bold {color} on {color}20"
-        risk_content = f"{icon} {risk_text.upper()} 风险等级"
-        # 安全转义横幅内容
-        safe_risk_content = _safe_escape_for_questionary(risk_content)
-        panel_content = (
-            f"[{risk_banner_style}] {safe_risk_content} [/{risk_banner_style}]"
-        )
-        risk_panel = Panel(
-            panel_content,
-            box=None,
-            style=color,
-            padding=(0, 1),
-        )
-        console.print(risk_panel)
+        try:
+            risk_banner_style = f"bold {color} on {color}20"
+            risk_content = f"{icon} {risk_text.upper()} 风险等级"
+            # 安全转义横幅内容
+            safe_risk_content = _safe_escape_for_rich(risk_content)
+            panel_content = (
+                f"[{risk_banner_style}] {safe_risk_content} "
+                f"[/{risk_banner_style}]"
+            )
+            risk_panel = Panel(
+                panel_content,
+                box=None,
+                style=color,
+                padding=(0, 1),
+            )
+            console.print(risk_panel)
+        except Exception:
+            # 如果横幅显示失败，使用简单文本
+            console.print(
+                f"[{color}]{icon} {risk_text.upper()} 风险等级[/{color}]"
+            )
 
         # 命令详情表格
         details_table = Table(show_header=False, box=None, padding=(0, 1))
@@ -934,38 +965,40 @@ def show_command_details(
         details_table.add_column("内容", style="white")
 
         # 添加命令行（安全转义）
-        safe_command = _safe_escape_for_questionary(command)
+        safe_command = _safe_escape_for_rich(command)
         details_table.add_row(
             "📋 命令", f"[bold green]{safe_command}[/bold green]"
         )
 
         # 添加描述（安全转义）
-        if suggestion.get("description"):
-            safe_description = _safe_escape_for_questionary(
-                suggestion["description"]
-            )
+        if description and description != "无描述":
+            safe_description = _safe_escape_for_rich(description)
             details_table.add_row("💡 方案", safe_description)
 
         # 添加技术原理（安全转义）
-        if suggestion.get("explanation"):
-            explanation = suggestion["explanation"]
+        if explanation:
             # 如果解释太长，进行智能换行
             if len(explanation) > 60:
                 explanation = (
                     explanation[:60] + "..." + "\n     " + explanation[60:]
                 )
-            safe_explanation = _safe_escape_for_questionary(explanation)
+            safe_explanation = _safe_escape_for_rich(explanation)
             details_table.add_row("🔧 原理", safe_explanation)
 
         # 创建主面板
-        safe_title = _safe_escape_for_questionary("📖 命令详细说明")
-        main_panel = Panel(
-            details_table,
-            title=f"[bold blue]{safe_title}[/bold blue]",
-            border_style="blue",
-            padding=(1, 2),
-        )
-        console.print(main_panel)
+        try:
+            safe_title = _safe_escape_for_rich("📖 命令详细说明")
+            main_panel = Panel(
+                details_table,
+                title=f"[bold blue]{safe_title}[/bold blue]",
+                border_style="blue",
+                padding=(1, 2),
+            )
+            console.print(main_panel)
+        except Exception:
+            # 如果面板显示失败，直接显示表格
+            console.print("📖 命令详细说明")
+            console.print(details_table)
 
         # 增强型风险警告（仅对危险和中等风险命令）
         if risk_level in ["dangerous", "moderate"]:
@@ -993,28 +1026,60 @@ def show_command_details(
             warning_parts.append(confidence_text)
 
             if warning_parts:
-                warning_content = "\n".join(warning_parts)
-                safe_warning_content = _safe_escape_for_questionary(
-                    warning_content
-                )
-                safe_warning_title = _safe_escape_for_questionary(
-                    "⚠️  智能安全提醒"
-                )
-                warning_panel = Panel(
-                    safe_warning_content,
-                    title=f"[bold {color}]{safe_warning_title}[/bold {color}]",
-                    border_style=color,
-                    style=f"{color}20",
-                )
-                console.print(warning_panel)
+                try:
+                    warning_content = "\n".join(warning_parts)
+                    safe_warning_content = _safe_escape_for_rich(
+                        warning_content
+                    )
+                    safe_warning_title = _safe_escape_for_rich(
+                        "⚠️  智能安全提醒"
+                    )
+                    warning_panel = Panel(
+                        safe_warning_content,
+                        title=(
+                            f"[bold {color}]{safe_warning_title}"
+                            f"[/bold {color}]"
+                        ),
+                        border_style=color,
+                        style=f"{color}20",
+                    )
+                    console.print(warning_panel)
+                except Exception:
+                    # 如果警告面板显示失败，使用简单文本
+                    console.print(f"[{color}]⚠️  智能安全提醒[/{color}]")
+                    for part in warning_parts:
+                        console.print(f"[dim]{part}[/dim]")
 
     except Exception as e:
         # 如果显示详情失败，显示简化版本
         console.print(f"[red]❌ 显示命令详情时出错: {e}[/red]")
-        command_text = suggestion.get("command", "N/A")
-        description_text = suggestion.get("description", "无描述")
-        console.print(f"[yellow]命令: {command_text}[/yellow]")
-        console.print(f"[dim]描述: {description_text}[/dim]")
+
+        # 安全地获取和显示基本信息
+        try:
+            command_text = (
+                suggestion.get("command", "N/A")
+                if isinstance(suggestion, dict)
+                else "N/A"
+            )
+            description_text = (
+                suggestion.get("description", "无描述")
+                if isinstance(suggestion, dict)
+                else "无描述"
+            )
+
+            # 安全转义后显示
+            safe_command_text = _safe_escape_for_rich(str(command_text))
+            safe_description_text = _safe_escape_for_rich(
+                str(description_text)
+            )
+
+            console.print(f"[yellow]命令: {safe_command_text}[/yellow]")
+            console.print(f"[dim]描述: {safe_description_text}[/dim]")
+        except Exception as fallback_error:
+            console.print(
+                f"[red]❌ 严重错误，无法显示命令信息: {fallback_error}[/red]"
+            )
+            console.print(f"[dim]原始错误: {e}[/dim]")
 
 
 def ask_follow_up_question(
