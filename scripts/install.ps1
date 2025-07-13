@@ -174,14 +174,19 @@ function Install-UserMode {
         exit 1
     }
     
-    # 设置shell集成
+    # 设置PowerShell集成
     if (-not $SkipShellIntegration) {
-        Write-Info "🔧 设置shell集成..."
+        Write-Info "🔧 设置PowerShell集成..."
         try {
-            & ais setup | Out-Null
+            # 运行 ais setup 来创建集成脚本
+            & ais setup
+            
+            Write-Info "💡 PowerShell集成设置完成！"
+            Write-Warning "请按照上面的说明完成最后的集成配置"
         }
         catch {
-            Write-Warning "shell集成设置可能需要手动完成"
+            Write-Warning "PowerShell集成设置可能需要手动完成"
+            Write-Info "稍后可以运行: ais setup"
         }
     }
 }
@@ -218,7 +223,7 @@ function Install-SystemMode {
         }
         
         Write-Success "✅ 系统级安装完成！所有用户都可以使用ais命令"
-        Write-Info "💡 用户可以运行: ais setup 来设置shell集成"
+        Write-Info "💡 用户可以运行: ais setup 来设置PowerShell集成"
     }
     catch {
         Write-ErrorMsg "AIS系统级安装失败: $($_.Exception.Message)"
