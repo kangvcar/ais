@@ -43,7 +43,7 @@ sudo apt install pipx  # Ubuntu/Debian
 # 或 sudo pip install pipx  # 通用方式
 
 # 2. 全局安装AIS
-sudo pipx install --global ais-terminal
+sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
 
 # 3. 每个用户设置shell集成
 ais setup
@@ -198,7 +198,7 @@ pip install ais-terminal
 pipx uninstall ais-terminal
 
 # 全局级
-sudo pipx uninstall --global ais-terminal
+sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx uninstall ais-terminal
 ```
 
 #### 系统级安装的卸载

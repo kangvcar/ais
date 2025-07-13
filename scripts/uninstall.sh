@@ -102,11 +102,11 @@ remove_ais_app() {
         
         # 检查全局 pipx 安装
         if command -v sudo >/dev/null 2>&1; then
-            if sudo pipx list --global 2>/dev/null | grep -q "ais-terminal"; then
+            if sudo PIPX_HOME=/opt/pipx pipx list 2>/dev/null | grep -q "ais-terminal"; then
                 print_info "发现 pipx 全局安装，正在卸载..."
                 read -p "是否卸载 pipx 全局安装？(y/N): " -r
                 if [[ $REPLY =~ ^[Yy]$ ]]; then
-                    sudo pipx uninstall --global ais-terminal
+                    sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx uninstall ais-terminal
                     print_success "pipx 全局安装已卸载"
                 fi
             else

@@ -29,10 +29,10 @@ sudo apt install pipx  # Ubuntu/Debian
 sudo python3 -m pip install pipx
 
 # 设置全局路径
-sudo pipx ensurepath --global
+sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx ensurepath
 
 # 全局安装AIS（所有用户可用）
-sudo pipx install --global ais-terminal
+sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
 
 # 为当前用户设置shell集成
 ais setup
@@ -47,7 +47,7 @@ ais setup
 ### 3. 混合模式（推荐）
 ```bash
 # 系统管理员全局安装基础版本
-sudo pipx install --global ais-terminal
+sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
 
 # 个人用户可以安装自己的版本（如果需要特定版本）
 pipx install ais-terminal==specific-version
@@ -71,7 +71,7 @@ bob@dev:~$ ais setup
 ### 场景2：服务器环境（全局安装）
 ```bash
 # 系统管理员安装
-admin@server:~$ sudo pipx install --global ais-terminal
+admin@server:~$ sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
 
 # 所有用户都可以使用
 user1@server:~$ ais --version  ✅
@@ -83,8 +83,8 @@ user3@server:~$ mkdirr test    ✅ (自动分析)
 ```bash
 # 在Docker/CI中使用全局安装
 RUN python3 -m pip install pipx && \
-    pipx install --global ais-terminal && \
-    pipx ensurepath --global
+    PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal && \
+    PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx ensurepath
 
 # 或使用常规pip在容器中
 RUN pip install ais-terminal
@@ -111,7 +111,7 @@ pipx install ais-terminal
 ### 企业/团队环境
 ```bash
 # 选择1：统一全局安装
-sudo pipx install --global ais-terminal
+sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
 
 # 选择2：每人自己安装（推荐）
 # 在团队文档中说明安装方法
@@ -121,7 +121,7 @@ echo "pipx install ais-terminal" > team-setup.sh
 ### 服务器运维
 ```bash
 # 如果需要最高安全性
-sudo pipx install --global ais-terminal
+sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
 
 # 如果需要深度系统集成
 curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
@@ -140,7 +140,7 @@ python3 -m pipx ensurepath
 ### 问题2：全局安装权限问题
 ```bash
 # 确保pipx全局路径设置
-sudo pipx ensurepath --global
+sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx ensurepath
 
 # 检查路径
 echo $PATH | grep "/usr/local/bin"
