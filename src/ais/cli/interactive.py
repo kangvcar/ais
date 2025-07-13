@@ -687,12 +687,9 @@ def _enhanced_risk_assessment(
 
     # 2. 基于命令特征的智能风险调整（移除技能级别依赖）
     # 检查复杂命令模式
-    if len(
-        command.split()) > 5 or any(
-        char in command for char in [
-            "|",
-            ">",
-            ";"]):
+    if len(command.split()) > 5 or any(
+        char in command for char in ["|", ">", ";"]
+    ):
         if original_risk == "safe":
             risk_assessment["level"] = "moderate"
             risk_assessment["factors"].append("复杂命令模式，提升风险等级")
@@ -706,7 +703,8 @@ def _enhanced_risk_assessment(
         "--dry-run",
         "--interactive",
         "-i",
-        "--help"]
+        "--help",
+    ]
     if any(indicator in command for indicator in safe_indicators):
         if original_risk == "dangerous":
             risk_assessment["level"] = "moderate"
