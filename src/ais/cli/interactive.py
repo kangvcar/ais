@@ -1180,60 +1180,52 @@ def show_interactive_menu(
 
         # 移除分割线，界面更简洁
 
-        # 添加固定选项 - 使用快捷键（安全转义）
-        fixed_options = [
-            {
-                "name": _safe_escape_for_questionary("  ✏️  [E] 编辑命令"),
-                "value": "edit",
-                "shortcut": "e",
-            },
-            {
-                "name": _safe_escape_for_questionary("  💬 [Q] 提问学习"),
-                "value": "question",
-                "shortcut": "q",
-            },
-            {
-                "name": _safe_escape_for_questionary("  👋 [X] 退出"),
-                "value": "exit",
-                "shortcut": "x",
-            },
-        ]
-        choices.extend(fixed_options)
+        # 不需要添加固定选项，直接通过输入处理
 
-        # 显示快捷键提示
+        # 显示快捷键提示（更简洁的提示）
         console.print(
-            "[dim]💡 快捷键: 1-9选择建议, E编辑, Q提问, X退出, ⭐推荐选项[/dim]"
+            "[dim]💡 输入选项: 1-{0}选择建议, e=编辑, q=提问, x=退出[/dim]".format(
+                len(suggestions)
+            )
         )
 
         # 显示菜单（增加错误处理）
         try:
-            # 实现自定义快捷键处理
-            from questionary import Choice
-
-            formatted_choices = []
-            shortcut_to_value = {}
-
-            for choice in choices:
-                if "shortcut" in choice:
-                    shortcut_to_value[choice["shortcut"]] = choice["value"]
-                    formatted_choices.append(
-                        Choice(
-                            title=choice["name"],
-                            value=choice["value"],
-                            shortcut_key=choice["shortcut"],
-                        )
-                    )
-                else:
-                    formatted_choices.append(
-                        Choice(title=choice["name"], value=choice["value"])
-                    )
-
-            action = questionary.select(
-                "Select an action:",
-                choices=formatted_choices,
-                instruction="(使用方向键选择，或直接按数字/字母键)",
-                use_shortcuts=True,
+            # 使用简单的文本输入实现快捷键
+            user_input = questionary.text(
+                "Select an action (1-9/e/q/x):",
+                instruction="(数字选择建议，e=编辑，q=提问，x=退出)",
             ).ask()
+
+            if not user_input:
+                action = "exit"
+            else:
+                user_input = user_input.strip().lower()
+
+                # 处理快捷键
+                if user_input == "e":
+                    action = "edit"
+                elif user_input == "q":
+                    action = "question"
+                elif user_input == "x" or user_input == "exit":
+                    action = "exit"
+                elif user_input.isdigit():
+                    # 数字选择
+                    choice_num = int(user_input)
+                    if 1 <= choice_num <= len(suggestions):
+                        action = f"execute_{choice_num - 1}"
+                    else:
+                        console.print(
+                            f"[red]错误: 选项 {choice_num} 不存在，"
+                            f"请输入1-{len(suggestions)}[/red]"
+                        )
+                        continue
+                else:
+                    console.print(
+                        f"[red]错误: 无效输入 '{user_input}'，"
+                        f"请输入1-{len(suggestions)}/e/q/x[/red]"
+                    )
+                    continue
         except Exception as e:
             console.print(f"[red]菜单显示错误: {e}[/red]")
             console.print("[yellow]回退到简单模式[/yellow]")
@@ -1305,23 +1297,6 @@ def show_interactive_menu(
                 )
                 console.print(f"[dim]调试信息: {debug_info}[/dim]")
                 continue
-
-        elif action == "details":
-            # 查看详情
-            choices = [
-                f"{i}. {sug.get('command', 'N/A')[:30]}..."
-                for i, sug in enumerate(suggestions, 1)
-            ]
-            choices.append("返回")
-
-            detail_choice = questionary.select(
-                "选择要查看详情的命令:", choices=choices
-            ).ask()
-
-            if detail_choice and detail_choice != "返回":
-                index = int(detail_choice.split(".")[0]) - 1
-                show_command_details(suggestions[index], console)
-                input("\n按回车继续...")
 
         elif action == "edit":
             # 编辑命令
