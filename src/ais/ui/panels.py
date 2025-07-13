@@ -20,6 +20,7 @@ class AISPanels:
         panel = Panel(
             content,
             title=f"[bold blue]{title}[/bold blue]",
+            title_align="left",
             border_style="blue",
             padding=(1, 2),
             expand=False,
@@ -33,6 +34,7 @@ class AISPanels:
         panel = Panel(
             table,
             title=f"[bold green]{title}[/bold green]",
+            title_align="left",
             border_style="green",
             padding=(1, 1),
             expand=False,
@@ -44,6 +46,7 @@ class AISPanels:
         panel = Panel(
             f"[green]{message}[/green]",
             title=f"[bold green]{title}[/bold green]",
+            title_align="left",
             border_style="green",
             padding=(1, 2),
             expand=False,
@@ -55,6 +58,7 @@ class AISPanels:
         panel = Panel(
             f"[yellow]{message}[/yellow]",
             title=f"[bold yellow]{title}[/bold yellow]",
+            title_align="left",
             border_style="yellow",
             padding=(1, 2),
             expand=False,
@@ -66,6 +70,7 @@ class AISPanels:
         panel = Panel(
             f"[red]{message}[/red]",
             title=f"[bold red]{title}[/bold red]",
+            title_align="left",
             border_style="red",
             padding=(1, 2),
             expand=False,
@@ -77,6 +82,7 @@ class AISPanels:
         panel = Panel(
             content,
             title=f"[bold cyan]{title}[/bold cyan]",
+            title_align="left",
             border_style="cyan",
             padding=(1, 2),
             expand=False,
@@ -90,6 +96,7 @@ class AISPanels:
         panel = Panel(
             content,
             title=f"[bold magenta]{title}[/bold magenta]",
+            title_align="left",
             border_style="magenta",
             padding=(1, 2),
             expand=False,
@@ -112,6 +119,7 @@ class AISPanels:
         panel = Panel(
             content,
             title=f"[bold]{title}[/bold]",
+            title_align="left",
             border_style=border_style,
             padding=(1, 2),
             expand=False,
@@ -125,6 +133,7 @@ class AISPanels:
         panel = Panel(
             content,
             title=f"[bold blue]📚 学习内容: {topic}[/bold blue]",
+            title_align="left",
             border_style="blue",
             padding=(1, 2),
             expand=False,

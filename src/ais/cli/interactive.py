@@ -839,6 +839,7 @@ def execute_command(command: str) -> bool:
             f"[bold cyan]🚀 正在执行: [/bold cyan]"
             f"[bold white]{command}[/bold white]",
             title="[bold blue]⚡ 命令执行[/bold blue]",
+            title_align="left",
             border_style="blue",
             padding=(
                 0,
@@ -863,6 +864,7 @@ def execute_command(command: str) -> bool:
             result_panel = Panel(
                 "[green]✅ 命令执行成功[/green]",
                 title="[bold green]🎉 执行结果[/bold green]",
+                title_align="left",
                 border_style="green",
                 padding=(0, 1),
                 expand=False
@@ -871,6 +873,7 @@ def execute_command(command: str) -> bool:
             result_panel = Panel(
                 f"[red]❌ 命令执行失败，退出码: {result.returncode}[/red]",
                 title="[bold red]💥 执行失败[/bold red]",
+                title_align="left",
                 border_style="red",
                 padding=(0, 1),
                 expand=False
@@ -883,6 +886,7 @@ def execute_command(command: str) -> bool:
         error_panel = Panel(
             f"[red]❌ 执行命令时出错: {e}[/red]",
             title="[bold red]🚨 系统错误[/bold red]",
+            title_align="left",
             border_style="red",
             padding=(0, 1),
             expand=False
@@ -972,6 +976,7 @@ def show_command_details(
                 box=None,
                 style=color,
                 padding=(0, 1),
+                title_align="left",
             )
             console.print(risk_panel)
         except Exception:
@@ -1012,6 +1017,7 @@ def show_command_details(
             main_panel = Panel(
                 details_table,
                 title=f"[bold blue]{safe_title}[/bold blue]",
+                title_align="left",
                 border_style="blue",
                 padding=(1, 2),
             )
@@ -1060,6 +1066,7 @@ def show_command_details(
                             f"[bold {color}]{safe_warning_title}"
                             f"[/bold {color}]"
                         ),
+                        title_align="left",
                         border_style=color,
                         style=f"{color}20",
                     )
@@ -1194,6 +1201,7 @@ def show_interactive_menu(
             suggestions_panel = Panel(
                 suggestions_table,
                 title="[bold green]💡 AI 基于你的使用习惯和当前环境推荐[/bold green]",
+                title_align="left",
                 border_style="green",
                 padding=(1, 1),
                 expand=False
@@ -1259,7 +1267,7 @@ def show_interactive_menu(
             return
 
         if not action or action == "exit":
-            panels.warning("👋 再见！")
+            print("👋 再见！")
             break
         elif action.startswith("execute_"):
             # 执行命令（增强错误处理）
