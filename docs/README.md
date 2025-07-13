@@ -31,7 +31,7 @@ python3 -m pipx ensurepath
 pipx install ais-terminal
 
 # 设置shell集成
-ais setup-shell
+ais setup
 ```
 > ✨ **最佳实践**：安全隔离，无需sudo，符合Python标准
 
@@ -44,7 +44,7 @@ sudo apt install pipx  # 或 sudo pip install pipx
 sudo pipx install --global ais-terminal
 
 # 每个用户设置shell集成
-ais setup-shell
+ais setup
 ```
 > 🎯 **推荐**：既有pipx的隔离优势，又支持多用户
 

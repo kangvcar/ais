@@ -161,8 +161,8 @@ chmod 644 /etc/ais/config.toml
 # 6. 设置Shell集成脚本
 print_info "步骤 6/7: 配置 Shell 集成..."
 
-# 运行ais setup-shell来创建集成脚本
-/usr/local/bin/ais setup-shell >/dev/null 2>&1 || true
+# 运行ais setup来创建集成脚本
+/usr/local/bin/ais setup >/dev/null 2>&1 || true
 
 # 创建全局Shell集成
 cat > /etc/profile.d/ais.sh << 'EOF'
@@ -272,7 +272,7 @@ echo
 print_info "📚 常用命令:"
 print_info "  ais config                - 查看配置"
 print_info "  ais ask '你的问题'        - 向AI提问"
-print_info "  ais setup-shell           - 重新设置Shell集成"
+print_info "  ais setup           - 重新设置Shell集成"
 print_info "  ais --help               - 查看完整帮助"
 echo
 

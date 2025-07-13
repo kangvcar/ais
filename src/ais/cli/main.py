@@ -104,7 +104,7 @@ def _auto_setup_shell_integration():
     config_dir.mkdir(parents=True, exist_ok=True)
 
     try:
-        # 自动运行setup-shell但不显示输出
+        # 自动运行setup但不显示输出
         import ais
 
         package_path = os.path.dirname(ais.__file__)
@@ -439,25 +439,25 @@ def _handle_provider_operation(
         console.print(f"[red]{error_prefix}失败: {e}[/red]")
 
 
-@main.command("add-provider")
+@main.command("provider-add")
 @click.argument("name", required=False)
 @click.option("--url", help="API 基础 URL")
 @click.option("--model", help="模型名称")
 @click.option("--key", help="API 密钥 (可选)")
 @click.option(
-    "--help-detail", is_flag=True, help="显示add-provider命令详细使用说明"
+    "--help-detail", is_flag=True, help="显示provider-add命令详细使用说明"
 )
 def add_provider_cmd(name, url, model, key, help_detail):
     """添加新的 AI 服务商。"""
     if help_detail:
-        console.print("[green]ais add-provider 命令详细使用说明:[/green]")
+        console.print("[green]ais provider-add 命令详细使用说明:[/green]")
         console.print()
         console.print("[bold]功能:[/bold]")
         console.print("  添加新的 AI 服务提供商配置，支持自定义 API 服务")
         console.print()
         console.print("[bold]用法:[/bold]")
         console.print(
-            "  ais add-provider <名称> --url <API地址> --model <模型名> [--key <密钥>]"
+            "  ais provider-add <名称> --url <API地址> --model <模型名> [--key <密钥>]"
         )
         console.print()
         console.print("[bold]参数:[/bold]")
@@ -468,7 +468,7 @@ def add_provider_cmd(name, url, model, key, help_detail):
         console.print()
         console.print("[bold]示例:[/bold]")
         console.print("  # 添加 OpenAI 服务")
-        console.print("  ais add-provider openai \\")
+        console.print("  ais provider-add openai \\")
         console.print(
             "    --url https://api.openai.com/v1/chat/completions \\"
         )
@@ -476,7 +476,7 @@ def add_provider_cmd(name, url, model, key, help_detail):
         console.print("    --key your_api_key")
         console.print()
         console.print("  # 添加本地 Ollama 服务")
-        console.print("  ais add-provider ollama \\")
+        console.print("  ais provider-add ollama \\")
         console.print(
             "    --url http://localhost:11434/v1/chat/completions \\"
         )
@@ -495,21 +495,21 @@ def add_provider_cmd(name, url, model, key, help_detail):
         )
         console.print()
         console.print("[bold]相关命令:[/bold]")
-        console.print("  ais list-provider         - 查看所有配置的提供商")
-        console.print("  ais use-provider <名称>   - 切换默认提供商")
-        console.print("  ais remove-provider <名称> - 删除提供商配置")
+        console.print("  ais provider-list         - 查看所有配置的提供商")
+        console.print("  ais provider-use <名称>   - 切换默认提供商")
+        console.print("  ais provider-remove <名称> - 删除提供商配置")
         console.print()
         console.print(
-            "[dim]💡 提示: 添加后使用 'ais use-provider <名称>' 切换到新提供商[/dim]"
+            "[dim]💡 提示: 添加后使用 'ais provider-use <名称>' 切换到新提供商[/dim]"
         )
         return
 
     if not name or not url or not model:
         console.print("[red]错误: 缺少必需参数[/red]")
         console.print(
-            "[dim]用法: ais add-provider <名称> --url <地址> --model <模型>[/dim]"
+            "[dim]用法: ais provider-add <名称> --url <地址> --model <模型>[/dim]"
         )
-        console.print("[dim]帮助: ais add-provider --help-detail[/dim]")
+        console.print("[dim]帮助: ais provider-add --help-detail[/dim]")
         return
 
     from ..core.config import add_provider
@@ -519,7 +519,7 @@ def add_provider_cmd(name, url, model, key, help_detail):
     )
 
 
-@main.command("remove-provider")
+@main.command("provider-remove")
 @click.argument("name")
 def remove_provider_cmd(name):
     """删除 AI 服务商。"""
@@ -530,7 +530,7 @@ def remove_provider_cmd(name):
     )
 
 
-@main.command("use-provider")
+@main.command("provider-use")
 @click.argument("name")
 def use_provider_cmd(name):
     """切换默认 AI 服务商。"""
@@ -541,20 +541,20 @@ def use_provider_cmd(name):
     )
 
 
-@main.command("list-provider")
+@main.command("provider-list")
 @click.option(
-    "--help-detail", is_flag=True, help="显示list-provider命令详细使用说明"
+    "--help-detail", is_flag=True, help="显示provider-list命令详细使用说明"
 )
 def list_provider(help_detail):
     """列出所有可用的 AI 服务商。"""
     if help_detail:
-        console.print("[green]ais list-provider 命令详细使用说明:[/green]")
+        console.print("[green]ais provider-list 命令详细使用说明:[/green]")
         console.print()
         console.print("[bold]功能:[/bold]")
         console.print("  列出所有已配置的 AI 服务提供商及其详细信息")
         console.print()
         console.print("[bold]用法:[/bold]")
-        console.print("  ais list-provider")
+        console.print("  ais provider-list")
         console.print()
         console.print("[bold]显示信息:[/bold]")
         console.print("  • 提供商名称和当前状态（✓ 表示当前使用）")
@@ -581,9 +581,9 @@ def list_provider(help_detail):
         )
         console.print()
         console.print("[bold]相关命令:[/bold]")
-        console.print("  ais use-provider <名称>    - 切换到指定提供商")
-        console.print("  ais add-provider ...       - 添加新的提供商")
-        console.print("  ais remove-provider <名称> - 删除提供商")
+        console.print("  ais provider-use <名称>    - 切换到指定提供商")
+        console.print("  ais provider-add ...       - 添加新的提供商")
+        console.print("  ais provider-remove <名称> - 删除提供商")
         console.print("  ais config                 - 查看当前配置状态")
         return
 
@@ -642,7 +642,7 @@ def analyze_error(exit_code, command, stderr):
                 )
 
             console.print(
-                "[dim]💡 你可以使用 'ais history-detail <索引>' "
+                "[dim]💡 你可以使用 'ais history <索引>' "
                 "查看之前的分析[/dim]"
             )
 
@@ -702,22 +702,29 @@ def analyze_error(exit_code, command, stderr):
 
 
 @main.command("history")
+@click.argument("index", type=int, required=False)
 @click.option("--limit", "-n", default=10, help="显示的历史记录数量")
 @click.option("--failed-only", is_flag=True, help="只显示失败的命令")
 @click.option("--command-filter", help="按命令名称过滤")
 @click.option(
     "--help-detail", is_flag=True, help="显示history命令详细使用说明"
 )
-def show_history(limit, failed_only, command_filter, help_detail):
-    """显示命令历史记录。"""
+def show_history(index, limit, failed_only, command_filter, help_detail):
+    """显示命令历史记录或查看指定索引的详细信息。"""
     if help_detail:
         console.print("[green]ais history 命令详细使用说明:[/green]")
         console.print()
         console.print("[bold]功能:[/bold]")
         console.print("  查看和分析命令执行历史记录，包括成功和失败的命令")
+        console.print("  也可以查看指定索引的详细分析信息")
         console.print()
         console.print("[bold]用法:[/bold]")
-        console.print("  ais history [选项]")
+        console.print("  ais history [索引] [选项]")
+        console.print()
+        console.print("[bold]参数:[/bold]")
+        console.print(
+            "  索引                      查看指定记录的详细信息（可选）"
+        )
         console.print()
         console.print("[bold]选项:[/bold]")
         console.print(
@@ -728,6 +735,9 @@ def show_history(limit, failed_only, command_filter, help_detail):
         console.print()
         console.print("[bold]示例:[/bold]")
         console.print("  ais history                    # 显示最近10条记录")
+        console.print(
+            "  ais history 3                  # 查看第3条记录的详细信息"
+        )
         console.print("  ais history -n 20              # 显示最近20条记录")
         console.print("  ais history --failed-only      # 只显示失败的命令")
         console.print(
@@ -741,12 +751,16 @@ def show_history(limit, failed_only, command_filter, help_detail):
         console.print("  • 成功/失败状态标识")
         console.print()
         console.print("[bold]相关命令:[/bold]")
-        console.print("  ais history-detail <索引>  - 查看具体记录的详细分析")
         console.print("  ais analyze               - 手动分析上一个失败命令")
         console.print()
         console.print(
             "[dim]💡 提示: 历史记录存储在本地数据库中，保护你的隐私[/dim]"
         )
+        return
+
+    # 如果提供了索引，显示详细信息
+    if index is not None:
+        show_history_detail_content(index)
         return
 
     try:
@@ -802,18 +816,14 @@ def show_history(limit, failed_only, command_filter, help_detail):
         console.print(table)
 
         # 提示用户可以查看详情
-        console.print(
-            "\n[dim]💡 使用 'ais history-detail <索引>' 查看详细分析[/dim]"
-        )
+        console.print("\n[dim]💡 使用 'ais history <索引>' 查看详细分析[/dim]")
 
     except Exception as e:
         console.print(f"[red]获取历史记录失败: {e}[/red]")
 
 
-@main.command("history-detail")
-@click.argument("index", type=int)
-def show_history_detail(index):
-    """显示历史命令的详细分析。"""
+def show_history_detail_content(index):
+    """显示历史命令的详细分析内容。"""
     try:
         from ..core.database import get_recent_logs
         import json
@@ -1073,7 +1083,7 @@ def learn_command(topic, help_detail):
         console.print(f"[red]学习功能出错: {e}[/red]")
 
 
-@main.command("setup-shell")
+@main.command("setup")
 def setup_shell():
     """设置 shell 集成。"""
     import os
@@ -1200,7 +1210,7 @@ def test_integration():
 
         console.print("\n[bold green]🎉 所有组件都工作正常！[/bold green]")
         console.print("如果您遇到自动分析不工作的问题，请:")
-        console.print("1. 运行 'ais setup-shell' 设置 shell 集成")
+        console.print("1. 运行 'ais setup' 设置 shell 集成")
         console.print("2. 确保您在交互式终端中")
         console.print("3. 重新加载 shell 配置")
 
@@ -1268,17 +1278,17 @@ def help_all():
     console.print()
     console.print("[bold]历史记录命令:[/bold]")
     console.print("  ais history --help-detail   - 历史记录查看详细说明")
-    console.print("  ais history-detail <索引>   - 查看具体记录详情")
+    console.print("  ais history <索引>         - 查看具体记录详情")
     console.print()
     console.print("[bold]AI 服务商管理:[/bold]")
-    console.print("  ais add-provider --help-detail    - 添加服务商详细说明")
-    console.print("  ais list-provider --help-detail   - 列出服务商详细说明")
-    console.print("  ais use-provider <名称>           - 切换服务商")
-    console.print("  ais remove-provider <名称>        - 删除服务商")
+    console.print("  ais provider-add --help-detail    - 添加服务商详细说明")
+    console.print("  ais provider-list --help-detail   - 列出服务商详细说明")
+    console.print("  ais provider-use <名称>           - 切换服务商")
+    console.print("  ais provider-remove <名称>        - 删除服务商")
     console.print()
     console.print("[bold]系统管理命令:[/bold]")
     console.print("  ais analyze                  - 手动分析错误")
-    console.print("  ais setup-shell             - 设置 Shell 集成")
+    console.print("  ais setup                   - 设置 Shell 集成")
     console.print("  ais test-integration         - 测试集成是否正常")
     console.print()
     console.print("[bold green]💡 使用技巧:[/bold green]")

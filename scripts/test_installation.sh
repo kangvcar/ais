@@ -56,7 +56,7 @@ test_installation() {
     # 功能测试
     run_test "开启自动分析" "ais on"
     run_test "关闭自动分析" "ais off"
-    run_test "列出服务商" "ais list-provider"
+    run_test "列出服务商" "ais provider-list"
     run_test "查看历史记录" "ais history"
     run_test "学习命令可用" "ais learn --help"
     run_test "建议命令可用" "ais suggest --help"

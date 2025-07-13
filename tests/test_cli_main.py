@@ -382,7 +382,7 @@ class TestProviderCommands:
         result = runner.invoke(add_provider_cmd, ["--help-detail"])
 
         assert result.exit_code == 0
-        assert "ais add-provider 命令详细使用说明" in result.output
+        assert "ais provider-add 命令详细使用说明" in result.output
 
     def test_remove_provider_command(self):
         """Test remove provider command."""
@@ -442,7 +442,7 @@ class TestProviderCommands:
         result = runner.invoke(list_provider, ["--help-detail"])
 
         assert result.exit_code == 0
-        assert "ais list-provider 命令详细使用说明" in result.output
+        assert "ais provider-list 命令详细使用说明" in result.output
 
 
 class TestAnalyzeCommand:

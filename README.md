@@ -52,7 +52,7 @@ python3 -m pipx ensurepath
 pipx install ais-terminal
 
 # 设置shell集成
-ais setup-shell
+ais setup
 ```
 > ✨ **最佳实践**：安全隔离，无需sudo，符合Python标准
 
@@ -65,7 +65,7 @@ sudo apt install pipx  # 或 sudo pip install pipx
 sudo pipx install --global ais-terminal
 
 # 每个用户设置shell集成
-ais setup-shell
+ais setup
 ```
 > 🎯 **推荐**：既有pipx的隔离优势，又支持多用户
 
@@ -105,16 +105,16 @@ iwr -useb https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.ps
 ais config
 
 # 添加AI服务商（以OpenAI为例）
-ais add-provider openai \
+ais provider-add openai \
   --url https://api.openai.com/v1/chat/completions \
   --model gpt-4 \
   --key your_api_key
 
 # 设置默认提供商
-ais use-provider openai
+ais provider-use openai
 
 # 设置Shell集成
-ais setup-shell
+ais setup
 ```
 
 ### 立即体验
@@ -173,7 +173,7 @@ ais learn ssh      # 学习远程连接
 ```bash
 ais history                    # 查看最近的命令记录
 ais history --failed-only     # 只显示失败的命令
-ais history-detail 3          # 查看第3条记录的详细分析
+ais history 3                 # 查看第3条记录的详细分析
 ```
 
 ### AI服务商管理
@@ -182,15 +182,15 @@ ais history-detail 3          # 查看第3条记录的详细分析
 
 ```bash
 # 查看可用服务商
-ais list-provider
+ais provider-list
 
 # 添加本地Ollama服务
-ais add-provider ollama \
+ais provider-add ollama \
   --url http://localhost:11434/v1/chat/completions \
   --model llama3
 
 # 切换服务商
-ais use-provider ollama
+ais provider-use ollama
 ```
 
 ## 🛠️ 高级配置
@@ -201,7 +201,7 @@ AIS支持自动错误分析，需要配置Shell集成：
 
 ```bash
 # 自动配置
-ais setup-shell
+ais setup
 
 # 手动配置 - 添加到 ~/.bashrc 或 ~/.zshrc
 source /path/to/ais/scripts/shell/integration.sh

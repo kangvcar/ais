@@ -12,7 +12,7 @@ python3 -m pipx ensurepath
 pipx install ais-terminal
 
 # 可选：安装shell集成
-ais setup-shell
+ais setup
 ```
 
 **优势：**

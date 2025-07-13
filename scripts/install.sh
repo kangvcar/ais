@@ -70,7 +70,7 @@ main() {
             "1")
                 print_info "💡 使用pipx用户级安装:"
                 print_info "   pipx install ais-terminal"
-                print_info "   ais setup-shell"
+                print_info "   ais setup"
                 exit 0
                 ;;
             "2"|"")
@@ -79,10 +79,10 @@ main() {
                     print_info "   正在执行: pipx install --global ais-terminal"
                     pipx install --global ais-terminal
                     print_success "✅ pipx全局安装完成！所有用户都可以使用ais命令"
-                    print_info "💡 用户可以运行: ais setup-shell 来设置shell集成"
+                    print_info "💡 用户可以运行: ais setup 来设置shell集成"
                 else
                     print_info "   sudo pipx install --global ais-terminal"
-                    print_info "   ais setup-shell"
+                    print_info "   ais setup"
                 fi
                 exit 0
                 ;;

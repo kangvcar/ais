@@ -23,7 +23,7 @@ python3 -m pipx ensurepath
 pipx install ais-terminal
 
 # 3. 设置shell集成
-ais setup-shell
+ais setup
 ```
 
 **优势：**
@@ -46,7 +46,7 @@ sudo apt install pipx  # Ubuntu/Debian
 sudo pipx install --global ais-terminal
 
 # 3. 每个用户设置shell集成
-ais setup-shell
+ais setup
 ```
 
 **优势：**
@@ -126,7 +126,7 @@ pip install -e .
 
 ```bash
 # 自动设置shell集成
-ais setup-shell
+ais setup
 
 # 手动加载（可选）
 source ~/.bashrc  # Bash

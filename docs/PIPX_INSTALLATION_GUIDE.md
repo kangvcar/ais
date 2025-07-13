@@ -12,7 +12,7 @@ python3 -m pipx ensurepath
 pipx install ais-terminal
 
 # 设置shell集成
-ais setup-shell
+ais setup
 ```
 
 **特点：**
@@ -35,7 +35,7 @@ sudo pipx ensurepath --global
 sudo pipx install --global ais-terminal
 
 # 为当前用户设置shell集成
-ais setup-shell
+ais setup
 ```
 
 **特点：**
@@ -59,11 +59,11 @@ pipx install ais-terminal==specific-version
 ```bash
 # 团队成员A
 alice@dev:~$ pipx install ais-terminal
-alice@dev:~$ ais setup-shell
+alice@dev:~$ ais setup
 
 # 团队成员B  
 bob@dev:~$ pipx install ais-terminal
-bob@dev:~$ ais setup-shell
+bob@dev:~$ ais setup
 
 # 优势：每人可以使用不同版本，互不干扰
 ```

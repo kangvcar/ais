@@ -13,7 +13,7 @@ source .venv/bin/activate && python3 -m pip install -e .
 pip install autopep8
 
 # 自动修复所有代码格式问题
-autopep8 --in-place --aggressive --aggressive --max-line-length=79 src/ tests/ -r
+source .venv/bin/activate && autopep8 --in-place --aggressive --aggressive --max-line-length=79 src/ tests/ -r
 ```
 
 ## 标准代码检查流程
@@ -22,11 +22,11 @@ autopep8 --in-place --aggressive --aggressive --max-line-length=79 src/ tests/ -
 # 运行测试
 python -m pytest tests/ -v
 
-# 代码格式化（如果没有用 autopep8）
-black src/ tests/
+# 代码格式化
+source .venv/bin/activate && black src/ tests/
 
 # 代码质量检查
-flake8 src/ tests/ --max-line-length=79
+source .venv/bin/activate && flake8 src/ tests/ --max-line-length=79
 ```
 
 ## 代码质量工具说明

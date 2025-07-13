@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 📚 **更新安装文档** - 重写 README 安装说明，突出全局安装的优势
 
 ### Fixed
-- 🔧 **Shell集成脚本缺失问题** - 修复 `ais setup-shell` 命令找不到集成脚本的问题
+- 🔧 **Shell集成脚本缺失问题** - 修复 `ais setup` 命令找不到集成脚本的问题
 - 📁 **包安装路径错误** - 改进脚本路径查找逻辑，支持多种安装场景
 - 🌐 **全局安装方案** - 新增 `install_global.sh` 脚本，实现真正的系统级全局安装
 - 🔄 **自动错误分析触发** - 修复在某些环境下自动错误分析不工作的问题
@@ -31,7 +31,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **优化用户体验**: 移除选择菜单选项后的重复命令详情显示，直接执行命令，避免信息冗余
   - **简化交互流程**: 移除多余的风险确认步骤，风险信息已在菜单选项中充分展示
   - **美化视觉效果**: 将命令执行分隔线从等号(=)改为更美观的横线(─)，提升视觉体验
-  - **完善历史记录展示**: 为 `ais history` 命令添加索引列，便于用户使用 `ais history-detail <索引>` 查看详情
+  - **完善历史记录展示**: 为 `ais history` 命令添加索引列，便于用户查看详情
+  - **统一历史命令接口**: 实现统一的 `ais history [索引]` 命令，完全替代原有的分离式命令
+    - `ais history` 显示历史记录列表（带索引列）
+    - `ais history <索引>` 直接查看指定记录的详细分析
+    - 移除 `ais history-detail` 命令，统一为单一接口
+    - 优化命令行界面的一致性和用户体验，简化命令结构
+  - **简化Shell集成命令**: 将 `ais setup-shell` 简化为 `ais setup`，更简洁易记
+    - 保持完全相同的功能和行为
+    - 更新所有文档和帮助信息
+    - 提升命令行界面的简洁性
+  - **重组Provider管理命令**: 统一provider相关命令的命名规范，提升一致性
+    - `ais add-provider` → `ais provider-add`
+    - `ais remove-provider` → `ais provider-remove`
+    - `ais use-provider` → `ais provider-use`
+    - `ais list-provider` → `ais provider-list`
+    - 遵循现代CLI设计原则，相关功能命令统一前缀
 
 ### Added
 - 📄 **内联集成脚本** - 当找不到外部脚本时自动创建内联版本
@@ -66,16 +81,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ais ask` - 向AI提问任何问题
 - `ais analyze` - 手动分析命令错误
 - `ais history` - 查看命令历史记录
-- `ais history-detail` - 查看详细的历史分析
 - `ais learn` - 学习命令行知识和技巧
 - `ais suggest` - 根据任务描述获取命令建议
 - `ais config` - 配置管理
 - `ais on/off` - 开启/关闭自动错误分析
-- `ais add-provider` - 添加自定义AI服务商
-- `ais remove-provider` - 删除AI服务商
-- `ais use-provider` - 切换默认AI服务商
-- `ais list-provider` - 列出所有AI服务商
-- `ais setup-shell` - 配置shell集成
+- `ais provider-add` - 添加自定义AI服务商
+- `ais provider-remove` - 删除AI服务商
+- `ais provider-use` - 切换默认AI服务商
+- `ais provider-list` - 列出所有AI服务商
+- `ais setup` - 配置shell集成
 
 ### Technical
 - 基于Click构建的现代CLI界面
