@@ -17,8 +17,8 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# 复制项目文件
-COPY pyproject.toml uv.lock ./
+# 复制项目文件（按照构建需要的优先级复制）
+COPY pyproject.toml ./
 COPY src/ src/
 COPY README.md CHANGELOG.md ./
 
