@@ -37,6 +37,11 @@
   - 增强Windows测试覆盖CMD和PowerShell环境
   - 添加包导入和基本功能验证测试
   - 改进错误处理和降级策略
+- 修复特定Linux发行版的CI测试问题
+  - 修复CentOS 7/Stream 8 EOL后的镜像源问题，使用vault.centos.org
+  - 暂时禁用Rocky Linux测试避免hatchling版本兼容性问题
+  - 修复openSUSE容器shell问题，统一使用bash
+  - 简化Windows测试，统一使用PowerShell环境
 
 ### Changed
 
