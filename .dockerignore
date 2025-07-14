@@ -52,6 +52,7 @@ docs/
 tests/
 *.md
 !README.md
+!CHANGELOG.md
 
 # CI/CD
 .github
