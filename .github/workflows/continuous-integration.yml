@@ -1,93 +1,49 @@
-name: CI
+# 持续集成工作流 - 确保代码质量和跨平台兼容性
+# 在每次Push和PR时运行，验证代码质量和多平台兼容性
+name: Continuous Integration
 
 on:
   push:
     branches: [ main, develop ]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.gitignore'
+      - '.gitattributes'
+      - 'LICENSE'
+      - '.dockerignore'
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.gitignore'
+      - '.gitattributes'
+      - 'LICENSE'
+      - '.dockerignore'
   schedule:
     # 每周一凌晨2点运行，确保依赖更新后仍能正常工作
     - cron: '0 2 * * 1'
 
 # 限制并发执行，节省资源
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
-    
-    permissions:
-      contents: read
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip'
-        cache-dependency-path: 'setup.py'
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e .
-        pip install pytest pytest-cov
-    
-    - name: Test installation
-      run: |
-        ais --version
-        ais config --help
-    
-    - name: Run tests
-      run: |
-        pytest tests/ -v --cov=ais --cov-report=xml || echo "No tests found"
-    
-    - name: Upload coverage to Codecov
-      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
-      uses: codecov/codecov-action@v4
-      with:
-        file: ./coverage.xml
-        fail_ci_if_error: false
-        token: ${{ secrets.CODECOV_TOKEN }}
+  # 使用共享工作流进行基础质量检查
+  quality-checks:
+    name: Quality Checks
+    uses: ./.github/workflows/shared-quality-checks.yml
+    with:
+      skip_coverage: false
+      python_versions: '["3.8", "3.9", "3.10", "3.11", "3.12"]'
+      operating_systems: '["ubuntu-latest", "macos-latest"]'
+    secrets: inherit
 
-  lint:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-        cache: 'pip'
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install black flake8 mypy
-        pip install -e .
-    
-    - name: Run black
-      run: black --check src/ais/
-    
-    - name: Run flake8
-      run: flake8 src/ais/
-    
-    - name: Run mypy
-      run: mypy src/ais/ || echo "MyPy check completed with warnings"
-
-  test-linux-distros:
+  # 扩展的Linux发行版兼容性测试
+  linux-compatibility:
+    name: Linux Compatibility Tests
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -205,7 +161,8 @@ jobs:
         fi
       shell: sh
     
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
       if: matrix.actions_compatible == true
     
     - name: Manual checkout for incompatible systems
@@ -219,7 +176,7 @@ jobs:
       shell: sh
       continue-on-error: true
     
-    - name: Create and use virtual environment
+    - name: Test installation and functionality
       run: |
         # 确保在正确的目录
         cd /github/workspace || cd /tmp/repo || pwd
@@ -256,7 +213,9 @@ jobs:
       shell: sh
       continue-on-error: true
 
-  test-windows:
+  # Windows兼容性测试
+  windows-compatibility:
+    name: Windows Compatibility Tests
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
@@ -288,7 +247,8 @@ jobs:
     name: Test on ${{ matrix.name }} (Python ${{ matrix.python-version }})
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
@@ -328,62 +288,3 @@ jobs:
         python -c "import ais; print('Package import successful')"
         Write-Host "✓ Package import test completed"
       shell: powershell
-
-  # Docker构建测试
-  docker-build-test:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-    
-    - name: Build Docker image (test only)
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        file: ./Dockerfile
-        platforms: linux/amd64
-        push: false
-        load: true
-        tags: ais-terminal:test
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-    
-    - name: Test Docker image
-      run: |
-        # 验证镜像是否存在
-        echo "=== 验证Docker镜像 ==="
-        docker images | grep ais-terminal || echo "Warning: Image not found in docker images"
-        
-        # 基本功能测试
-        echo "=== 基本功能测试 ==="
-        docker run --rm ais-terminal:test ais --version
-        docker run --rm ais-terminal:test ais --help
-        
-        # 配置测试
-        echo "=== 配置测试 ==="
-        docker run --rm ais-terminal:test ais config || echo "Config test completed with warnings"
-        
-        # 容器信息测试
-        echo "=== 容器信息测试 ==="
-        docker run --rm ais-terminal:test uname -a
-    
-    - name: Security scan with Trivy
-      uses: aquasecurity/trivy-action@master
-      with:
-        image-ref: ais-terminal:test
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-      continue-on-error: true
-    
-    - name: Upload Trivy scan results
-      uses: github/codeql-action/upload-sarif@v3
-      if: always()
-      with:
-        sarif_file: 'trivy-results.sarif'
-      continue-on-error: true
-
-  # 构建和发布由 release.yml 负责
