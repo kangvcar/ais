@@ -5,8 +5,8 @@ build-backend = "hatchling.build"
 [project]
 name = "ais-terminal"
 version = "0.1.0"
-description = "智能终端助手 - AI-powered terminal assistant"
-readme = "docs/README.md"
+description = "AI智能终端助手 - 让命令行更智能，让学习更高效"
+readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
 authors = [

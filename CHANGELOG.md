@@ -8,6 +8,14 @@
 ## [Unreleased]
 
 ### Added
+- 全面重写项目README.md，符合现代开源项目最佳实践
+  - 添加专业的徽章和导航链接
+  - 结构化的功能介绍和使用指南
+  - 详细的安装说明，支持多种场景
+  - 完整的项目架构说明
+  - 全面的开发和贡献指南
+  - 美观的Markdown格式和布局
+- 更新docs/README.md保持文档一致性
 - CI测试支持多Linux发行版：新增对16个主流Linux发行版的测试支持
   - Ubuntu: 20.04 LTS, 22.04 LTS, 24.04 LTS
   - Debian: 11 (Bullseye), 12 (Bookworm)
