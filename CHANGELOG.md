@@ -47,6 +47,12 @@
   - 专注于主流稳定发行版：Ubuntu 22.04/24.04, Debian 12, Fedora 39, Alpine 3.19
   - 简化Windows测试避免Unicode编码问题
   - 统一使用sh shell确保最大兼容性
+- 重新添加企业级Linux发行版支持
+  - 恢复CentOS 7/Stream 8/Stream 9测试支持
+  - 恢复Rocky Linux 8/9测试支持
+  - 添加openEuler 22.03 LTS测试支持
+  - 实现智能兼容性检测：区分actions兼容和非兼容系统
+  - 特殊处理策略：EOL发行版使用vault镜像源，旧版本Python使用setuptools构建
 
 ### Changed
 

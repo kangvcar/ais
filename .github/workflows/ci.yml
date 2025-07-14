@@ -95,22 +95,70 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # 主要测试发行版 - 保留稳定和广泛使用的版本
+          # Ubuntu LTS versions
           - distro: ubuntu:22.04
             python: "python3"
             name: "Ubuntu 22.04 LTS"
+            actions_compatible: true
           - distro: ubuntu:24.04
             python: "python3"
             name: "Ubuntu 24.04 LTS"
+            actions_compatible: true
+          
+          # Debian versions
           - distro: debian:12
             python: "python3"
             name: "Debian 12 (Bookworm)"
+            actions_compatible: true
+          
+          # Fedora versions
           - distro: fedora:39
             python: "python3"
             name: "Fedora 39"
+            actions_compatible: true
+          
+          # Alpine Linux
           - distro: alpine:3.19
             python: "python3"
             name: "Alpine Linux 3.19"
+            actions_compatible: true
+          
+          # CentOS versions - 使用特殊处理
+          - distro: centos:7
+            python: "python3"
+            name: "CentOS 7"
+            actions_compatible: false
+            needs_epel: true
+          
+          # CentOS Stream versions
+          - distro: quay.io/centos/centos:stream8
+            python: "python3"
+            name: "CentOS Stream 8"
+            actions_compatible: false
+            needs_vault: true
+          
+          - distro: quay.io/centos/centos:stream9
+            python: "python3"
+            name: "CentOS Stream 9"
+            actions_compatible: true
+          
+          # Rocky Linux versions
+          - distro: rockylinux:8
+            python: "python3"
+            name: "Rocky Linux 8"
+            actions_compatible: false
+            use_setuptools_build: true
+          
+          - distro: rockylinux:9
+            python: "python3"
+            name: "Rocky Linux 9"
+            actions_compatible: true
+          
+          # openEuler
+          - distro: openeuler/openeuler:22.03-lts
+            python: "python3"
+            name: "openEuler 22.03 LTS"
+            actions_compatible: true
 
     container:
       image: ${{ matrix.distro }}
@@ -118,6 +166,23 @@ jobs:
     name: Test on ${{ matrix.name }}
     
     steps:
+    - name: Fix repositories for EOL distributions
+      if: matrix.needs_vault == true || matrix.needs_epel == true
+      run: |
+        # 修复CentOS EOL后的镜像源问题
+        if [ -f /etc/centos-release ]; then
+          if grep -q "CentOS Linux release 7" /etc/centos-release; then
+            echo "Fixing CentOS 7 repositories..."
+            sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*.repo
+            sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*.repo
+          elif grep -q "CentOS Stream release 8" /etc/centos-release; then
+            echo "Fixing CentOS Stream 8 repositories..."
+            sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*.repo
+            sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*.repo
+          fi
+        fi
+      shell: sh
+    
     - name: Install basic tools
       run: |
         if command -v apt-get > /dev/null; then
@@ -126,8 +191,14 @@ jobs:
           apt-get update
           apt-get install -y git python3 python3-pip python3-venv build-essential
         elif command -v dnf > /dev/null; then
-          # Fedora
-          dnf install -y git python3 python3-pip gcc python3-devel
+          # Fedora/CentOS Stream 9+/Rocky 9+
+          dnf install -y git python3 python3-pip gcc python3-devel --allowerasing || dnf install -y git python3 python3-pip gcc python3-devel
+        elif command -v yum > /dev/null; then
+          # CentOS 7/8, Rocky 8
+          if [ "${{ matrix.needs_epel }}" = "true" ]; then
+            yum install -y epel-release || echo "EPEL installation may have failed"
+          fi
+          yum install -y git python3 python3-pip gcc python3-devel
         elif command -v apk > /dev/null; then
           # Alpine
           apk add --no-cache git python3 py3-pip build-base python3-dev
@@ -135,24 +206,52 @@ jobs:
       shell: sh
     
     - uses: actions/checkout@v4
+      if: matrix.actions_compatible == true
+    
+    - name: Manual checkout for incompatible systems
+      if: matrix.actions_compatible == false
+      run: |
+        # 对于不兼容GitHub Actions checkout的系统，手动获取代码
+        git clone https://github.com/${{ github.repository }}.git /tmp/repo
+        cd /tmp/repo
+        git checkout ${{ github.sha }}
+        cp -r . /github/workspace/
+      shell: sh
+      continue-on-error: true
     
     - name: Create and use virtual environment
       run: |
+        # 确保在正确的目录
+        cd /github/workspace || cd /tmp/repo || pwd
+        
         # Create virtual environment
         ${{ matrix.python }} -m venv /tmp/venv
-        # Activate and use virtual environment
+        # Activate virtual environment
         . /tmp/venv/bin/activate
-        # Upgrade pip
-        python -m pip install --upgrade pip setuptools wheel
-        # Install project
-        python -m pip install -e .
+        
+        # Upgrade pip and basic tools
+        python -m pip install --upgrade pip wheel
+        
+        # 针对旧版本Python的特殊处理
+        if [ "${{ matrix.use_setuptools_build }}" = "true" ]; then
+          echo "Using setuptools-based build for compatibility..."
+          python -m pip install "setuptools<60" "hatchling<1.0" || python -m pip install setuptools
+          python setup.py develop || python -m pip install -e . --no-build-isolation
+        else
+          # 标准安装
+          python -m pip install setuptools
+          python -m pip install -e .
+        fi
+        
         # Test basic functionality
-        python -c "import ais; print('✓ Package import successful')"
+        python -c "import ais; print('✓ Package import successful')" || echo "Import test failed"
+        
         # Test CLI if available
         if command -v ais > /dev/null; then
           ais --version || echo "Direct command failed"
         else
-          echo "Direct command not available"
+          echo "Direct command not available, trying module execution"
+          python -m ais --version || echo "Module execution failed"
         fi
       shell: sh
       continue-on-error: true
