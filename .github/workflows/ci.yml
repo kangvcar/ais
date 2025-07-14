@@ -166,17 +166,15 @@ jobs:
             name: "Alpine Linux 3.19"
             pep668: false
           
-          # openSUSE (使用bash shell)
+          # openSUSE
           - distro: opensuse/leap:15.5
             python: "python3"
             name: "openSUSE Leap 15.5"
             pep668: true
-            shell: "bash"
           - distro: opensuse/tumbleweed:latest
             python: "python3"
             name: "openSUSE Tumbleweed"
             pep668: true
-            shell: "bash"
           
           # openEuler
           - distro: openeuler/openeuler:22.03-lts
@@ -186,7 +184,6 @@ jobs:
 
     container:
       image: ${{ matrix.distro }}
-      options: ${{ matrix.shell && format('--entrypoint={0}', matrix.shell) || '' }}
     
     name: Test on ${{ matrix.name }}
     
@@ -233,7 +230,7 @@ jobs:
           zypper refresh
           zypper install -y git python3 python3-pip gcc python3-devel curl
         fi
-      shell: ${{ matrix.shell || 'sh' }}
+      shell: bash
     
     - uses: actions/checkout@v4
     
@@ -247,7 +244,7 @@ jobs:
         python -m pip install --upgrade pip wheel setuptools
         echo "VIRTUAL_ENV=/tmp/test-venv" >> $GITHUB_ENV
         echo "/tmp/test-venv/bin" >> $GITHUB_PATH
-      shell: ${{ matrix.shell || 'sh' }}
+      shell: bash
     
     - name: Install project dependencies
       run: |
@@ -259,7 +256,7 @@ jobs:
         
         # Install test dependencies
         python -m pip install pytest pytest-cov || echo "pytest installation may have issues on some distros"
-      shell: ${{ matrix.shell || 'sh' }}
+      shell: bash
     
     - name: Test installation and basic functionality
       run: |
@@ -275,7 +272,7 @@ jobs:
           python -m ais --version
           python -m ais config --help
         fi
-      shell: ${{ matrix.shell || 'sh' }}
+      shell: bash
     
     - name: Run tests if available
       run: |
@@ -287,7 +284,7 @@ jobs:
         else
           echo "No tests directory found"
         fi
-      shell: ${{ matrix.shell || 'sh' }}
+      shell: bash
       continue-on-error: true
     
     - name: Test system-wide installation (fallback for older systems)
@@ -296,7 +293,7 @@ jobs:
         # For systems without PEP 668 protection, test system-wide installation
         ${{ matrix.python }} -m pip install --user -e . || echo "User installation failed, trying with --break-system-packages"
         ${{ matrix.python }} -m pip install --break-system-packages -e . || echo "System installation also failed"
-      shell: ${{ matrix.shell || 'sh' }}
+      shell: bash
       continue-on-error: true
 
   test-windows:
