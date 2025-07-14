@@ -36,6 +36,11 @@
   - 添加条件限制，确保只在release事件时发布到PyPI
   - 修复工作流依赖关系，处理跳过PyPI发布的情况
   - 解决"invalid-publisher"错误，确保发布流程正常工作
+- 🔄 **发布工作流优化**：改进Build Release Packages后的作业触发逻辑
+  - 设置Publish to PyPI和Create GitHub Release同时依赖Build Release Packages
+  - 根据触发事件智能决定是否执行PyPI发布和GitHub Release创建
+  - 优化通知作业，支持不同发布场景的状态报告
+  - 提高发布流程的灵活性和可控性
 
 ### Added
 - 🐳 **Docker容器化完整支持**：实现符合行业最佳实践的容器化方案

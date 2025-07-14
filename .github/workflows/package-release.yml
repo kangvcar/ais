@@ -107,8 +107,8 @@ jobs:
     name: Publish to PyPI
     runs-on: ubuntu-latest
     needs: build-packages
-    # 只在release事件时发布，避免从main分支意外发布
-    if: github.event_name == 'release'
+    # 在build-packages成功后，根据触发事件决定是否发布到PyPI
+    if: needs.build-packages.result == 'success'
     permissions:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
       contents: read
@@ -121,33 +121,59 @@ jobs:
         path: dist/
 
     - name: Publish to PyPI
+      # 只在release事件或手动指定发布时才发布到PyPI
+      if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.version != '')
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         skip-existing: true
         verbose: true
+        
+    - name: Skip PyPI publication
+      if: github.event_name == 'workflow_dispatch' && github.event.inputs.version == ''
+      run: |
+        echo "⏭️ 跳过PyPI发布（手动触发且未指定版本）"
+        echo "如需发布到PyPI，请在workflow_dispatch时提供version参数"
 
   # 创建GitHub Release
   create-github-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [build-packages]
-    if: github.event_name == 'workflow_dispatch' && always()
+    needs: build-packages
+    # 在build-packages成功后，根据触发事件决定是否创建GitHub Release
+    if: needs.build-packages.result == 'success'
     permissions:
       contents: write
     
     steps:
+    - name: Check if should create release
+      id: should_create
+      run: |
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          echo "should_create=true" >> $GITHUB_OUTPUT
+          echo "🎯 手动触发，将创建GitHub Release"
+        elif [ "${{ github.event_name }}" == "release" ]; then
+          echo "should_create=false" >> $GITHUB_OUTPUT  
+          echo "⏭️ 跳过GitHub Release创建（已通过release事件触发）"
+        else
+          echo "should_create=false" >> $GITHUB_OUTPUT
+          echo "⏭️ 跳过GitHub Release创建（触发条件不匹配）"
+        fi
+
     - name: Checkout repository
+      if: steps.should_create.outputs.should_create == 'true'
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
     - name: Download build artifacts
+      if: steps.should_create.outputs.should_create == 'true'
       uses: actions/download-artifact@v4
       with:
         name: release-packages-${{ needs.build-packages.outputs.version }}
         path: dist/
 
     - name: Generate release notes
+      if: steps.should_create.outputs.should_create == 'true'
       id: release_notes
       run: |
         VERSION=${{ needs.build-packages.outputs.version }}
@@ -169,6 +195,7 @@ jobs:
         fi
 
     - name: Create release
+      if: steps.should_create.outputs.should_create == 'true'
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ needs.build-packages.outputs.version }}
@@ -233,20 +260,35 @@ jobs:
   notify-release-success:
     name: Notify Release Success
     runs-on: ubuntu-latest
-    needs: [build-packages, publish-pypi, test-installation]
-    if: always() && needs.publish-pypi.result == 'success'
+    needs: [build-packages, publish-pypi, create-github-release, test-installation]
+    if: always() && needs.build-packages.result == 'success'
     
     steps:
     - name: Notify success
       run: |
-        echo "🎉 版本 ${{ needs.build-packages.outputs.version }} 发布成功！"
+        echo "🎉 版本 ${{ needs.build-packages.outputs.version }} 构建成功！"
         echo ""
-        echo "📦 PyPI: https://pypi.org/project/ais-terminal/${{ needs.build-packages.outputs.version }}/"
-        echo "📋 GitHub Release: https://github.com/${{ github.repository }}/releases/tag/${{ needs.build-packages.outputs.version }}"
+        
+        # 检查PyPI发布状态
+        if [ "${{ needs.publish-pypi.result }}" == "success" ]; then
+          echo "✅ PyPI发布成功"
+          echo "📦 PyPI: https://pypi.org/project/ais-terminal/${{ needs.build-packages.outputs.version }}/"
+          echo "安装命令: pip install ais-terminal==${{ needs.build-packages.outputs.version }}"
+        else
+          echo "⏭️ PyPI发布已跳过"
+        fi
+        
+        echo ""
+        
+        # 检查GitHub Release状态
+        if [ "${{ needs.create-github-release.result }}" == "success" ]; then
+          echo "✅ GitHub Release创建成功"
+          echo "📋 GitHub Release: https://github.com/${{ github.repository }}/releases/tag/${{ needs.build-packages.outputs.version }}"
+        else
+          echo "⏭️ GitHub Release创建已跳过"
+        fi
+        
         echo ""
         echo "🐳 Docker镜像将在几分钟内自动构建完成"
         echo "📋 Docker Hub: https://hub.docker.com/r/kangvcar/ais"
-        echo ""
-        echo "安装命令:"
-        echo "pip install ais-terminal==${{ needs.build-packages.outputs.version }}"
-        echo "docker run -it --rm kangvcar/ais:${{ needs.build-packages.outputs.version }}"
+        echo "Docker命令: docker run -it --rm kangvcar/ais:${{ needs.build-packages.outputs.version }}"
