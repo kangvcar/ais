@@ -107,13 +107,11 @@ jobs:
     name: Publish to PyPI
     runs-on: ubuntu-latest
     needs: build-packages
+    # 只在release事件时发布，避免从main分支意外发布
+    if: github.event_name == 'release'
     permissions:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
       contents: read
-    
-    environment:
-      name: pypi
-      url: https://pypi.org/project/ais-terminal/
     
     steps:
     - name: Download build artifacts
@@ -132,8 +130,8 @@ jobs:
   create-github-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [build-packages, publish-pypi]
-    if: github.event_name == 'workflow_dispatch'
+    needs: [build-packages]
+    if: github.event_name == 'workflow_dispatch' && always()
     permissions:
       contents: write
     
@@ -205,6 +203,7 @@ jobs:
     name: Test Installation from PyPI
     runs-on: ${{ matrix.os }}
     needs: publish-pypi
+    if: needs.publish-pypi.result == 'success'
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]

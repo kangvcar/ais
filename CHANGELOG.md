@@ -31,6 +31,11 @@
   - 修复Docker镜像本地构建后无法找到的问题，添加load: true参数
   - 改进Docker镜像测试步骤，添加镜像验证和详细的功能测试
   - 添加容器信息测试，确保镜像正确构建
+- 📦 **PyPI Trusted Publishing修复**：解决PyPI发布中的trusted publisher配置错误
+  - 移除environment配置，简化trusted publishing设置
+  - 添加条件限制，确保只在release事件时发布到PyPI
+  - 修复工作流依赖关系，处理跳过PyPI发布的情况
+  - 解决"invalid-publisher"错误，确保发布流程正常工作
 
 ### Added
 - 🐳 **Docker容器化完整支持**：实现符合行业最佳实践的容器化方案
