@@ -214,7 +214,6 @@ jobs:
 
   # Windows兼容性测试
   windows-compatibility:
-    name: Windows Compatibility Tests
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
