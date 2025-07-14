@@ -79,8 +79,8 @@ jobs:
           type=semver,pattern={{major}}.{{minor}}
           type=semver,pattern={{major}}
           # 为主分支设置latest标签
+          type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
           type=ref,event=branch,suffix=-{{sha}}
-          type=raw,value=latest,enable={{is_default_branch}}
           # 手动触发时使用自定义标签
           type=raw,value={{inputs.tag}},enable=${{ github.event_name == 'workflow_dispatch' }}
         labels: |
@@ -148,9 +148,33 @@ jobs:
 
     - name: Test Docker image functionality
       run: |
+        # 调试信息
+        echo "=== DEBUG INFO ==="
+        echo "Image tags output: '${{ needs.build-and-push.outputs.image-tags }}'"
+        echo "Image digest output: '${{ needs.build-and-push.outputs.image-digest }}'"
+        echo "=================="
+        
         # 提取第一个标签进行测试
-        IMAGE_TAG=$(echo "${{ needs.build-and-push.outputs.image-tags }}" | head -n1)
-        echo "Testing image: $IMAGE_TAG"
+        IMAGE_TAGS="${{ needs.build-and-push.outputs.image-tags }}"
+        IMAGE_DIGEST="${{ needs.build-and-push.outputs.image-digest }}"
+        
+        # 提取第一个非空标签
+        IMAGE_TAG=$(echo "$IMAGE_TAGS" | tr '\n' ' ' | tr ',' ' ' | awk '{print $1}' | xargs)
+        
+        if [ -z "$IMAGE_TAG" ]; then
+          echo "Warning: No image tag found, trying with digest"
+          if [ -n "$IMAGE_DIGEST" ]; then
+            IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@$IMAGE_DIGEST"
+            echo "Using image with digest: $IMAGE_TAG"
+          else
+            echo "Error: No image tag or digest found in build output"
+            echo "Tags output: '$IMAGE_TAGS'"
+            echo "Digest output: '$IMAGE_DIGEST'"
+            exit 1
+          fi
+        else
+          echo "Using image tag: $IMAGE_TAG"
+        fi
         
         # 基本功能测试
         docker run --rm --platform ${{ matrix.platform }} $IMAGE_TAG ais --version

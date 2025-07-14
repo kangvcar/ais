@@ -7,6 +7,13 @@
 
 ## [Unreleased]
 
+### Fixed
+- 🐳 **Docker工作流修复**：修复Docker构建和推送工作流中的镜像标签引用问题
+  - 修复test-image作业中IMAGE_TAG变量为空的问题
+  - 改进镜像标签提取逻辑，支持多种标签格式
+  - 添加调试信息和错误处理，提高诊断能力
+  - 添加digest fallback机制，确保测试能够正常运行
+
 ### Added
 - 🐳 **Docker容器化完整支持**：实现符合行业最佳实践的容器化方案
   - 多阶段构建Dockerfile，优化镜像大小和安全性
