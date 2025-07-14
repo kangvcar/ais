@@ -43,7 +43,6 @@ jobs:
 
   # 扩展的Linux发行版兼容性测试
   linux-compatibility:
-    name: Linux Compatibility Tests
     runs-on: ubuntu-latest
     permissions:
       contents: read
