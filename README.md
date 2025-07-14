@@ -72,7 +72,27 @@ curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh
 ### 🎯 分场景安装
 
 <details>
-<summary><b>👨‍💻 个人开发者（推荐）</b></summary>
+<summary><b>🐳 Docker容器（推荐 - 零配置）</b></summary>
+
+```bash
+# 直接运行最新版本
+docker run -it --rm kangvcar/ais:latest
+
+# 或者交互式使用
+docker run -it --rm -v $(pwd):/workspace kangvcar/ais:latest bash
+
+# 使用Docker Compose（推荐用于持久化配置）
+curl -O https://raw.githubusercontent.com/kangvcar/ais/main/docker-compose.yml
+docker-compose up -d ais
+docker-compose exec ais bash
+```
+
+**优势**: 零配置启动，环境隔离，跨平台一致性，支持ARM64架构
+
+</details>
+
+<details>
+<summary><b>👨‍💻 个人开发者（Python环境）</b></summary>
 
 ```bash
 # 用户级安装（最安全）

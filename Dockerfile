@@ -1,6 +1,11 @@
 # AIS - AI智能终端助手 Docker镜像
 # 多阶段构建，优化镜像大小
 
+# 构建参数
+ARG VERSION=0.1.0
+ARG BUILD_DATE
+ARG VCS_REF
+
 FROM python:3.11-slim as builder
 
 # 设置工作目录
@@ -62,8 +67,16 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # 默认命令
 CMD ["ais", "--help"]
 
-# 标签信息
+# 标签信息（符合OCI标准）
 LABEL maintainer="AIS Team <ais@example.com>" \
-      version="0.1.0" \
-      description="AIS - AI-powered terminal assistant" \
-      org.opencontainers.image.source="https://github.com/kangvcar/ais"
+      org.opencontainers.image.title="AIS - AI智能终端助手" \
+      org.opencontainers.image.description="AI-powered terminal assistant for intelligent error analysis and learning" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.source="https://github.com/kangvcar/ais" \
+      org.opencontainers.image.url="https://github.com/kangvcar/ais" \
+      org.opencontainers.image.documentation="https://github.com/kangvcar/ais/blob/main/README.md" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.vendor="AIS Team" \
+      org.opencontainers.image.authors="kangvcar <kangvcar@gmail.com>"

@@ -8,14 +8,30 @@
 ## [Unreleased]
 
 ### Added
-- 全面重写项目README.md，符合现代开源项目最佳实践
+- 🐳 **Docker容器化完整支持**：实现符合行业最佳实践的容器化方案
+  - 多阶段构建Dockerfile，优化镜像大小和安全性
+  - 多架构支持（AMD64/ARM64），支持Apple Silicon和树莓派
+  - 完整的Docker Compose配置，支持开发和生产环境
+  - CI/CD自动构建和发布到Docker Hub
+  - 安全扫描集成（Trivy）和SBOM生成
+  - 符合OCI标准的镜像标签和元数据
+- 🚀 **增强的CI/CD工作流**：专业级的DevOps流程
+  - 新增docker.yml工作流，专门处理容器构建和发布
+  - 在CI中集成Docker构建测试和安全扫描
+  - 自动化的多平台镜像构建和推送
+  - Docker Hub描述自动更新
+  - 完善的镜像测试和验证流程
+- 📝 **全面重写项目README.md**：符合现代开源项目最佳实践
   - 添加专业的徽章和导航链接
   - 结构化的功能介绍和使用指南
-  - 详细的安装说明，支持多种场景
+  - 详细的安装说明，支持多种场景（重点推荐Docker）
   - 完整的项目架构说明
   - 全面的开发和贡献指南
   - 美观的Markdown格式和布局
-- 更新docs/README.md保持文档一致性
+- 📊 **优化项目配置**：提升开发体验
+  - 添加.dockerignore优化构建上下文
+  - 更新pyproject.toml项目描述
+  - 更新docs/README.md保持文档一致性
 - CI测试支持多Linux发行版：新增对16个主流Linux发行版的测试支持
   - Ubuntu: 20.04 LTS, 22.04 LTS, 24.04 LTS
   - Debian: 11 (Bullseye), 12 (Bookworm)

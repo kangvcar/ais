@@ -1,74 +1,89 @@
 # Git相关
 .git
 .gitignore
-.github/
+.gitattributes
 
 # Python相关
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
+__pycache__
+*.pyc
+*.pyo
+*.pyd
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# 虚拟环境
-.env
+env
+venv
 .venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# 测试
-.pytest_cache/
+ENV
+env.bak
+venv.bak
+.pytest_cache
 .coverage
-htmlcov/
-.tox/
+htmlcov
+.tox
 .cache
 nosetests.xml
 coverage.xml
 *.cover
-.hypothesis/
+.hypothesis
 
-# 文档
-docs/_build/
-docs/build/
-
-# 日志
-*.log
-
-# 临时文件
-.tmp/
-tmp/
-*.tmp
-*.bak
+# IDE和编辑器
+.vscode
+.idea
+*.swp
+*.swo
+*~
 
 # OS相关
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# AIS特定
-workspace/
-*.db
-.ais/
+# 构建产物
+dist
+build
+*.egg-info
+.eggs
+
+# 文档和测试
+docs/
+tests/
+*.md
+!README.md
+
+# CI/CD
+.github
+.travis.yml
+.gitlab-ci.yml
+
+# 临时文件
+*.tmp
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# 依赖文件（可选，如果希望使用缓存层）
+# requirements*.txt
+# poetry.lock
+# Pipfile.lock
+
+# 开发工具配置
+.pre-commit-config.yaml
+.flake8
+.mypy.ini
+pytest.ini
+tox.ini
+setup.cfg
+
+# 示例和样本文件
+examples/
+samples/
+demo/
+
+# Docker相关
+Dockerfile*
+docker-compose*.yml
+.dockerignore

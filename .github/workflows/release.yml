@@ -144,6 +144,28 @@ jobs:
         password: ${{ secrets.PYPI_API_TOKEN }}
         skip-existing: true
 
+  # 触发Docker构建
+  trigger-docker-build:
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event_name == 'release'
+    
+    steps:
+    - name: Trigger Docker workflow
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.actions.createWorkflowDispatch({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            workflow_id: 'docker.yml',
+            ref: 'main',
+            inputs: {
+              tag: '${{ needs.build.outputs.version }}',
+              platforms: 'linux/amd64,linux/arm64'
+            }
+          });
+
 
   create-github-release:
     runs-on: ubuntu-latest
@@ -168,26 +190,48 @@ jobs:
         body: |
           ## 🎉 AIS v${{ needs.build.outputs.version }} 发布
           
-          ### 安装方法
+          ### 📦 安装方法
           
-          **Python包管理器**:
+          #### 🐳 Docker（推荐）
           ```bash
+          # 运行最新版本
+          docker run -it --rm kangvcar/ais:${{ needs.build.outputs.version }}
+          
+          # 或使用Docker Compose
+          curl -O https://raw.githubusercontent.com/kangvcar/ais/main/docker-compose.yml
+          docker-compose up -d ais
+          ```
+          
+          #### 🐍 Python包管理器
+          ```bash
+          # 使用pipx（推荐）
+          pipx install ais-terminal
+          
+          # 或使用pip
           pip install ais-terminal
           ```
           
-          **一键安装脚本**:
+          #### ⚡ 一键安装脚本
           ```bash
           curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
           ```
           
-          ### 更新内容
+          ### 🆕 更新内容
           
           详细更新内容请查看 [CHANGELOG.md](https://github.com/kangvcar/ais/blob/main/docs/CHANGELOG.md)
           
-          ### 文档
+          ### 📚 文档
           
-          - [README](https://github.com/kangvcar/ais/blob/main/docs/README.md)
-          - [部署指南](https://github.com/kangvcar/ais/blob/main/docs/DEPLOYMENT_GUIDE.md)
+          - [📖 README](https://github.com/kangvcar/ais/blob/main/README.md) - 完整使用指南
+          - [🐳 Docker指南](https://github.com/kangvcar/ais/blob/main/docs/DOCKER_GUIDE.md) - 容器化部署
+          - [🏢 部署指南](https://github.com/kangvcar/ais/blob/main/docs/DEPLOYMENT_GUIDE.md) - 生产环境部署
+          - [🔧 开发指南](https://github.com/kangvcar/ais/blob/main/docs/DEVELOPMENT.md) - 开发环境设置
+          
+          ### 🔗 相关链接
+          
+          - 🐳 [Docker Hub](https://hub.docker.com/r/kangvcar/ais)
+          - 📦 [PyPI](https://pypi.org/project/ais-terminal/)
+          - 📋 [GitHub](https://github.com/kangvcar/ais)
         draft: false
         prerelease: false
         files: dist/*

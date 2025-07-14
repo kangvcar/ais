@@ -1,0 +1,234 @@
+name: Docker Build and Push
+
+on:
+  # 主分支推送时构建latest标签
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'Dockerfile'
+      - 'pyproject.toml'
+      - '.github/workflows/docker.yml'
+  
+  # 发布新版本时构建版本标签
+  release:
+    types: [published]
+  
+  # 允许手动触发
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Docker tag to build'
+        required: false
+        default: 'latest'
+        type: string
+      platforms:
+        description: 'Target platforms'
+        required: false
+        default: 'linux/amd64,linux/arm64'
+        type: string
+
+# 限制并发执行
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: kangvcar/ais
+
+jobs:
+  # 构建和推送Docker镜像
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # for uploading SARIF results
+    
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+      image-tags: ${{ steps.meta.outputs.tags }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        platforms: linux/amd64,linux/arm64
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          # 为release设置版本标签
+          type=ref,event=tag
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=semver,pattern={{major}}
+          # 为主分支设置latest标签
+          type=ref,event=branch,suffix=-{{sha}}
+          type=raw,value=latest,enable={{is_default_branch}}
+          # 手动触发时使用自定义标签
+          type=raw,value={{inputs.tag}},enable=${{ github.event_name == 'workflow_dispatch' }}
+        labels: |
+          org.opencontainers.image.title=AIS - AI智能终端助手
+          org.opencontainers.image.description=AI-powered terminal assistant for intelligent error analysis and learning
+          org.opencontainers.image.vendor=AIS Team
+          org.opencontainers.image.licenses=MIT
+
+    - name: Build and push Docker image
+      id: build
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        platforms: ${{ github.event.inputs.platforms || 'linux/amd64,linux/arm64' }}
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        # 构建参数
+        build-args: |
+          VERSION=${{ github.ref_name }}
+          BUILD_DATE=${{ github.event.head_commit.timestamp }}
+          VCS_REF=${{ github.sha }}
+
+    - name: Generate SBOM
+      uses: anchore/sbom-action@v0
+      with:
+        image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+        format: spdx-json
+        output-file: sbom.spdx.json
+
+    - name: Security scan with Trivy
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+    - name: Upload SBOM as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sbom-${{ github.sha }}
+        path: sbom.spdx.json
+        retention-days: 30
+
+  # 测试构建的镜像
+  test-image:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+    
+    steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Test Docker image functionality
+      run: |
+        # 提取第一个标签进行测试
+        IMAGE_TAG=$(echo "${{ needs.build-and-push.outputs.image-tags }}" | head -n1)
+        echo "Testing image: $IMAGE_TAG"
+        
+        # 基本功能测试
+        docker run --rm --platform ${{ matrix.platform }} $IMAGE_TAG ais --version
+        docker run --rm --platform ${{ matrix.platform }} $IMAGE_TAG ais --help
+        
+        # 配置测试
+        docker run --rm --platform ${{ matrix.platform }} $IMAGE_TAG ais config || true
+        
+        # 健康检查测试
+        docker run --rm --platform ${{ matrix.platform }} \
+          --health-cmd="ais --version" \
+          --health-interval=10s \
+          --health-timeout=5s \
+          --health-retries=3 \
+          $IMAGE_TAG sh -c "sleep 15 && ais --version"
+
+  # 更新Docker Hub描述
+  update-dockerhub-description:
+    runs-on: ubuntu-latest
+    needs: [build-and-push, test-image]
+    if: github.event_name == 'release' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Update Docker Hub Description
+      uses: peter-evans/dockerhub-description@v4
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        repository: ${{ env.IMAGE_NAME }}
+        short-description: "AIS - AI智能终端助手，让命令行更智能，让学习更高效"
+        readme-filepath: ./README.md
+
+  # 发布通知
+  notify:
+    runs-on: ubuntu-latest
+    needs: [build-and-push, test-image]
+    if: always()
+    
+    steps:
+    - name: Notify success
+      if: needs.build-and-push.result == 'success' && needs.test-image.result == 'success'
+      run: |
+        echo "🐳 Docker镜像构建成功！"
+        echo "📋 镜像标签:"
+        echo "${{ needs.build-and-push.outputs.image-tags }}"
+        echo "🔐 镜像摘要: ${{ needs.build-and-push.outputs.image-digest }}"
+        echo "🌐 Docker Hub: https://hub.docker.com/r/${{ env.IMAGE_NAME }}"
+        
+        # 如果是发布版本，显示使用说明
+        if [ "${{ github.event_name }}" == "release" ]; then
+          echo ""
+          echo "🎉 新版本发布成功！"
+          echo "使用方法:"
+          echo "docker run -it --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}"
+        fi
+
+    - name: Notify failure
+      if: needs.build-and-push.result == 'failure' || needs.test-image.result == 'failure'
+      run: |
+        echo "❌ Docker构建失败"
+        echo "请检查构建日志"
+        exit 1
+
+  # 清理旧的镜像标签（可选）
+  cleanup:
+    runs-on: ubuntu-latest
+    needs: [build-and-push, test-image]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Delete old development tags
+      uses: actions/github-script@v7
+      with:
+        script: |
+          // 这里可以添加清理逻辑，删除过期的开发标签
+          // 保留最近的10个main分支构建的镜像
+          console.log('清理功能可以根据需要实现');
+      continue-on-error: true
