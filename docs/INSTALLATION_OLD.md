@@ -5,7 +5,7 @@
 ## 系统要求
 
 - **Python**: 3.8 或更高版本
-- **操作系统**: Linux, macOS, Windows
+- **操作系统**: Linux, macOS
 - **网络**: 需要网络连接以下载依赖和AI服务
 
 ## 🎯 推荐安装方式
@@ -104,7 +104,6 @@ pipx install -e .
 # 或在虚拟环境中安装
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
-# 或 venv\Scripts\activate  # Windows
 pip install -e .
 ```
 

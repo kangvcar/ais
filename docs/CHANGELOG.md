@@ -89,7 +89,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 为不同类型的信息提供颜色编码：蓝色(AI分析)、绿色(成功/建议)、黄色(警告)、红色(错误)、青色(信息)、紫色(配置)
 
 ### Planned
-- Windows support via WSL
 - Plugin system for custom AI providers
 - Command suggestion caching
 - Web interface for configuration

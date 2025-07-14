@@ -39,7 +39,6 @@ ais --version
 # 创建虚拟环境
 python3 -m venv .venv
 source .venv/bin/activate  # Linux/Mac
-# 或 .venv\Scripts\activate  # Windows
 
 # 安装项目和开发依赖
 pip install -e ".[dev]"
