@@ -42,6 +42,11 @@
   - 暂时禁用Rocky Linux测试避免hatchling版本兼容性问题
   - 修复openSUSE容器shell问题，统一使用bash
   - 简化Windows测试，统一使用PowerShell环境
+- 大幅简化CI测试策略以提高稳定性
+  - 移除有问题的旧版本发行版（CentOS 7/8, Rocky Linux等）
+  - 专注于主流稳定发行版：Ubuntu 22.04/24.04, Debian 12, Fedora 39, Alpine 3.19
+  - 简化Windows测试避免Unicode编码问题
+  - 统一使用sh shell确保最大兼容性
 
 ### Changed
 
