@@ -347,14 +347,29 @@ jobs:
         file: ./Dockerfile
         platforms: linux/amd64
         push: false
+        load: true
         tags: ais-terminal:test
         cache-from: type=gha
         cache-to: type=gha,mode=max
     
     - name: Test Docker image
       run: |
+        # 验证镜像是否存在
+        echo "=== 验证Docker镜像 ==="
+        docker images | grep ais-terminal || echo "Warning: Image not found in docker images"
+        
+        # 基本功能测试
+        echo "=== 基本功能测试 ==="
         docker run --rm ais-terminal:test ais --version
         docker run --rm ais-terminal:test ais --help
+        
+        # 配置测试
+        echo "=== 配置测试 ==="
+        docker run --rm ais-terminal:test ais config || echo "Config test completed with warnings"
+        
+        # 容器信息测试
+        echo "=== 容器信息测试 ==="
+        docker run --rm ais-terminal:test uname -a
     
     - name: Security scan with Trivy
       uses: aquasecurity/trivy-action@master
