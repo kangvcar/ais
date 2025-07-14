@@ -73,15 +73,15 @@ install_pipx() {
     # 根据系统安装pipx
     if command_exists apt-get; then
         if [ "$(detect_environment)" = "user" ]; then
-            sudo apt update && sudo apt install -y python3-pipx
+            sudo apt update && sudo apt install -y pipx
         else
-            apt update && apt install -y python3-pipx
+            apt update && apt install -y pipx
         fi
     elif command_exists yum; then
         if [ "$(detect_environment)" = "user" ]; then
-            sudo yum install -y python3-pipx
+            sudo yum install -y pipx
         else
-            yum install -y python3-pipx
+            yum install -y pipx
         fi
     elif command_exists brew; then
         brew install pipx
