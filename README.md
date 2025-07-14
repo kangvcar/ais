@@ -39,10 +39,10 @@ AIS（AI-powered terminal assistant）是一个革命性的命令行工具，通
 - **分析模式** - 自动或手动分析命令错误
 
 #### 🔌 强大的集成能力
-- **Shell集成** - 支持Bash、Zsh、PowerShell自动错误捕获
+- **Shell集成** - 支持Bash、Zsh自动错误捕获
 - **多AI支持** - 兼容OpenAI、Ollama、Claude等多种AI服务
 - **隐私保护** - 本地数据存储，敏感信息自动过滤
-- **跨平台** - 支持Linux、macOS、Windows
+- **跨平台** - 支持Linux、macOS
 
 ---
 
@@ -51,7 +51,7 @@ AIS（AI-powered terminal assistant）是一个革命性的命令行工具，通
 ### 系统要求
 
 - **Python**: 3.8+ （推荐 3.11+）
-- **操作系统**: Linux, macOS, Windows
+- **操作系统**: Linux, macOS
 - **网络**: 需要网络连接以下载依赖和AI服务
 - **空间**: 至少 100MB 可用空间
 

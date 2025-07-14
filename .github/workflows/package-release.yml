@@ -245,11 +245,11 @@ jobs:
   test-installation:
     name: Test Installation from PyPI
     runs-on: ${{ matrix.os }}
-    needs: publish-pypi
+    needs: [build-packages, publish-pypi]
     if: needs.publish-pypi.result == 'success'
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         python-version: ['3.8', '3.11', '3.12']
     
     steps:

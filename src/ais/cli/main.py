@@ -91,115 +91,6 @@ fi
     os.chmod(script_path, 0o755)
 
 
-def _create_powershell_integration_script(script_path: str):
-    """创建PowerShell集成脚本。"""
-    import os
-
-    # 尝试从已存在的 PowerShell 脚本复制
-    package_dir = os.path.dirname(os.path.dirname(script_path))
-    existing_ps_script = os.path.join(package_dir, "shell", "integration.ps1")
-
-    if os.path.exists(existing_ps_script):
-        # 如果已经存在，直接复制
-        return
-
-    # 如果不存在，创建内联版本
-    with open(script_path, "w", encoding="utf-8") as f:
-        f.write(
-            "# AIS PowerShell 集成脚本\n"
-            "# 功能：自动捕获命令执行错误并调用 AIS 进行分析\n\n"
-            "function Test-AisAvailability {\n"
-            "    try {\n"
-            "        $null = Get-Command ais -ErrorAction Stop\n"
-            "        return $true\n"
-            "    } catch {\n"
-            "        return $false\n"
-            "    }\n"
-            "}\n\n"
-            "function Test-AisAutoAnalysis {\n"
-            "    if (-not (Test-AisAvailability)) { return $false }\n"
-            "    \n"
-            "    $configFile = Join-Path $env:USERPROFILE "
-            '".config\\ais\\config.toml"\n'
-            "    if (Test-Path $configFile) {\n"
-            "        try {\n"
-            "            $content = Get-Content $configFile -Raw\n"
-            '            return $content -match "auto_analysis\\s*=\\s*true"\n'
-            "        } catch {\n"
-            "            return $false\n"
-            "        }\n"
-            "    }\n"
-            "    return $false\n"
-            "}\n\n"
-            "function Invoke-AisErrorAnalysis {\n"
-            "    param([string]$Command, [int]$ExitCode, "
-            '[string]$ErrorOutput = "")\n'
-            "    \n"
-            '    if ($Command -match "_ais_|ais_|Get-History|Test-|Invoke-") '
-            "{ return }\n"
-            "    \n"
-            "    try {\n"
-            '        Write-Host ""\n'
-            '        $arguments = @("analyze", "--exit-code", $ExitCode, '
-            '"--command", $Command)\n'
-            '        if ($ErrorOutput) { $arguments += "--stderr", '
-            "$ErrorOutput }\n"
-            "        & ais @arguments\n"
-            "    } catch {\n"
-            "        # 静默失败\n"
-            "    }\n"
-            "}\n\n"
-            "# PowerShell 提示符集成\n"
-            "function prompt {\n"
-            "    if (-not $Global:OriginalPrompt) {\n"
-            "        $Global:OriginalPrompt = $function:prompt\n"
-            "    }\n"
-            "    \n"
-            "    if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne $null "
-            "-and (Test-AisAutoAnalysis)) {\n"
-            "        $history = Get-History -Count 1 "
-            "-ErrorAction SilentlyContinue\n"
-            "        if ($history) {\n"
-            "            Start-Job -ScriptBlock {\n"
-            "                param($cmd, $exitCode)\n"
-            "                try {\n"
-            "                    & ais analyze --exit-code $exitCode "
-            "--command $cmd\n"
-            "                } catch {\n"
-            "                    # 静默失败\n"
-            "                }\n"
-            "            } -ArgumentList $history.CommandLine, "
-            "$LASTEXITCODE | Out-Null\n"
-            "        }\n"
-            "    }\n"
-            "    \n"
-            "    if ($Global:OriginalPrompt -and $Global:OriginalPrompt "
-            "-ne $function:prompt) {\n"
-            "        & $Global:OriginalPrompt\n"
-            "    } else {\n"
-            '        "PS $($executionContext.SessionState.Path.'
-            "CurrentLocation)$('>' * ($nestedPromptLevel + 1)) \"\n"
-            "    }\n"
-            "}\n\n"
-            "# Windows Terminal 集成\n"
-            "if ($env:WT_SESSION) {\n"
-            '    $Host.UI.RawUI.WindowTitle = "PowerShell - AIS Enabled"\n'
-            "}\n\n"
-            "# 启动消息\n"
-            "if (Test-AisAvailability -and Test-AisAutoAnalysis) {\n"
-            "    if (-not $Global:AisWelcomeShown) {\n"
-            '        Write-Host "🤖 AIS PowerShell 集成已启用" '
-            "-ForegroundColor Green\n"
-            "        $Global:AisWelcomeShown = $true\n"
-            "    }\n"
-            "}\n"
-        )
-
-    # 设置可执行权限（Windows 上通常不需要，但保持一致性）
-    try:
-        os.chmod(script_path, 0o755)
-    except Exception:
-        pass  # Windows 上可能失败，但不影响功能
 
 
 def _auto_setup_shell_integration():
@@ -222,15 +113,8 @@ def _auto_setup_shell_integration():
 
         package_path = os.path.dirname(ais.__file__)
 
-        # 检测操作系统
-        is_windows = platform.system() == "Windows"
-
-        if is_windows:
-            # Windows PowerShell 自动设置
-            _auto_setup_powershell_integration(package_path, config_dir)
-        else:
-            # Unix shell 自动设置
-            _auto_setup_unix_integration(package_path, config_dir)
+        # Unix shell 自动设置
+        _auto_setup_unix_integration(package_path, config_dir)
 
         # 确保默认配置中启用自动分析
         config_file_path = config_dir / "config.toml"
@@ -256,27 +140,6 @@ api_key = "sk-97RxyS9R2dsqFTUxcUZOpZwhnbjQCSOaFboooKDeTv5nHJgg"
         pass
 
 
-def _auto_setup_powershell_integration(package_path, config_dir):
-    """自动设置 PowerShell 集成"""
-    import os
-
-    # PowerShell 集成脚本路径
-    ps_script_path = os.path.join(package_path, "shell", "integration.ps1")
-
-    # 确保脚本存在
-    if not os.path.exists(ps_script_path):
-        os.makedirs(os.path.dirname(ps_script_path), exist_ok=True)
-        _create_powershell_integration_script(ps_script_path)
-
-    # 显示一次性提示（PowerShell 需要手动设置）
-    setup_message = """[green]🎉 AIS PowerShell 集成已准备就绪！[/green]
-
-[yellow]💡 PowerShell 集成需要手动完成最后一步:[/yellow]
-[dim]   运行: ais setup[/dim]
-[dim]   按照提示将集成脚本添加到 PowerShell 配置文件中[/dim]
-
-[green]✨ 配置完成后，命令失败时将自动显示AI分析！[/green]"""
-    panels.success(setup_message, "🎉 AIS PowerShell 配置准备完成")
 
 
 def _auto_setup_unix_integration(package_path, config_dir):
@@ -1133,74 +996,9 @@ def setup_shell():
 
     console.print("[bold blue]🔧 设置 Shell 集成[/bold blue]")
 
-    # 检测操作系统和 shell 类型
-    is_windows = platform.system() == "Windows"
+    # Unix shell 集成
+    _setup_unix_shell_integration()
 
-    if is_windows:
-        # Windows PowerShell 集成
-        _setup_powershell_integration()
-    else:
-        # Unix shell 集成
-        _setup_unix_shell_integration()
-
-
-def _setup_powershell_integration():
-    """设置 PowerShell 集成。"""
-    import os
-    import ais
-
-    console.print("检测到 Windows 环境，设置 PowerShell 集成...")
-
-    # 获取 PowerShell 集成脚本路径
-    package_path = os.path.dirname(ais.__file__)
-    ps_script_path = os.path.join(package_path, "shell", "integration.ps1")
-
-    # 确保脚本存在
-    if not os.path.exists(ps_script_path):
-        os.makedirs(os.path.dirname(ps_script_path), exist_ok=True)
-        _create_powershell_integration_script(ps_script_path)
-
-    console.print(f"PowerShell 集成脚本路径: {ps_script_path}")
-
-    console.print("\n[bold yellow]📝 PowerShell 集成设置:[/bold yellow]")
-    console.print("请选择以下方式之一来设置 PowerShell 集成：")
-
-    console.print("\n[bold green]方式1: 自动设置（推荐）[/bold green]")
-    console.print("在 PowerShell 中运行以下命令：")
-    console.print(
-        f"""
-[green]# 检查当前配置文件路径
-$PROFILE
-
-# 创建配置文件（如果不存在）
-if (!(Test-Path $PROFILE)) {{
-    New-Item -ItemType File -Path $PROFILE -Force
-}}
-
-# 添加 AIS 集成
-Add-Content $PROFILE @"
-
-# START AIS INTEGRATION
-Import-Module '{ps_script_path}' -Force
-# END AIS INTEGRATION
-"@[/green]
-"""
-    )
-
-    console.print("\n[bold blue]方式2: 手动设置[/bold blue]")
-    console.print("编辑您的 PowerShell 配置文件，添加以下内容：")
-    console.print(
-        f"""
-[dim]# START AIS INTEGRATION[/dim]
-[green]Import-Module '{ps_script_path}' -Force[/green]
-[dim]# END AIS INTEGRATION[/dim]
-"""
-    )
-
-    console.print("\n[bold cyan]设置完成后：[/bold cyan]")
-    console.print("1. 重启 PowerShell 或运行: [bold]. $PROFILE[/bold]")
-    console.print("2. 运行 [bold]ais test-integration[/bold] 测试集成")
-    console.print("3. 错误命令将自动触发 AI 分析")
 
 
 def _setup_unix_shell_integration():
