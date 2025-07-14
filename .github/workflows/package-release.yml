@@ -67,6 +67,22 @@ jobs:
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "Building version: $VERSION"
 
+    - name: Update version in project files
+      run: |
+        VERSION=${{ steps.version.outputs.version }}
+        echo "Updating version to: $VERSION"
+        
+        # 更新 pyproject.toml 中的版本
+        sed -i "s/version = \".*\"/version = \"$VERSION\"/" pyproject.toml
+        
+        # 更新 __init__.py 中的版本
+        sed -i "s/__version__ = \".*\"/__version__ = \"$VERSION\"/" src/ais/__init__.py
+        
+        # 验证更新结果
+        echo "=== 更新后的版本信息 ==="
+        grep "version = " pyproject.toml
+        grep "__version__ = " src/ais/__init__.py
+
     - name: Build packages
       id: build
       run: |
