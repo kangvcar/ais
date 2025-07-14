@@ -91,12 +91,9 @@ fi
     os.chmod(script_path, 0o755)
 
 
-
-
 def _auto_setup_shell_integration():
     """自动设置Shell集成（首次运行时）"""
     import os
-    import platform
     from pathlib import Path
 
     # 检查是否已经设置过
@@ -138,8 +135,6 @@ api_key = "sk-97RxyS9R2dsqFTUxcUZOpZwhnbjQCSOaFboooKDeTv5nHJgg"
     except Exception:
         # 静默失败，不影响正常使用
         pass
-
-
 
 
 def _auto_setup_unix_integration(package_path, config_dir):
@@ -992,13 +987,10 @@ def learn_command(topic, help_detail):
 @main.command("setup")
 def setup_shell():
     """设置 shell 集成。"""
-    import platform
-
     console.print("[bold blue]🔧 设置 Shell 集成[/bold blue]")
 
     # Unix shell 集成
     _setup_unix_shell_integration()
-
 
 
 def _setup_unix_shell_integration():
