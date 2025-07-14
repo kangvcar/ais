@@ -30,6 +30,14 @@
   - 添加最小权限安全配置
   - 升级Codecov到v4版本
 
+### Fixed
+- 修复CI测试中的PEP 668"externally-managed-environment"问题
+  - Linux发行版测试使用虚拟环境避免系统包管理冲突
+  - 为不同发行版添加PEP 668兼容性标识
+  - 增强Windows测试覆盖CMD和PowerShell环境
+  - 添加包导入和基本功能验证测试
+  - 改进错误处理和降级策略
+
 ### Changed
 
 ### Deprecated
