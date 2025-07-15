@@ -346,23 +346,6 @@ def config(set_key, get_key, list_providers, help_context):
                 save_config(config)
                 console.print(f"[green]✓ 流式输出模式已设置为 {value}[/green]")
                 return
-            elif key == "enable_streaming":
-                if value.lower() in ["true", "false"]:
-                    bool_value = value.lower() == "true"
-                    config = get_config()
-                    if "ui" not in config:
-                        config["ui"] = {}
-                    config["ui"]["enable_streaming"] = bool_value
-                    from ..core.config import save_config
-                    save_config(config)
-                    status = "已启用" if bool_value else "已禁用"
-                    console.print(f"[green]✓ 流式输出{status}[/green]")
-                    return
-                else:
-                    console.print(
-                        "[red]错误: enable_streaming 必须是 true 或 false[/red]"
-                    )
-                    return
             elif key == "auto_analysis":
                 if value.lower() in ["true", "false"]:
                     value = value.lower() == "true"
@@ -428,8 +411,6 @@ def config(set_key, get_key, list_providers, help_context):
 
             # UI配置
             ui_config = config.get("ui", {})
-            streaming_enabled = ui_config.get("enable_streaming", True)
-            streaming_status = "✅ 开启" if streaming_enabled else "❌ 关闭"
             stream_mode = ui_config.get("stream_mode", "progressive")
 
             config_content = f"""默认提供商: {
@@ -438,7 +419,6 @@ def config(set_key, get_key, list_providers, help_context):
                     'default_free')}
 自动分析: {auto_status}
 上下文级别: {context_level}
-流式输出: {streaming_status}
 输出模式: {stream_mode}
 敏感目录: {sensitive_count} 个
 
@@ -448,7 +428,6 @@ def config(set_key, get_key, list_providers, help_context):
 [dim]  ais config --set key=value   - 修改配置[/dim]
 [dim]
 [dim]  流式输出配置:[/dim]
-[dim]  ais config --set enable_streaming=true/false  - 开启/关闭流式输出[/dim]
 [dim]  ais config --set stream_mode=progressive      - 设置输出模式[/dim]
 [dim]  (模式: progressive/realtime/spinner)[/dim]"""
             panels.config(config_content, "⚙️ 当前配置")

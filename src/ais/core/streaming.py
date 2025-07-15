@@ -179,13 +179,8 @@ class StreamingAnalyzer:
                                config: dict) -> Any:
         """执行带流式输出的分析"""
 
-        # 检查是否启用流式输出
+        # 流式输出始终启用，根据配置选择显示方式
         ui_config = config.get("ui", {})
-        if not ui_config.get("enable_streaming", True):
-            # 如果禁用流式输出，直接调用原函数
-            return analyze_func(command, exit_code, stderr, context, config)
-
-        # 根据配置选择显示方式
         stream_mode = ui_config.get("stream_mode", "progressive")
 
         if stream_mode == "progressive":
@@ -333,13 +328,8 @@ class StreamingLearner:
                              config: dict) -> Any:
         """执行带流式输出的学习"""
 
-        # 检查是否启用流式输出
+        # 流式输出始终启用，根据配置选择显示方式
         ui_config = config.get("ui", {})
-        if not ui_config.get("enable_streaming", True):
-            # 如果禁用流式输出，直接调用原函数
-            return learn_func(topic, config)
-
-        # 根据配置选择显示方式
         stream_mode = ui_config.get("stream_mode", "progressive")
 
         if stream_mode == "progressive":
@@ -475,13 +465,8 @@ class StreamingAsker:
                            config: dict) -> Any:
         """执行带流式输出的问答"""
 
-        # 检查是否启用流式输出
+        # 流式输出始终启用，根据配置选择显示方式
         ui_config = config.get("ui", {})
-        if not ui_config.get("enable_streaming", True):
-            # 如果禁用流式输出，直接调用原函数
-            return ask_func(question, config)
-
-        # 根据配置选择显示方式
         stream_mode = ui_config.get("stream_mode", "progressive")
 
         if stream_mode == "progressive":
