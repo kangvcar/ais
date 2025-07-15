@@ -202,6 +202,49 @@ jobs:
         name: release-packages-${{ needs.build-packages.outputs.version }}
         path: dist/
 
+    - name: Update CHANGELOG.md for release
+      if: steps.should_create.outputs.should_create == 'true'
+      run: |
+        VERSION=${{ needs.build-packages.outputs.version }}
+        
+        if [ -f CHANGELOG.md ]; then
+          # 检查是否已经有这个版本的章节
+          if ! grep -q "^## \[$VERSION\]" CHANGELOG.md; then
+            # 如果没有，将Unreleased内容移动到新版本章节
+            echo "Creating version section for $VERSION in CHANGELOG.md"
+            
+            # 创建临时文件
+            cat > temp_changelog.md << 'HEADER'
+# Changelog
+
+所有对此项目的重要更改都将记录在此文件中。
+
+格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/),
+并且此项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/)。
+
+## [Unreleased]
+
+HEADER
+            
+            # 添加新版本章节
+            echo "## [$VERSION] - $(date '+%Y-%m-%d')" >> temp_changelog.md
+            echo "" >> temp_changelog.md
+            
+            # 提取Unreleased部分的内容
+            awk '/^## \[Unreleased\]/{flag=1;next}/^## \[/{flag=0}flag' CHANGELOG.md >> temp_changelog.md
+            
+            # 添加现有的版本章节
+            awk '/^## \[.*\] - [0-9]/{flag=1}flag' CHANGELOG.md >> temp_changelog.md
+            
+            # 替换原文件
+            mv temp_changelog.md CHANGELOG.md
+            
+            echo "CHANGELOG.md updated with version $VERSION"
+          else
+            echo "Version $VERSION already exists in CHANGELOG.md"
+          fi
+        fi
+
     - name: Generate release notes
       if: steps.should_create.outputs.should_create == 'true'
       id: release_notes
@@ -211,13 +254,16 @@ jobs:
         
         # 从CHANGELOG.md提取发布说明
         if [ -f CHANGELOG.md ]; then
-          # 提取Unreleased部分作为发布说明
-          RELEASE_NOTES=$(awk '/^## \[Unreleased\]/{flag=1;next}/^## \[/{flag=0}flag' CHANGELOG.md)
-          if [ -n "$RELEASE_NOTES" ]; then
+          # 提取特定版本的章节
+          VERSION_SECTION=$(awk "/^## \[$VERSION\]/{flag=1;next}/^## \[/{flag=0}flag" CHANGELOG.md)
+          
+          if [ -n "$VERSION_SECTION" ]; then
+            # 找到了特定版本的章节
             echo "release_notes<<EOF" >> $GITHUB_OUTPUT
-            echo "$RELEASE_NOTES" >> $GITHUB_OUTPUT
+            echo "$VERSION_SECTION" >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
           else
+            # 使用默认发布说明
             echo "release_notes=发布版本 $VERSION" >> $GITHUB_OUTPUT
           fi
         else
@@ -254,6 +300,27 @@ jobs:
           dist/*
         draft: false
         prerelease: false
+
+    - name: Commit updated CHANGELOG.md
+      if: steps.should_create.outputs.should_create == 'true'
+      run: |
+        # 配置git用户信息
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # 检查是否有更改
+        if ! git diff --quiet CHANGELOG.md; then
+          git add CHANGELOG.md
+          git commit -m "更新CHANGELOG.md for version ${{ needs.build-packages.outputs.version }}
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+          git push
+          echo "CHANGELOG.md committed and pushed"
+        else
+          echo "No changes to CHANGELOG.md"
+        fi
 
   # 发布后安装测试
   test-installation:

@@ -24,6 +24,12 @@
   - 移除CI中的重复Docker测试功能，避免资源浪费
 
 ### Fixed
+- 📋 **发布说明长度优化**：修复GitHub Release页面显示过长Changelog的问题
+  - 改进Package Release工作流中的Changelog提取逻辑
+  - 发布时自动创建具体版本章节，避免显示所有Unreleased内容
+  - 只提取当前版本的更改内容作为发布说明
+  - 自动管理CHANGELOG.md版本结构，符合Keep a Changelog标准
+  - 发布后自动提交更新的CHANGELOG.md到仓库
 - 🌍 **多用户环境Shell集成优化**：彻底解决切换用户后需要重新配置的问题
   - 系统级安装现在配置全局Shell集成(`/etc/profile.d/ais.sh`)
   - 所有用户（包括新用户）登录后自动启用AIS功能，无需手动配置
