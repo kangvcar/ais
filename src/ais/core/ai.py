@@ -62,6 +62,237 @@ def _build_context_summary(context: Dict[str, Any]) -> str:
     return "\n".join(summary_parts) if summary_parts else "📋 基本环境信息"
 
 
+def _build_intelligent_context_analysis(context: Dict[str, Any]) -> str:
+    """构建智能的上下文分析"""
+    analysis_parts = []
+    
+    # 网络诊断分析
+    network_context = context.get("network_context", {})
+    if network_context and network_context != {"error": "network context collection failed"}:
+        network_analysis = []
+        if network_context.get("internet_connectivity") is False:
+            network_analysis.append("❌ 网络连接异常")
+        elif network_context.get("dns_resolution") == "failed":
+            network_analysis.append("❌ DNS解析失败")
+        elif network_context.get("proxy_settings"):
+            network_analysis.append(f"🔄 代理设置: {network_context['proxy_settings']}")
+        else:
+            network_analysis.append("✅ 网络连接正常")
+        
+        if network_context.get("local_open_ports"):
+            network_analysis.append(f"🔌 本地开放端口: {network_context['local_open_ports']}")
+        
+        if network_analysis:
+            analysis_parts.append(f"🌐 **网络状态**: {' | '.join(network_analysis)}")
+    
+    # 权限分析
+    permission_context = context.get("permission_context", {})
+    if permission_context and permission_context != {"error": "permission context collection failed"}:
+        permission_analysis = []
+        
+        current_user = permission_context.get("current_user", "unknown")
+        permission_analysis.append(f"用户: {current_user}")
+        
+        if permission_context.get("sudo_available"):
+            permission_analysis.append("sudo可用")
+        else:
+            permission_analysis.append("sudo不可用")
+        
+        # 目录权限
+        cwd_perms = []
+        if permission_context.get("cwd_readable"):
+            cwd_perms.append("R")
+        if permission_context.get("cwd_writable"):
+            cwd_perms.append("W")
+        if permission_context.get("cwd_executable"):
+            cwd_perms.append("X")
+        
+        if cwd_perms:
+            permission_analysis.append(f"当前目录权限: {''.join(cwd_perms)}")
+        
+        # 目标文件权限
+        if permission_context.get("target_path"):
+            target_path = permission_context["target_path"]
+            if permission_context.get("target_permissions"):
+                permission_analysis.append(f"目标 {target_path} 权限: {permission_context['target_permissions']}")
+            elif permission_context.get("parent_dir_writable") is not None:
+                parent_writable = "可写" if permission_context["parent_dir_writable"] else "不可写"
+                permission_analysis.append(f"父目录{parent_writable}")
+        
+        if permission_analysis:
+            analysis_parts.append(f"🔐 **权限状态**: {' | '.join(permission_analysis)}")
+    
+    # 项目环境分析
+    project_context = context.get("project_context", {})
+    if project_context and project_context != {"error": "project context collection failed"}:
+        project_analysis = []
+        
+        project_type = project_context.get("project_type", "unknown")
+        if project_type != "unknown":
+            project_analysis.append(f"类型: {project_type}")
+            
+            if project_context.get("framework"):
+                project_analysis.append(f"框架: {project_context['framework']}")
+            
+            if project_context.get("package_manager"):
+                project_analysis.append(f"包管理: {project_context['package_manager']}")
+            
+            if project_context.get("build_system"):
+                project_analysis.append(f"构建系统: {project_context['build_system']}")
+            
+            # 配置文件状态
+            config_files = project_context.get("config_files", {})
+            if config_files:
+                existing_configs = [k for k, v in config_files.items() if v == "exists"]
+                if existing_configs:
+                    project_analysis.append(f"配置文件: {', '.join(existing_configs[:3])}")
+        
+        if project_analysis:
+            analysis_parts.append(f"🚀 **项目环境**: {' | '.join(project_analysis)}")
+    
+    # Git状态分析
+    if context.get("git_branch"):
+        git_analysis = [f"分支: {context['git_branch']}"]
+        if context.get("git_status"):
+            git_analysis.append("有未提交变更")
+        analysis_parts.append(f"📋 **Git状态**: {' | '.join(git_analysis)}")
+    
+    # 命令历史模式分析
+    recent_history = context.get("recent_history", [])
+    if recent_history:
+        # 分析最近命令的类型
+        command_types = []
+        for cmd in recent_history[-5:]:  # 分析最近5条命令
+            if any(git_cmd in cmd for git_cmd in ["git", "GitHub", "gitlab"]):
+                command_types.append("Git操作")
+            elif any(dev_cmd in cmd for dev_cmd in ["npm", "pip", "poetry", "cargo", "mvn"]):
+                command_types.append("依赖管理")
+            elif any(sys_cmd in cmd for sys_cmd in ["sudo", "chmod", "chown", "systemctl"]):
+                command_types.append("系统管理")
+            elif any(net_cmd in cmd for net_cmd in ["curl", "wget", "ssh", "ping"]):
+                command_types.append("网络操作")
+        
+        if command_types:
+            unique_types = list(set(command_types))
+            analysis_parts.append(f"📊 **操作模式**: {', '.join(unique_types)}")
+    
+    return "\n".join(analysis_parts) if analysis_parts else "📋 基本环境信息"
+
+
+def _determine_user_skill_level(context: Dict[str, Any]) -> str:
+    """基于上下文推断用户技能水平"""
+    recent_history = context.get("recent_history", [])
+    if not recent_history:
+        return "beginner"
+    
+    # 分析命令复杂度
+    advanced_commands = ["awk", "sed", "grep -P", "find -exec", "xargs", "jq"]
+    intermediate_commands = ["git rebase", "docker", "ssh", "rsync", "tar"]
+    
+    advanced_count = sum(1 for cmd in recent_history if any(adv in cmd for adv in advanced_commands))
+    intermediate_count = sum(1 for cmd in recent_history if any(inter in cmd for inter in intermediate_commands))
+    
+    if advanced_count >= 2:
+        return "advanced"
+    elif intermediate_count >= 3:
+        return "intermediate"
+    else:
+        return "beginner"
+
+
+def _generate_contextual_system_prompt(context: Dict[str, Any]) -> str:
+    """生成基于上下文的系统提示词"""
+    
+    # 基础角色定义
+    base_role = """你是一个专业的 Linux/macOS 命令行专家和AI助手。
+你的目标是帮助用户理解和解决终端问题，同时提供精准的教学指导。"""
+    
+    # 分析用户技能水平
+    skill_level = _determine_user_skill_level(context)
+    
+    # 项目特定指导
+    project_context = context.get("project_context", {})
+    project_type = project_context.get("project_type", "unknown")
+    
+    # 构建个性化指导
+    personalized_guidance = []
+    
+    if skill_level == "beginner":
+        personalized_guidance.append("- 提供详细的命令解释和基础概念")
+        personalized_guidance.append("- 使用简单易懂的语言")
+        personalized_guidance.append("- 重点说明安全性和风险")
+    elif skill_level == "intermediate":
+        personalized_guidance.append("- 平衡解释深度和实用性")
+        personalized_guidance.append("- 提供替代方案和最佳实践")
+        personalized_guidance.append("- 适当引用相关工具和概念")
+    else:  # advanced
+        personalized_guidance.append("- 提供深入的技术细节")
+        personalized_guidance.append("- 关注效率和高级用法")
+        personalized_guidance.append("- 适当提及边缘案例和系统原理")
+    
+    # 项目特定指导
+    if project_type == "python":
+        personalized_guidance.append("- 重点关注Python生态系统和虚拟环境")
+        personalized_guidance.append("- 结合pip、poetry等包管理工具")
+        personalized_guidance.append("- 考虑PEP规范和最佳实践")
+    elif project_type == "node":
+        personalized_guidance.append("- 关注npm/yarn生态系统")
+        personalized_guidance.append("- 考虑Node.js版本管理")
+        personalized_guidance.append("- 涉及前端/后端构建流程")
+    elif project_type == "docker":
+        personalized_guidance.append("- 重点关注容器化相关问题")
+        personalized_guidance.append("- 考虑镜像、网络、存储等Docker概念")
+        personalized_guidance.append("- 涉及容器编排和部署")
+    
+    # 网络状态相关指导
+    network_context = context.get("network_context", {})
+    if network_context.get("internet_connectivity") is False:
+        personalized_guidance.append("- 特别关注离线环境的解决方案")
+        personalized_guidance.append("- 优先推荐不需要网络的方法")
+    
+    # 权限相关指导
+    permission_context = context.get("permission_context", {})
+    if permission_context.get("current_user") == "root":
+        personalized_guidance.append("- 注意root用户的安全风险")
+        personalized_guidance.append("- 强调最小权限原则")
+    elif not permission_context.get("sudo_available"):
+        personalized_guidance.append("- 提供无sudo的替代方案")
+        personalized_guidance.append("- 关注用户权限范围内的解决方法")
+    
+    guidance_text = "\n".join(personalized_guidance)
+    
+    return f"""{base_role}
+
+**个性化指导原则:**
+{guidance_text}
+
+**核心分析框架:**
+1. **多层诊断**: 网络→权限→项目→环境，逐层分析问题根源
+2. **情境感知**: 充分利用用户当前的工作上下文和历史模式
+3. **解决导向**: 不仅解释问题，更要提供可行的解决路径
+4. **教学价值**: 帮助用户理解背后的原理，提升整体技能
+5. **安全优先**: 任何建议都要考虑安全性和风险评估
+
+**输出格式要求:**
+请严格按照以下JSON格式返回分析结果：
+{{
+  "explanation": "**🔍 问题诊断:**\\n[基于多层分析的问题根源]\\n**📚 知识扩展:**\\n[相关概念和背景知识]\\n**🎯 解决思路:**\\n[具体的解决策略和步骤]",
+  "suggestions": [
+    {{
+      "description": "解决方案的详细说明和适用场景",
+      "command": "具体命令",
+      "risk_level": "safe|moderate|dangerous",
+      "explanation": "命令原理和参数说明"
+    }}
+  ],
+  "follow_up_questions": [
+    "相关的学习建议和延伸问题"
+  ]
+}}
+
+**重要**: 确保JSON格式正确，字符串使用双引号，避免语法错误。"""
+
+
 def _make_api_request(
     messages: List[Dict[str, str]],
     config: Dict[str, Any],
@@ -130,81 +361,43 @@ def analyze_error(
     config: Dict[str, Any],
 ) -> Dict[str, Any]:
     """Analyze a command error using AI."""
-    system_prompt = """你是一个专业的 Linux/macOS 命令行专家和导师。
-你的目标是帮助用户理解和解决终端问题，同时教会他们相关的知识。
-
-**重要**：你需要结合用户的具体环境上下文来提供个性化的教学内容：
-- 如果在Git仓库中，重点解释与版本控制相关的概念
-- 如果在特定项目类型中（如Python/Node.js/Docker等），结合该生态系统的最佳实践
-- 如果用户最近在进行某种操作模式，要考虑操作的连贯性
-- 根据用户的命令历史判断技能水平，调整解释的深度
-- 基于当前工作目录和文件结构提供针对性建议
-
-请分析失败的命令并提供教学性的帮助。你必须用中文回复，并且严格按照以下 JSON 格式，确保是有效的JSON：
-
-{
-  "explanation": "**🔍 错误分析:**\\n[结合当前环境简明解释错误原因]\\n"
-                 "**📚 背景知识:**\\n[相关命令或概念的核心原理，结合用户所在的项目类型和环境]\\n"
-                 "**🎯 常见场景:**\\n[这类错误的典型触发情况，特别是在当前环境下]",
-  "suggestions": [
-    {
-      "description": "这个解决方案的详细说明，包括为什么要这样做和预期效果（结合当前环境和项目背景）",
-      "command": "具体的命令",
-      "risk_level": "safe",
-      "explanation": "这个命令的工作原理和每个参数的作用，以及在当前环境下的特殊考虑"
-    }
-  ],
-  "follow_up_questions": [
-    "想了解更多关于[相关概念]的知识吗？",
-    "需要我解释[相关工具]的工作原理吗？"
-  ]
-}
-
-风险等级：
-- "safe": 安全操作，不会造成数据丢失
-- "moderate": 需要谨慎，可能影响系统状态
-- "dangerous": 危险操作，可能造成数据丢失
-
-重要原则：
-1. **上下文感知**：充分利用环境信息（Git状态、项目类型、目录结构、命令历史）提供个性化建议
-2. **教学导向**：解释"为什么"而不只是"怎么做"，建立概念关联网络
-3. **渐进式学习**：根据用户技能水平调整解释深度，提供从基础到进阶的知识递进
-4. **实用性优先**：结合具体环境提供真正有用的解决方案
-5. **学习引导**：提供后续学习方向和互动问题
-6. **预防性教育**：不仅解决当前问题，还要帮助用户避免类似错误
-
-**重要：请确保返回的是有效的JSON格式，不要使用Python语法或其他非JSON语法。所有字符串必须用双引号包围，不要使用圆括号或其他特殊语法。**
-"""
-
-    # 构建更详细的错误描述
-    error_info = f"Command failed: `{command}`\nExit code: {exit_code}"
-
+    
+    # 生成基于上下文的个性化系统提示词
+    system_prompt = _generate_contextual_system_prompt(context)
+    
+    # 构建详细的错误描述
+    error_info = f"**失败命令**: `{command}`\n**退出码**: {exit_code}"
+    
     if stderr and stderr.strip():
-        error_info += f"\nError output: {stderr}"
+        error_info += f"\n**错误输出**: {stderr}"
     else:
-        error_info += (
-            "\nNote: No stderr captured, "
-            "analysis based on command and exit code"
-        )
-
-    # 构建结构化的上下文信息
-    context_summary = _build_context_summary(context)
-
+        error_info += "\n**注意**: 无错误输出，基于命令和退出码分析"
+    
+    # 构建智能上下文分析
+    context_analysis = _build_intelligent_context_analysis(context)
+    
+    # 构建结构化的用户提示
     user_prompt = f"""{error_info}
 
-**环境上下文信息:**
-{context_summary}
+**环境诊断信息:**
+{context_analysis}
 
-**完整上下文数据:**
-{json.dumps(context, indent=2, ensure_ascii=False)}
+**核心分析任务:**
+请基于以上信息进行多层次分析：
 
-**分析要求:**
-请根据上述环境信息和用户的操作上下文，提供个性化的错误分析和教学内容。特别注意：
-1. 结合当前的项目类型和目录结构
-2. 考虑用户的操作历史和技能水平
-3. 基于Git状态（如果适用）提供版本控制相关的建议
-4. 如果是开发环境，结合相应的生态系统最佳实践
-5. 提供符合用户当前工作流程的解决方案"""
+1. **网络诊断**: 检查是否为网络相关问题
+2. **权限分析**: 分析权限和文件访问问题
+3. **项目环境**: 结合项目类型和构建系统分析
+4. **系统状态**: 考虑系统资源和环境因素
+
+**关键要求:**
+- 优先分析最可能的问题根源
+- 提供针对当前环境的实用解决方案
+- 考虑用户的技能水平和工作流程
+- 包含预防性建议和学习指导
+
+**输出要求:**
+必须返回完整的JSON格式，包含explanation、suggestions和follow_up_questions三个字段。"""
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -213,11 +406,11 @@ def analyze_error(
 
     try:
         content = _make_api_request(
-            messages, config, temperature=0.3, max_tokens=2000
+            messages, config, temperature=0.3, max_tokens=2500
         )
         if not content:
             return {
-                "explanation": "No response from AI service",
+                "explanation": "AI服务无响应，请检查网络连接或服务配置",
                 "suggestions": [],
                 "follow_up_questions": [],
             }
@@ -263,7 +456,7 @@ def analyze_error(
             try:
                 # 尝试提取explanation, suggestions和follow_up_questions
                 explanation_match = re.search(
-                    r'"explanation":\s*\(\s*"([^"]+)', content
+                    r'"explanation":\s*"([^"]+)', content, re.DOTALL
                 )
                 if explanation_match:
                     explanation = explanation_match.group(1)
@@ -298,14 +491,14 @@ def analyze_error(
 
             # 最后的fallback - 返回原始内容作为explanation
             return {
-                "explanation": content,
+                "explanation": f"**AI分析结果**:\n{content}",
                 "suggestions": [],
                 "follow_up_questions": [],
             }
 
     except Exception as e:
         return {
-            "explanation": f"Error communicating with AI service: {e}",
+            "explanation": f"**AI分析失败**: {str(e)}\n请检查网络连接或AI服务配置",
             "suggestions": [],
             "follow_up_questions": [],
         }
