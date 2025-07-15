@@ -52,13 +52,15 @@ class ProgressiveAnalysis:
         self.console = console
         self.display = StreamingDisplay(console)
 
-    def analyze_with_progress(self,
-                              analyze_func: Callable,
-                              command: str,
-                              exit_code: int,
-                              stderr: str,
-                              context: dict,
-                              config: dict) -> Any:
+    def analyze_with_progress(
+        self,
+        analyze_func: Callable,
+        command: str,
+        exit_code: int,
+        stderr: str,
+        context: dict,
+        config: dict,
+    ) -> Any:
         """带进度显示的错误分析"""
 
         # 定义分析步骤
@@ -67,7 +69,7 @@ class ProgressiveAnalysis:
             "解析错误信息",
             "诊断问题根因",
             "生成解决方案",
-            "优化建议内容"
+            "优化建议内容",
         ]
 
         self.display.start_analysis(steps)
@@ -92,7 +94,8 @@ class ProgressiveAnalysis:
             self.display.update_step(3, "进行中")
             try:
                 result = analyze_func(
-                    command, exit_code, stderr, context, config)
+                    command, exit_code, stderr, context, config
+                )
                 self.display.update_step(3, "完成")
             except Exception as e:
                 self.display.update_step(3, "错误")
@@ -121,13 +124,15 @@ class StreamingAnalyzer:
         self.console = console
         self.progressive = ProgressiveAnalysis(console)
 
-    def analyze_with_streaming(self,
-                               analyze_func: Callable,
-                               command: str,
-                               exit_code: int,
-                               stderr: str,
-                               context: dict,
-                               config: dict) -> Any:
+    def analyze_with_streaming(
+        self,
+        analyze_func: Callable,
+        command: str,
+        exit_code: int,
+        stderr: str,
+        context: dict,
+        config: dict,
+    ) -> Any:
         """执行带流式输出的分析"""
 
         # 流式输出始终启用，固定使用progressive模式
@@ -143,10 +148,9 @@ class LearnAnalysis:
         self.console = console
         self.display = StreamingDisplay(console)
 
-    def learn_with_progress(self,
-                            learn_func: Callable,
-                            topic: str,
-                            config: dict) -> Any:
+    def learn_with_progress(
+        self, learn_func: Callable, topic: str, config: dict
+    ) -> Any:
         """带进度显示的学习执行"""
 
         # 定义学习步骤
@@ -155,7 +159,7 @@ class LearnAnalysis:
             "收集相关知识点和最佳实践",
             "生成结构化学习内容",
             "优化内容格式和可读性",
-            "验证内容准确性和实用性"
+            "验证内容准确性和实用性",
         ]
 
         self.display.start_analysis(steps)
@@ -208,10 +212,9 @@ class StreamingLearner:
         self.console = console
         self.learn_analysis = LearnAnalysis(console)
 
-    def learn_with_streaming(self,
-                             learn_func: Callable,
-                             topic: str,
-                             config: dict) -> Any:
+    def learn_with_streaming(
+        self, learn_func: Callable, topic: str, config: dict
+    ) -> Any:
         """执行带流式输出的学习"""
 
         # 流式输出始终启用，固定使用progressive模式
@@ -227,10 +230,9 @@ class AskAnalysis:
         self.console = console
         self.display = StreamingDisplay(console)
 
-    def ask_with_progress(self,
-                          ask_func: Callable,
-                          question: str,
-                          config: dict) -> Any:
+    def ask_with_progress(
+        self, ask_func: Callable, question: str, config: dict
+    ) -> Any:
         """带进度显示的问答执行"""
 
         # 定义问答步骤
@@ -239,7 +241,7 @@ class AskAnalysis:
             "搜索相关知识",
             "组织答案结构",
             "生成详细回答",
-            "检查答案质量"
+            "检查答案质量",
         ]
 
         self.display.start_analysis(steps)
@@ -292,16 +294,13 @@ class StreamingAsker:
         self.console = console
         self.ask_analysis = AskAnalysis(console)
 
-    def ask_with_streaming(self,
-                           ask_func: Callable,
-                           question: str,
-                           config: dict) -> Any:
+    def ask_with_streaming(
+        self, ask_func: Callable, question: str, config: dict
+    ) -> Any:
         """执行带流式输出的问答"""
 
         # 流式输出始终启用，固定使用progressive模式
-        return self.ask_analysis.ask_with_progress(
-            ask_func, question, config
-        )
+        return self.ask_analysis.ask_with_progress(ask_func, question, config)
 
 
 def create_streaming_analyzer(console: Console) -> StreamingAnalyzer:
