@@ -9,7 +9,7 @@
 [![Package Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/kangvcar/ais)
 [![CI Status](https://img.shields.io/github/workflow/status/kangvcar/ais/CI)](https://github.com/kangvcar/ais/actions)
 
-[📖 安装指南](#installation) · [🚀 快速开始](#quickstart) · [🗑️ 卸载指南](#卸载指南) · [📚 文档](#documentation) · [🤝 贡献](#contributing)
+[📖 安装指南](#installation) · [🚀 快速开始](#quickstart) · [📚 文档](#documentation) · [🤝 贡献](#contributing)
 
 </div>
 
@@ -311,99 +311,6 @@ AIS重视用户隐私和数据安全：
 - **敏感信息过滤** - 自动过滤密码、密钥等敏感信息
 - **可配置的上下文级别** - 用户可控制信息收集范围
 - **开源透明** - 完全开源，代码公开透明
-
----
-
-## 🗑️ 卸载指南
-
-如果您需要完全卸载AIS，请根据您的安装方式选择对应的卸载方法：
-
-### pipx安装的卸载
-
-```bash
-# 卸载AIS包
-pipx uninstall ais-terminal
-
-# 移除shell集成（可选）
-# 编辑您的shell配置文件，删除AIS集成部分：
-# ~/.bashrc 或 ~/.zshrc 中的：
-# # START AIS INTEGRATION
-# ... AIS相关内容 ...
-# # END AIS INTEGRATION
-
-# 删除配置和数据目录（可选）
-rm -rf ~/.config/ais
-rm -rf ~/.local/share/ais
-```
-
-### pip安装的卸载
-
-```bash
-# 卸载AIS包
-pip uninstall ais-terminal
-
-# 其他步骤同上
-```
-
-### Docker使用的清理
-
-```bash
-# 删除容器和镜像
-docker stop ais  # 如果有运行的容器
-docker rm ais
-docker rmi kangvcar/ais
-
-# 清理volume（如果有持久化数据）
-docker volume rm ais_config  # 根据实际volume名称
-```
-
-### 系统级安装的卸载
-
-```bash
-# 如果是系统级pipx安装
-sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx uninstall ais-terminal
-
-# 或手动删除
-sudo rm -f /usr/local/bin/ais
-sudo rm -f /usr/local/bin/ais-doctor
-sudo rm -f /usr/local/bin/ais-setup
-sudo rm -rf /opt/pipx
-```
-
-### 完全清理（删除所有数据）
-
-⚠️ **警告**：以下操作将删除所有AIS相关的配置、历史记录和数据，请谨慎操作！
-
-```bash
-# 删除用户配置目录
-rm -rf ~/.config/ais
-
-# 删除用户数据目录
-rm -rf ~/.local/share/ais
-
-# 删除缓存目录
-rm -rf ~/.cache/ais
-
-# 检查并手动清理shell配置文件中的AIS集成
-echo "请手动检查以下文件并删除AIS相关配置："
-echo "  ~/.bashrc"
-echo "  ~/.zshrc"
-echo "  ~/.bash_profile"
-echo "  ~/.profile"
-```
-
-### 验证卸载完成
-
-```bash
-# 验证命令不存在
-which ais  # 应该返回 "not found"
-
-# 验证shell集成已移除
-# 重新打开终端，执行错误命令不应该触发AIS分析
-
-# 检查配置目录是否已删除
-ls -la ~/.config/ | grep ais  # 应该没有输出
-```
 
 ---
 
