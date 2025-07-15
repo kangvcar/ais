@@ -228,8 +228,17 @@ jobs:
             echo "## [$VERSION] - $(date '+%Y-%m-%d')" >> temp_changelog.md
             echo "" >> temp_changelog.md
             
-            # 提取Unreleased部分的内容
-            awk '/^## \[Unreleased\]/{flag=1;next}/^## \[/{flag=0}flag' CHANGELOG.md >> temp_changelog.md
+            # 提取Unreleased部分的内容（排除空行和标题）
+            UNRELEASED_CONTENT=$(awk '/^## \[Unreleased\]/{flag=1;next}/^## \[/{flag=0}flag && NF>0' CHANGELOG.md)
+            
+            # 如果Unreleased内容不为空，则添加到版本章节
+            if [ -n "$UNRELEASED_CONTENT" ]; then
+              echo "$UNRELEASED_CONTENT" >> temp_changelog.md
+            else
+              echo "### Changed" >> temp_changelog.md
+              echo "- 发布版本 $VERSION" >> temp_changelog.md
+            fi
+            echo "" >> temp_changelog.md
             
             # 添加现有的版本章节
             awk '/^## \[.*\] - [0-9]/{flag=1}flag' CHANGELOG.md >> temp_changelog.md
@@ -252,8 +261,8 @@ jobs:
         
         # 从CHANGELOG.md提取发布说明
         if [ -f CHANGELOG.md ]; then
-          # 提取特定版本的章节
-          VERSION_SECTION=$(awk "/^## \[$VERSION\]/{flag=1;next}/^## \[/{flag=0}flag" CHANGELOG.md)
+          # 提取特定版本的章节内容
+          VERSION_SECTION=$(awk "/^## \[$VERSION\]/{flag=1;next}/^## \[/{flag=0}flag && NF>0" CHANGELOG.md)
           
           if [ -n "$VERSION_SECTION" ]; then
             # 找到了特定版本的章节
@@ -261,8 +270,16 @@ jobs:
             echo "$VERSION_SECTION" >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
           else
-            # 使用默认发布说明
-            echo "release_notes=发布版本 $VERSION" >> $GITHUB_OUTPUT
+            # 如果找不到版本章节，尝试从Unreleased提取
+            UNRELEASED_SECTION=$(awk '/^## \[Unreleased\]/{flag=1;next}/^## \[/{flag=0}flag && NF>0' CHANGELOG.md)
+            if [ -n "$UNRELEASED_SECTION" ]; then
+              echo "release_notes<<EOF" >> $GITHUB_OUTPUT
+              echo "$UNRELEASED_SECTION" >> $GITHUB_OUTPUT
+              echo "EOF" >> $GITHUB_OUTPUT
+            else
+              # 使用默认发布说明
+              echo "release_notes=发布版本 $VERSION" >> $GITHUB_OUTPUT
+            fi
           fi
         else
           echo "release_notes=发布版本 $VERSION" >> $GITHUB_OUTPUT
