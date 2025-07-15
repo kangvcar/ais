@@ -65,39 +65,49 @@ def _build_context_summary(context: Dict[str, Any]) -> str:
 def _build_intelligent_context_analysis(context: Dict[str, Any]) -> str:
     """构建智能的上下文分析"""
     analysis_parts = []
-    
+
     # 网络诊断分析
     network_context = context.get("network_context", {})
-    if network_context and network_context != {"error": "network context collection failed"}:
+    if network_context and network_context != {
+        "error": "network context collection failed"
+    }:
         network_analysis = []
         if network_context.get("internet_connectivity") is False:
             network_analysis.append("❌ 网络连接异常")
         elif network_context.get("dns_resolution") == "failed":
             network_analysis.append("❌ DNS解析失败")
         elif network_context.get("proxy_settings"):
-            network_analysis.append(f"🔄 代理设置: {network_context['proxy_settings']}")
+            network_analysis.append(
+                f"🔄 代理设置: {network_context['proxy_settings']}"
+            )
         else:
             network_analysis.append("✅ 网络连接正常")
-        
+
         if network_context.get("local_open_ports"):
-            network_analysis.append(f"🔌 本地开放端口: {network_context['local_open_ports']}")
-        
+            network_analysis.append(
+                f"🔌 本地开放端口: {network_context['local_open_ports']}"
+            )
+
         if network_analysis:
-            analysis_parts.append(f"🌐 **网络状态**: {' | '.join(network_analysis)}")
-    
+            analysis_parts.append(
+                f"🌐 **网络状态**: {' | '.join(network_analysis)}"
+            )
+
     # 权限分析
     permission_context = context.get("permission_context", {})
-    if permission_context and permission_context != {"error": "permission context collection failed"}:
+    if permission_context and permission_context != {
+        "error": "permission context collection failed"
+    }:
         permission_analysis = []
-        
+
         current_user = permission_context.get("current_user", "unknown")
         permission_analysis.append(f"用户: {current_user}")
-        
+
         if permission_context.get("sudo_available"):
             permission_analysis.append("sudo可用")
         else:
             permission_analysis.append("sudo不可用")
-        
+
         # 目录权限
         cwd_perms = []
         if permission_context.get("cwd_readable"):
@@ -106,57 +116,79 @@ def _build_intelligent_context_analysis(context: Dict[str, Any]) -> str:
             cwd_perms.append("W")
         if permission_context.get("cwd_executable"):
             cwd_perms.append("X")
-        
+
         if cwd_perms:
             permission_analysis.append(f"当前目录权限: {''.join(cwd_perms)}")
-        
+
         # 目标文件权限
         if permission_context.get("target_path"):
             target_path = permission_context["target_path"]
             if permission_context.get("target_permissions"):
-                permission_analysis.append(f"目标 {target_path} 权限: {permission_context['target_permissions']}")
+                permission_analysis.append(
+                    f"目标 {target_path} 权限: {
+                        permission_context['target_permissions']}")
             elif permission_context.get("parent_dir_writable") is not None:
-                parent_writable = "可写" if permission_context["parent_dir_writable"] else "不可写"
+                parent_writable = (
+                    "可写"
+                    if permission_context["parent_dir_writable"]
+                    else "不可写"
+                )
                 permission_analysis.append(f"父目录{parent_writable}")
-        
+
         if permission_analysis:
-            analysis_parts.append(f"🔐 **权限状态**: {' | '.join(permission_analysis)}")
-    
+            analysis_parts.append(
+                f"🔐 **权限状态**: {' | '.join(permission_analysis)}"
+            )
+
     # 项目环境分析
     project_context = context.get("project_context", {})
-    if project_context and project_context != {"error": "project context collection failed"}:
+    if project_context and project_context != {
+        "error": "project context collection failed"
+    }:
         project_analysis = []
-        
+
         project_type = project_context.get("project_type", "unknown")
         if project_type != "unknown":
             project_analysis.append(f"类型: {project_type}")
-            
+
             if project_context.get("framework"):
-                project_analysis.append(f"框架: {project_context['framework']}")
-            
+                project_analysis.append(
+                    f"框架: {project_context['framework']}"
+                )
+
             if project_context.get("package_manager"):
-                project_analysis.append(f"包管理: {project_context['package_manager']}")
-            
+                project_analysis.append(
+                    f"包管理: {project_context['package_manager']}"
+                )
+
             if project_context.get("build_system"):
-                project_analysis.append(f"构建系统: {project_context['build_system']}")
-            
+                project_analysis.append(
+                    f"构建系统: {project_context['build_system']}"
+                )
+
             # 配置文件状态
             config_files = project_context.get("config_files", {})
             if config_files:
-                existing_configs = [k for k, v in config_files.items() if v == "exists"]
+                existing_configs = [
+                    k for k, v in config_files.items() if v == "exists"
+                ]
                 if existing_configs:
-                    project_analysis.append(f"配置文件: {', '.join(existing_configs[:3])}")
-        
+                    project_analysis.append(
+                        f"配置文件: {', '.join(existing_configs[:3])}"
+                    )
+
         if project_analysis:
-            analysis_parts.append(f"🚀 **项目环境**: {' | '.join(project_analysis)}")
-    
+            analysis_parts.append(
+                f"🚀 **项目环境**: {' | '.join(project_analysis)}"
+            )
+
     # Git状态分析
     if context.get("git_branch"):
         git_analysis = [f"分支: {context['git_branch']}"]
         if context.get("git_status"):
             git_analysis.append("有未提交变更")
         analysis_parts.append(f"📋 **Git状态**: {' | '.join(git_analysis)}")
-    
+
     # 命令历史模式分析
     recent_history = context.get("recent_history", [])
     if recent_history:
@@ -165,17 +197,27 @@ def _build_intelligent_context_analysis(context: Dict[str, Any]) -> str:
         for cmd in recent_history[-5:]:  # 分析最近5条命令
             if any(git_cmd in cmd for git_cmd in ["git", "GitHub", "gitlab"]):
                 command_types.append("Git操作")
-            elif any(dev_cmd in cmd for dev_cmd in ["npm", "pip", "poetry", "cargo", "mvn"]):
+            elif any(
+                dev_cmd in cmd
+                for dev_cmd in ["npm", "pip", "poetry", "cargo", "mvn"]
+            ):
                 command_types.append("依赖管理")
-            elif any(sys_cmd in cmd for sys_cmd in ["sudo", "chmod", "chown", "systemctl"]):
+            elif any(
+                sys_cmd in cmd
+                for sys_cmd in ["sudo", "chmod", "chown", "systemctl"]
+            ):
                 command_types.append("系统管理")
-            elif any(net_cmd in cmd for net_cmd in ["curl", "wget", "ssh", "ping"]):
+            elif any(
+                net_cmd in cmd for net_cmd in ["curl", "wget", "ssh", "ping"]
+            ):
                 command_types.append("网络操作")
-        
+
         if command_types:
             unique_types = list(set(command_types))
-            analysis_parts.append(f"📊 **操作模式**: {', '.join(unique_types)}")
-    
+            analysis_parts.append(
+                f"📊 **操作模式**: {', '.join(unique_types)}"
+            )
+
     return "\n".join(analysis_parts) if analysis_parts else "📋 基本环境信息"
 
 
@@ -184,14 +226,22 @@ def _determine_user_skill_level(context: Dict[str, Any]) -> str:
     recent_history = context.get("recent_history", [])
     if not recent_history:
         return "beginner"
-    
+
     # 分析命令复杂度
     advanced_commands = ["awk", "sed", "grep -P", "find -exec", "xargs", "jq"]
     intermediate_commands = ["git rebase", "docker", "ssh", "rsync", "tar"]
-    
-    advanced_count = sum(1 for cmd in recent_history if any(adv in cmd for adv in advanced_commands))
-    intermediate_count = sum(1 for cmd in recent_history if any(inter in cmd for inter in intermediate_commands))
-    
+
+    advanced_count = sum(
+        1
+        for cmd in recent_history
+        if any(adv in cmd for adv in advanced_commands)
+    )
+    intermediate_count = sum(
+        1
+        for cmd in recent_history
+        if any(inter in cmd for inter in intermediate_commands)
+    )
+
     if advanced_count >= 2:
         return "advanced"
     elif intermediate_count >= 3:
@@ -202,21 +252,21 @@ def _determine_user_skill_level(context: Dict[str, Any]) -> str:
 
 def _generate_contextual_system_prompt(context: Dict[str, Any]) -> str:
     """生成基于上下文的系统提示词"""
-    
+
     # 基础角色定义
     base_role = """你是一个专业的 Linux/macOS 命令行专家和AI助手。
 你的目标是帮助用户理解和解决终端问题，同时提供精准的教学指导。"""
-    
+
     # 分析用户技能水平
     skill_level = _determine_user_skill_level(context)
-    
+
     # 项目特定指导
     project_context = context.get("project_context", {})
     project_type = project_context.get("project_type", "unknown")
-    
+
     # 构建个性化指导
     personalized_guidance = []
-    
+
     if skill_level == "beginner":
         personalized_guidance.append("- 提供详细的命令解释和基础概念")
         personalized_guidance.append("- 使用简单易懂的语言")
@@ -229,7 +279,7 @@ def _generate_contextual_system_prompt(context: Dict[str, Any]) -> str:
         personalized_guidance.append("- 提供深入的技术细节")
         personalized_guidance.append("- 关注效率和高级用法")
         personalized_guidance.append("- 适当提及边缘案例和系统原理")
-    
+
     # 项目特定指导
     if project_type == "python":
         personalized_guidance.append("- 重点关注Python生态系统和虚拟环境")
@@ -243,13 +293,13 @@ def _generate_contextual_system_prompt(context: Dict[str, Any]) -> str:
         personalized_guidance.append("- 重点关注容器化相关问题")
         personalized_guidance.append("- 考虑镜像、网络、存储等Docker概念")
         personalized_guidance.append("- 涉及容器编排和部署")
-    
+
     # 网络状态相关指导
     network_context = context.get("network_context", {})
     if network_context.get("internet_connectivity") is False:
         personalized_guidance.append("- 特别关注离线环境的解决方案")
         personalized_guidance.append("- 优先推荐不需要网络的方法")
-    
+
     # 权限相关指导
     permission_context = context.get("permission_context", {})
     if permission_context.get("current_user") == "root":
@@ -258,9 +308,9 @@ def _generate_contextual_system_prompt(context: Dict[str, Any]) -> str:
     elif not permission_context.get("sudo_available"):
         personalized_guidance.append("- 提供无sudo的替代方案")
         personalized_guidance.append("- 关注用户权限范围内的解决方法")
-    
+
     guidance_text = "\n".join(personalized_guidance)
-    
+
     return f"""{base_role}
 
 **个性化指导原则:**
@@ -276,7 +326,9 @@ def _generate_contextual_system_prompt(context: Dict[str, Any]) -> str:
 **输出格式要求:**
 请严格按照以下JSON格式返回分析结果：
 {{
-  "explanation": "**🔍 问题诊断:**\\n[基于多层分析的问题根源]\\n**📚 知识扩展:**\\n[相关概念和背景知识]\\n**🎯 解决思路:**\\n[具体的解决策略和步骤]",
+  "explanation": "**🔍 问题诊断:**\\n[基于多层分析的问题根源]\\n"
+                 "**📚 知识扩展:**\\n[相关概念和背景知识]\\n"
+                 "**🎯 解决思路:**\\n[具体的解决策略和步骤]",
   "suggestions": [
     {{
       "description": "解决方案的详细说明和适用场景",
@@ -361,21 +413,21 @@ def analyze_error(
     config: Dict[str, Any],
 ) -> Dict[str, Any]:
     """Analyze a command error using AI."""
-    
+
     # 生成基于上下文的个性化系统提示词
     system_prompt = _generate_contextual_system_prompt(context)
-    
+
     # 构建详细的错误描述
     error_info = f"**失败命令**: `{command}`\n**退出码**: {exit_code}"
-    
+
     if stderr and stderr.strip():
         error_info += f"\n**错误输出**: {stderr}"
     else:
         error_info += "\n**注意**: 无错误输出，基于命令和退出码分析"
-    
+
     # 构建智能上下文分析
     context_analysis = _build_intelligent_context_analysis(context)
-    
+
     # 构建结构化的用户提示
     user_prompt = f"""{error_info}
 

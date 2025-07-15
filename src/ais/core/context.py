@@ -142,9 +142,7 @@ def collect_permission_context(command: str, cwd: str) -> Dict[str, Any]:
     # 检查sudo可用性
     try:
         sudo_result = subprocess.run(
-            ["sudo", "-n", "true"],
-            capture_output=True,
-            timeout=2
+            ["sudo", "-n", "true"], capture_output=True, timeout=2
         )
         permission_info["sudo_available"] = sudo_result.returncode == 0
     except Exception:
@@ -157,8 +155,9 @@ def collect_permission_context(command: str, cwd: str) -> Dict[str, Any]:
         try:
             if os.path.exists(target_path):
                 stat_info = os.stat(target_path)
-                permission_info["target_permissions"] = oct(
-                    stat_info.st_mode)[-3:]
+                permission_info["target_permissions"] = oct(stat_info.st_mode)[
+                    -3:
+                ]
                 permission_info["target_owner"] = stat_info.st_uid
                 permission_info["target_group"] = stat_info.st_gid
             else:
@@ -166,7 +165,8 @@ def collect_permission_context(command: str, cwd: str) -> Dict[str, Any]:
                 parent_dir = os.path.dirname(target_path)
                 if os.path.exists(parent_dir):
                     permission_info["parent_dir_writable"] = os.access(
-                        parent_dir, os.W_OK)
+                        parent_dir, os.W_OK
+                    )
         except Exception:
             pass
 
@@ -190,7 +190,8 @@ def extract_target_path(command: str) -> Optional[str]:
         "cp",
         "mv",
         "chmod",
-        "chown"]
+        "chown",
+    ]
 
     if parts[0] in file_commands:
         # 查找最后一个不以-开头的参数
@@ -209,7 +210,7 @@ def detect_project_type_enhanced(cwd: str) -> Dict[str, Any]:
         "build_system": None,
         "package_manager": None,
         "config_files": {},
-        "key_files": []
+        "key_files": [],
     }
 
     cwd_path = Path(cwd)
@@ -218,75 +219,70 @@ def detect_project_type_enhanced(cwd: str) -> Dict[str, Any]:
     type_indicators = {
         "python": {
             "files": [
-                "requirements.txt", "pyproject.toml", "setup.py",
-                "setup.cfg", "Pipfile"
+                "requirements.txt",
+                "pyproject.toml",
+                "setup.py",
+                "setup.cfg",
+                "Pipfile",
             ],
             "frameworks": {
                 "django": ["manage.py", "settings.py"],
                 "flask": ["app.py", "wsgi.py"],
-                "fastapi": ["main.py", "api.py"]
+                "fastapi": ["main.py", "api.py"],
             },
             "build_systems": {
                 "poetry": ["pyproject.toml"],
                 "setuptools": ["setup.py"],
-                "pipenv": ["Pipfile"]
-            }
+                "pipenv": ["Pipfile"],
+            },
         },
         "node": {
             "files": ["package.json", "yarn.lock", "package-lock.json"],
             "frameworks": {
                 "react": ["src/App.js", "src/App.jsx", "public/index.html"],
                 "vue": ["src/main.js", "vue.config.js"],
-                "express": ["app.js", "server.js"]
+                "express": ["app.js", "server.js"],
             },
             "build_systems": {
                 "npm": ["package-lock.json"],
                 "yarn": ["yarn.lock"],
-                "pnpm": ["pnpm-lock.yaml"]
-            }
+                "pnpm": ["pnpm-lock.yaml"],
+            },
         },
         "docker": {
             "files": [
-                "Dockerfile", "docker-compose.yml",
-                "docker-compose.yaml", ".dockerignore"
+                "Dockerfile",
+                "docker-compose.yml",
+                "docker-compose.yaml",
+                ".dockerignore",
             ],
             "frameworks": {},
             "build_systems": {
                 "docker": ["Dockerfile"],
-                "compose": ["docker-compose.yml", "docker-compose.yaml"]
-            }
+                "compose": ["docker-compose.yml", "docker-compose.yaml"],
+            },
         },
         "rust": {
             "files": ["Cargo.toml", "Cargo.lock"],
-            "frameworks": {
-                "axum": ["Cargo.toml"],
-                "rocket": ["Cargo.toml"]
-            },
-            "build_systems": {
-                "cargo": ["Cargo.toml"]
-            }
+            "frameworks": {"axum": ["Cargo.toml"], "rocket": ["Cargo.toml"]},
+            "build_systems": {"cargo": ["Cargo.toml"]},
         },
         "go": {
             "files": ["go.mod", "go.sum", "main.go"],
-            "frameworks": {
-                "gin": ["go.mod"],
-                "echo": ["go.mod"]
-            },
-            "build_systems": {
-                "go_modules": ["go.mod"]
-            }
+            "frameworks": {"gin": ["go.mod"], "echo": ["go.mod"]},
+            "build_systems": {"go_modules": ["go.mod"]},
         },
         "java": {
             "files": ["pom.xml", "build.gradle", "gradle.properties"],
             "frameworks": {
                 "spring": ["pom.xml", "build.gradle"],
-                "maven": ["pom.xml"]
+                "maven": ["pom.xml"],
             },
             "build_systems": {
                 "maven": ["pom.xml"],
-                "gradle": ["build.gradle"]
-            }
-        }
+                "gradle": ["build.gradle"],
+            },
+        },
     }
 
     # 检测项目类型
@@ -455,22 +451,26 @@ def collect_context(
         context["network_context"] = collect_network_context()
     except Exception:
         context["network_context"] = {
-            "error": "network context collection failed"}
+            "error": "network context collection failed"
+        }
 
     try:
         # 权限检查
         context["permission_context"] = collect_permission_context(
-            command, cwd)
+            command, cwd
+        )
     except Exception:
         context["permission_context"] = {
-            "error": "permission context collection failed"}
+            "error": "permission context collection failed"
+        }
 
     try:
         # 增强的项目类型检测
         context["project_context"] = detect_project_type_enhanced(cwd)
     except Exception:
         context["project_context"] = {
-            "error": "project context collection failed"}
+            "error": "project context collection failed"
+        }
 
     # 过滤敏感数据
     for key, value in context.items():
@@ -495,9 +495,13 @@ def filter_sensitive_dict(data: Dict[str, Any]) -> Dict[str, Any]:
             filtered[key] = filter_sensitive_dict(value)
         elif isinstance(value, list):
             filtered[key] = [
-                filter_sensitive_data(
-                    str(item)) if isinstance(
-                    item, str) else item for item in value]
+                (
+                    filter_sensitive_data(str(item))
+                    if isinstance(item, str)
+                    else item
+                )
+                for item in value
+            ]
         else:
             filtered[key] = value
     return filtered
