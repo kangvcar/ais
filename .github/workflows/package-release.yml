@@ -325,12 +325,20 @@ jobs:
         
         # 检查是否有更改
         if ! git diff --quiet CHANGELOG.md; then
-          # 先拉取远程最新代码，避免冲突
-          git pull origin main --rebase
-          
+          # 先暂存更改
           git add CHANGELOG.md
+          
+          # 拉取远程最新代码，解决可能的冲突
+          git fetch origin main
+          
+          # 检查是否有冲突
+          if ! git merge-base --is-ancestor HEAD origin/main; then
+            echo "🔄 检测到远程有新提交，尝试合并..."
+            git pull origin main --no-rebase --strategy=ours
+          fi
+          
           git commit -m "更新CHANGELOG.md for version ${{ needs.build-packages.outputs.version }}"
-          git push
+          git push origin main
           echo "CHANGELOG.md committed and pushed"
         else
           echo "No changes to CHANGELOG.md"
