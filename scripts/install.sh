@@ -255,7 +255,14 @@ install_user_mode() {
     
     # 安装AIS
     print_info "📦 安装ais-terminal..."
-    pipx install ais-terminal
+    
+    # 检查是否已安装并强制更新到最新版本
+    if pipx list | grep -q "ais-terminal"; then
+        print_info "发现已安装版本，更新到最新版本..."
+        pipx upgrade ais-terminal
+    else
+        pipx install ais-terminal
+    fi
     
     # 立即更新当前会话的PATH
     print_info "🔄 更新当前会话PATH..."
@@ -275,54 +282,44 @@ install_user_mode() {
         print_warning "Shell集成自动设置失败，稍后运行: ais setup"
     fi
     
-    # 执行健康检查
-    print_info "🏥 执行完整健康检查..."
-    if health_check; then
-        print_success "✅ 用户级安装完成！AIS已就绪可用"
-        print_info "💡 现在可以直接使用AIS，命令失败时将自动显示AI分析"
-        print_info "💡 如需为其他用户安装，请使用: $0 --system"
-        
-        # 显示使用提示
-        echo
-        print_info "🚀 快速开始:"
-        print_info "  测试安装: ais --version"
-        print_info "  AI对话: ais ask '你好'"
-        print_info "  获取帮助: ais --help"
-        
-        echo
-        print_success "🎉 AIS安装和配置完全完成！"
-        
-        # 检测配置文件并提供激活指导
-        local config_file=""
-        if [ -n "$ZSH_VERSION" ] && [ -f "$HOME/.zshrc" ]; then
-            config_file="$HOME/.zshrc"
-        elif [ -n "$BASH_VERSION" ] && [ -f "$HOME/.bashrc" ]; then
-            config_file="$HOME/.bashrc"
-        elif [ -f "$HOME/.bashrc" ]; then
-            config_file="$HOME/.bashrc"
-        elif [ -f "$HOME/.bash_profile" ]; then
-            config_file="$HOME/.bash_profile"
-        fi
-        
-        if [ -n "$config_file" ]; then
-            echo
-            print_warning "🔧 要在当前会话启用自动分析功能，请运行："
-            print_info "   source $config_file"
-            echo
-            print_info "或者开启新的终端会话，自动分析功能将自动启用"
-        else
-            echo
-            print_info "新开的终端会话将自动加载AIS集成功能"
-        fi
-        
-        echo
-        print_info "🎯 状态说明："
-        print_info "   • ais命令：当前会话立即可用"
-        print_info "   • 自动分析：需要重新加载配置或新开会话"
-    else
-        print_error "健康检查失败，安装可能存在问题"
+    # 简化的健康检查
+    print_info "🔍 验证安装..."
+    
+    # 刷新pipx并获取版本信息
+    # 确保pipx环境更新
+    pipx ensurepath >/dev/null 2>&1 || true
+    hash -r 2>/dev/null || true  # 刷新命令缓存
+    
+    VERSION=$(ais --version 2>/dev/null | head -n1) || {
+        print_error "安装失败：ais命令不可用"
         exit 1
+    }
+    
+    print_success "🎉 AIS安装完成！版本: $VERSION"
+    
+    # 检测配置文件并提供激活指导
+    local config_file=""
+    if [ -n "$ZSH_VERSION" ] && [ -f "$HOME/.zshrc" ]; then
+        config_file="$HOME/.zshrc"
+    elif [ -n "$BASH_VERSION" ] && [ -f "$HOME/.bashrc" ]; then
+        config_file="$HOME/.bashrc"
+    elif [ -f "$HOME/.bashrc" ]; then
+        config_file="$HOME/.bashrc"
+    elif [ -f "$HOME/.bash_profile" ]; then
+        config_file="$HOME/.bash_profile"
     fi
+    
+    echo
+    print_warning "🔧 重要：要启用自动错误分析，请执行以下命令之一："
+    if [ -n "$config_file" ]; then
+        print_info "   source $config_file"
+        print_info "   或者重新打开终端"
+    else
+        print_info "   重新打开终端"
+    fi
+    
+    echo
+    print_info "🚀 快速测试: ais ask '你好'"
 }
 
 # 系统级安装
@@ -338,10 +335,22 @@ install_system_mode() {
     
     # 安装AIS
     print_info "📦 安装ais-terminal到系统位置..."
+    
+    # 检查是否已安装并强制更新到最新版本
     if [ "$(detect_environment)" = "user" ]; then
-        sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
+        if sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx list | grep -q "ais-terminal"; then
+            print_info "发现已安装版本，更新到最新版本..."
+            sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx upgrade ais-terminal
+        else
+            sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ais-terminal
+        fi
     else
-        pipx install ais-terminal
+        if pipx list | grep -q "ais-terminal"; then
+            print_info "发现已安装版本，更新到最新版本..."
+            pipx upgrade ais-terminal
+        else
+            pipx install ais-terminal
+        fi
     fi
     
     # 确保所有用户可访问
@@ -351,7 +360,14 @@ install_system_mode() {
         chmod +x /usr/local/bin/ais 2>/dev/null || true
     fi
     
-    print_success "✅ 系统级安装完成！所有用户都可以使用ais命令"
+    # 验证安装
+    VERSION=$(ais --version 2>/dev/null | head -n1) || {
+        print_error "系统级安装失败：ais命令不可用"
+        exit 1
+    }
+    
+    print_success "🎉 AIS系统级安装完成！版本: $VERSION"
+    print_info "💡 所有用户都可以使用ais命令"
     print_info "💡 用户可以运行: ais setup 来设置shell集成"
 }
 
@@ -426,14 +442,7 @@ main() {
             ;;
     esac
     
-    # 执行健康检查
-    if [ "$SKIP_CHECKS" != "1" ]; then
-        health_check || {
-            print_warning "健康检查失败，但安装可能成功。请手动验证:"
-            print_info "  运行: ais --version"
-            print_info "  测试: ais ask 'hello'"
-        }
-    fi
+    # 健康检查已在各安装模式中完成
 }
 
 # 处理命令行参数
