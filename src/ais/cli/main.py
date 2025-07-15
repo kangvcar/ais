@@ -1046,11 +1046,7 @@ def learn_command(topic, help_detail):
         )
 
         if response:
-            console.print(
-                f"\n[bold blue]📖 {topic.upper()} 学习指南[/bold blue]"
-            )
-            console.print()
-            console.print(Markdown(response))
+            panels.learning_content(Markdown(response), topic.upper())
         else:
             console.print("[red]无法获取学习内容，请检查网络连接[/red]")
 
