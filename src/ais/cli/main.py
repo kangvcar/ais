@@ -120,7 +120,7 @@ def _auto_setup_shell_integration():
             default_config = """# AIS 配置文件
 default_provider = "default_free"
 auto_analysis = true
-context_level = "standard"
+context_level = "detailed"
 sensitive_dirs = ["~/.ssh", "~/.config/ais", "~/.aws"]
 
 [providers.default_free]
@@ -379,7 +379,7 @@ def config(set_key, get_key, list_providers, help_context):
             # 显示当前配置
             auto_analysis = config.get("auto_analysis", True)
             auto_status = "✅ 开启" if auto_analysis else "❌ 关闭"
-            context_level = config.get("context_level", "standard")
+            context_level = config.get("context_level", "detailed")
             sensitive_count = len(config.get("sensitive_dirs", []))
 
             config_content = f"""默认提供商: {

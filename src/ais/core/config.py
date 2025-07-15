@@ -17,7 +17,7 @@ def get_default_config() -> Dict[str, Any]:
     return {
         "default_provider": "default_free",
         "auto_analysis": True,
-        "context_level": "standard",
+        "context_level": "detailed",
         "sensitive_dirs": ["~/.ssh", "~/.config/ais", "~/.aws"],
         "ui": {
             "enable_colors": True,

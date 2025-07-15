@@ -162,7 +162,7 @@ def collect_context(
     context = collect_core_context(command, exit_code, stderr, cwd)
 
     # 根据配置级别收集额外信息
-    context_level = config.get("context_level", "standard")
+    context_level = config.get("context_level", "detailed")
 
     if context_level in ["standard", "detailed"]:
         context.update(collect_standard_context(config))
