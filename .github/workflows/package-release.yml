@@ -129,23 +129,37 @@ jobs:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
       contents: read
     
+    outputs:
+      published: ${{ steps.publish_check.outputs.published }}
+    
     steps:
+    - name: Check if should publish
+      id: publish_check
+      run: |
+        if [ "${{ github.event_name }}" == "release" ] || [ "${{ github.event_name }}" == "workflow_dispatch" -a -n "${{ github.event.inputs.version }}" ]; then
+          echo "published=true" >> $GITHUB_OUTPUT
+          echo "🎯 将发布到PyPI"
+        else
+          echo "published=false" >> $GITHUB_OUTPUT
+          echo "⏭️ 跳过PyPI发布"
+        fi
+
     - name: Download build artifacts
+      if: steps.publish_check.outputs.published == 'true'
       uses: actions/download-artifact@v4
       with:
         name: release-packages-${{ needs.build-packages.outputs.version }}
         path: dist/
 
     - name: Publish to PyPI
-      # 只在release事件或手动指定发布时才发布到PyPI
-      if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.version != '')
+      if: steps.publish_check.outputs.published == 'true'
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         skip-existing: true
         verbose: true
         
     - name: Skip PyPI publication
-      if: github.event_name == 'workflow_dispatch' && github.event.inputs.version == ''
+      if: steps.publish_check.outputs.published == 'false'
       run: |
         echo "⏭️ 跳过PyPI发布（手动触发且未指定版本）"
         echo "如需发布到PyPI，请在workflow_dispatch时提供version参数"
@@ -246,7 +260,8 @@ jobs:
     name: Test Installation from PyPI
     runs-on: ${{ matrix.os }}
     needs: [build-packages, publish-pypi]
-    if: needs.publish-pypi.result == 'success'
+    # 只有在实际发布到PyPI时才运行测试
+    if: needs.publish-pypi.result == 'success' && needs.publish-pypi.outputs.published == 'true'
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -258,14 +273,62 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Wait for PyPI propagation
+    - name: Wait for PyPI package availability
       run: |
-        echo "Waiting for PyPI package to propagate..."
-        sleep 60
+        VERSION="${{ needs.build-packages.outputs.version }}"
+        echo "🔍 等待PyPI包 ais-terminal==$VERSION 可用..."
+        
+        # 智能等待逻辑：最多等待10分钟，每30秒检查一次
+        max_attempts=20
+        attempt=1
+        
+        while [ $attempt -le $max_attempts ]; do
+          echo "📦 第 $attempt/$max_attempts 次检查..."
+          
+          # 检查包是否可用
+          if pip index versions ais-terminal 2>/dev/null | grep -q "$VERSION"; then
+            echo "✅ 包 ais-terminal==$VERSION 已在PyPI上可用！"
+            break
+          fi
+          
+          if [ $attempt -eq $max_attempts ]; then
+            echo "❌ 等待超时：包在10分钟内仍未在PyPI上可用"
+            echo "🔍 当前可用版本："
+            pip index versions ais-terminal 2>/dev/null || echo "无法获取版本信息"
+            exit 1
+          fi
+          
+          echo "⏳ 包尚未可用，等待30秒后重试..."
+          sleep 30
+          attempt=$((attempt + 1))
+        done
 
-    - name: Install from PyPI
+    - name: Install from PyPI with retry
       run: |
-        pip install ais-terminal==${{ needs.build-packages.outputs.version }}
+        VERSION="${{ needs.build-packages.outputs.version }}"
+        echo "📦 安装 ais-terminal==$VERSION..."
+        
+        # 安装时也添加重试逻辑
+        max_attempts=3
+        attempt=1
+        
+        while [ $attempt -le $max_attempts ]; do
+          echo "🚀 第 $attempt/$max_attempts 次安装尝试..."
+          
+          if pip install ais-terminal==$VERSION; then
+            echo "✅ 安装成功！"
+            break
+          fi
+          
+          if [ $attempt -eq $max_attempts ]; then
+            echo "❌ 安装失败：已重试 $max_attempts 次"
+            exit 1
+          fi
+          
+          echo "⏳ 安装失败，等待30秒后重试..."
+          sleep 30
+          attempt=$((attempt + 1))
+        done
 
     - name: Test installation
       run: |
@@ -286,10 +349,19 @@ jobs:
         echo ""
         
         # 检查PyPI发布状态
-        if [ "${{ needs.publish-pypi.result }}" == "success" ]; then
+        if [ "${{ needs.publish-pypi.result }}" == "success" ] && [ "${{ needs.publish-pypi.outputs.published }}" == "true" ]; then
           echo "✅ PyPI发布成功"
           echo "📦 PyPI: https://pypi.org/project/ais-terminal/${{ needs.build-packages.outputs.version }}/"
           echo "安装命令: pip install ais-terminal==${{ needs.build-packages.outputs.version }}"
+          
+          # 检查安装测试状态
+          if [ "${{ needs.test-installation.result }}" == "success" ]; then
+            echo "✅ 安装测试通过"
+          elif [ "${{ needs.test-installation.result }}" == "failure" ]; then
+            echo "❌ 安装测试失败"
+          else
+            echo "⏭️ 安装测试已跳过"
+          fi
         else
           echo "⏭️ PyPI发布已跳过"
         fi
