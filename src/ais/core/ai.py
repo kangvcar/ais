@@ -125,8 +125,9 @@ def _build_intelligent_context_analysis(context: Dict[str, Any]) -> str:
             target_path = permission_context["target_path"]
             if permission_context.get("target_permissions"):
                 permission_analysis.append(
-                    f"目标 {target_path} 权限: {
-                        permission_context['target_permissions']}")
+                    f"目标 {target_path} 权限: "
+                    f"{permission_context['target_permissions']}"
+                )
             elif permission_context.get("parent_dir_writable") is not None:
                 parent_writable = (
                     "可写"
