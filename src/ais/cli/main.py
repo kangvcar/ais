@@ -319,6 +319,43 @@ def config(set_key, get_key, list_providers, help_context):
                         "[dim]使用 'ais config --help-context' 查看详细说明[/dim]"
                     )
                     return
+            elif key == "stream_mode":
+                if value not in ["progressive", "realtime", "spinner"]:
+                    console.print(
+                        "[red]错误: stream_mode 必须是 progressive, "
+                        "realtime 或 spinner[/red]"
+                    )
+                    console.print(
+                        "[dim]progressive: 步骤化显示, realtime: 实时进度条, "
+                        "spinner: 简单转圈[/dim]"
+                    )
+                    return
+                # 需要更新UI配置
+                config = get_config()
+                if "ui" not in config:
+                    config["ui"] = {}
+                config["ui"]["stream_mode"] = value
+                from ..core.config import save_config
+                save_config(config)
+                console.print(f"[green]✓ 流式输出模式已设置为 {value}[/green]")
+                return
+            elif key == "enable_streaming":
+                if value.lower() in ["true", "false"]:
+                    bool_value = value.lower() == "true"
+                    config = get_config()
+                    if "ui" not in config:
+                        config["ui"] = {}
+                    config["ui"]["enable_streaming"] = bool_value
+                    from ..core.config import save_config
+                    save_config(config)
+                    status = "已启用" if bool_value else "已禁用"
+                    console.print(f"[green]✓ 流式输出{status}[/green]")
+                    return
+                else:
+                    console.print(
+                        "[red]错误: enable_streaming 必须是 true 或 false[/red]"
+                    )
+                    return
             elif key == "auto_analysis":
                 if value.lower() in ["true", "false"]:
                     value = value.lower() == "true"
@@ -382,18 +419,31 @@ def config(set_key, get_key, list_providers, help_context):
             context_level = config.get("context_level", "detailed")
             sensitive_count = len(config.get("sensitive_dirs", []))
 
+            # UI配置
+            ui_config = config.get("ui", {})
+            streaming_enabled = ui_config.get("enable_streaming", True)
+            streaming_status = "✅ 开启" if streaming_enabled else "❌ 关闭"
+            stream_mode = ui_config.get("stream_mode", "progressive")
+
             config_content = f"""默认提供商: {
                 config.get(
                     'default_provider',
                     'default_free')}
 自动分析: {auto_status}
 上下文级别: {context_level}
+流式输出: {streaming_status}
+输出模式: {stream_mode}
 敏感目录: {sensitive_count} 个
 
 [dim]💡 提示:[/dim]
-[dim]  ais config --help-context  - 查看上下文配置帮助[/dim]
-[dim]  ais config --list-providers - 查看AI服务提供商[/dim]
-[dim]  ais config --set key=value  - 修改配置[/dim]"""
+[dim]  ais config --help-context    - 查看上下文配置帮助[/dim]
+[dim]  ais config --list-providers  - 查看AI服务提供商[/dim]
+[dim]  ais config --set key=value   - 修改配置[/dim]
+[dim]
+[dim]  流式输出配置:[/dim]
+[dim]  ais config --set enable_streaming=true/false  - 开启/关闭流式输出[/dim]
+[dim]  ais config --set stream_mode=progressive      - 设置输出模式[/dim]
+[dim]  (模式: progressive/realtime/spinner)[/dim]"""
             panels.config(config_content, "⚙️ 当前配置")
 
     except Exception as e:
@@ -599,6 +649,7 @@ def analyze_error(exit_code, command, stderr):
         from ..core.context import collect_context
         from ..core.ai import analyze_error
         from ..core.database import save_command_log
+        from ..core.streaming import create_streaming_analyzer
         import os
 
         # 收集上下文信息
@@ -626,8 +677,13 @@ def analyze_error(exit_code, command, stderr):
                 "查看之前的分析[/dim]"
             )
 
-        # 使用 AI 分析错误
-        analysis = analyze_error(command, exit_code, stderr, context, config)
+        # 创建流式分析器
+        streaming_analyzer = create_streaming_analyzer(console)
+
+        # 使用流式输出进行 AI 分析
+        analysis = streaming_analyzer.analyze_with_streaming(
+            analyze_error, command, exit_code, stderr, context, config
+        )
 
         # 保存到数据库
         username = os.getenv("USER", "unknown")

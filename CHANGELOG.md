@@ -7,6 +7,30 @@
 
 ## [Unreleased]
 
+### Added
+- ✨ **流式输出功能**：优化AI分析用户体验
+  - 新增流式显示组件，提供实时进度反馈
+  - 支持三种显示模式：progressive（步骤化）、realtime（实时进度条）、spinner（简单转圈）
+  - 可通过配置开启/关闭流式输出：`ais config --set enable_streaming=true/false`
+  - 可切换输出模式：`ais config --set stream_mode=progressive/realtime/spinner`
+  - 改进错误处理，在AI分析失败时显示清晰的错误信息
+  - 保持同步处理，避免中断用户操作
+
+### Changed
+- 🔧 **优化AI分析流程**：集成流式输出到错误分析命令
+  - 分析过程现在显示实时进度，包括：收集环境上下文、诊断问题根因、生成解决方案等步骤
+  - 用户可以看到分析进度，而不是等待黑屏
+  - 优化错误处理，提供更好的用户反馈
+- 🎨 **统一learn命令输出格式使用rich Panel**
+  - 修改learn命令使用panels.learning_content()方法
+  - 保持与ask命令一致的Panel框架式输出风格
+  - 提升用户界面的视觉一致性
+
+### Fixed
+- 🐛 **修复代码格式问题**：通过autopep8和flake8检查
+  - 修正所有代码格式违规问题
+  - 确保代码符合PEP8标准
+
 ## [0.3.1] - 2025-07-15
 
 ### Changed

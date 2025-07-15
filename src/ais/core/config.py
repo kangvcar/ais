@@ -22,6 +22,7 @@ def get_default_config() -> Dict[str, Any]:
         "ui": {
             "enable_colors": True,
             "enable_streaming": True,
+            "stream_mode": "progressive",  # progressive, realtime, spinner
             "max_history_display": 10,
         },
         "providers": {

@@ -370,7 +370,8 @@ Some text after"""
 
             result = analyze_error(command, exit_code, stderr, context, config)
 
-            assert result["explanation"] == "**AI分析结果**:\nInvalid JSON response"
+            expected = "**AI分析结果**:\nInvalid JSON response"
+            assert result["explanation"] == expected
             assert result["suggestions"] == []
             assert result["follow_up_questions"] == []
 
