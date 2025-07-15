@@ -69,6 +69,20 @@ curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh
 - 🔧 配置shell集成
 - ✅ 执行健康检查
 
+### 🗑️ 一键卸载
+
+```bash
+# 智能卸载 - 自动检测安装方式并完全清理
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/uninstall.sh | bash
+```
+
+**卸载脚本会自动：**
+- 🔍 检测AIS安装方式（pipx用户级/系统级）
+- 🗑️ 卸载AIS包和依赖
+- 🧹 清理shell集成配置
+- 📁 可选择保留或删除用户数据
+- ✅ 验证卸载完成
+
 ### 🎯 分场景安装
 
 <details>
