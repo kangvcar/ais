@@ -48,8 +48,6 @@ dependencies = [
 
 [project.scripts]
 ais = "ais.cli.main:main"
-ais-doctor = "ais.cli.main:doctor"
-ais-setup = "ais.cli.main:setup"
 
 
 
