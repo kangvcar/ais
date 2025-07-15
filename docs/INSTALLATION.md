@@ -296,18 +296,68 @@ curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh
 
 ### 卸载
 
+#### pipx安装的卸载
 ```bash
-# pipx安装的卸载
-pipx uninstall ais-terminal  # 用户级
-sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx uninstall ais-terminal  # 全局
+# 用户级安装
+pipx uninstall ais-terminal
 
-# Docker卸载
-docker stop ais-daemon && docker rm ais-daemon
-docker rmi ais-terminal:latest
+# 系统级pipx安装
+sudo PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx uninstall ais-terminal
 
-# 系统级安装卸载
-# （使用专用卸载脚本）
-curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/uninstall.sh | bash
+# 手动清理系统级安装
+sudo rm -f /usr/local/bin/ais
+sudo rm -f /usr/local/bin/ais-doctor
+sudo rm -f /usr/local/bin/ais-setup
+sudo rm -rf /opt/pipx
+```
+
+#### Docker容器清理
+```bash
+# 停止并删除容器
+docker stop ais && docker rm ais
+
+# 删除镜像
+docker rmi kangvcar/ais
+
+# 清理数据卷（如果有）
+docker volume rm ais_config ais_data
+
+# 使用Docker Compose
+docker-compose down
+docker-compose down --volumes  # 同时删除数据卷
+```
+
+#### 完全清理（删除所有数据）
+⚠️ **警告**：以下操作将删除所有配置和历史数据
+
+```bash
+# 删除配置目录
+rm -rf ~/.config/ais
+
+# 删除数据目录
+rm -rf ~/.local/share/ais
+
+# 删除缓存
+rm -rf ~/.cache/ais
+
+# 手动清理shell集成
+echo "请检查并清理以下文件中的AIS集成："
+echo "  ~/.bashrc"
+echo "  ~/.zshrc"
+echo "  ~/.bash_profile"
+echo "删除标记为 '# START AIS INTEGRATION' 到 '# END AIS INTEGRATION' 的部分"
+```
+
+#### 验证卸载
+```bash
+# 验证命令已删除
+which ais  # 应该返回 "not found"
+
+# 验证配置已清理
+ls ~/.config/ | grep ais  # 应该无输出
+
+# 测试shell集成已移除
+# 重新打开终端，执行错误命令不应触发AIS
 ```
 
 ## 📚 更多资源
