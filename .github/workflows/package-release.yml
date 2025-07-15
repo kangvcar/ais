@@ -325,6 +325,9 @@ jobs:
         
         # 检查是否有更改
         if ! git diff --quiet CHANGELOG.md; then
+          # 先拉取远程最新代码，避免冲突
+          git pull origin main --rebase
+          
           git add CHANGELOG.md
           git commit -m "更新CHANGELOG.md for version ${{ needs.build-packages.outputs.version }}"
           git push

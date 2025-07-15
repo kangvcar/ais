@@ -1,7 +1,7 @@
 source .venv/bin/activate && python3 -m pip install -e .
 
 # Rules
-1. 如果有新功能或者修复了程序请必须更新CHANGELOG.md
+1. 如果有新功能或者修复了程序请安装[Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)最佳实践更新CHANGELOG.md
 2. 每次改动后提交一个详细的 git commit
 
 # 代码质量检查和格式化最佳实践
@@ -40,3 +40,23 @@ source .venv/bin/activate && flake8 src/ tests/ --max-line-length=79
 2. **设置最大行长度**：统一使用 79 字符限制
 3. **批量处理**：使用 `-r` 参数递归处理所有文件
 4. **激进修复**：使用 `--aggressive --aggressive` 修复更多问题
+
+git commit 中不要包含以下内容：
+```
+🤖 Generated with Claude Code
+
+Co-Authored-By: Claude noreply@anthropic.com
+```
+
+# 发布流程规范
+## Package Release工作流注意事项
+1. **发布前同步**：确保本地修改已推送到远程
+   ```bash
+   git pull origin main
+   git push origin main
+   ```
+2. **发布后同步**：拉取工作流的自动提交
+   ```bash
+   git pull origin main  # 拉取工作流自动更新的CHANGELOG.md
+   ```
+3. **避免冲突**：不要在触发Package Release工作流的同时修改CHANGELOG.md
