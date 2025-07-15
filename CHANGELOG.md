@@ -24,6 +24,14 @@
   - 移除CI中的重复Docker测试功能，避免资源浪费
 
 ### Fixed
+- 🔧 **卸载脚本修复**：修复在管道执行时无法正常读取用户输入的问题
+  - 修复`curl | bash`方式执行卸载脚本时挂起的问题
+  - 添加输入源检测，管道执行时使用/dev/tty读取用户确认
+  - 提升卸载脚本在不同执行环境下的稳定性
+- 🔄 **Container Build & Deploy工作流重复触发修复**：消除工作流重复触发问题
+  - 移除release触发器，避免与workflow_run重复触发
+  - 统一通过Package Release工作流完成后触发，避免重复构建
+  - 保持push到main分支时的正常触发逻辑
 - 🐳 **Docker工作流全面修复**：彻底解决Docker构建和推送工作流中的多个关键问题
   - 修复test-image作业中IMAGE_TAG变量为空的问题
   - 改进docker/metadata-action标签配置，确保正确生成镜像标签

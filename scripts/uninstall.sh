@@ -262,10 +262,21 @@ main() {
     # 确认卸载
     echo
     print_warning "⚠️  即将卸载AIS及其所有配置和数据"
-    read -p "继续卸载吗? (y/N): " -r
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        print_info "已取消卸载"
-        exit 0
+    if [ -t 0 ]; then
+        # 标准输入是终端，可以正常读取用户输入
+        read -p "继续卸载吗? (y/N): " -r
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            print_info "已取消卸载"
+            exit 0
+        fi
+    else
+        # 从管道执行，使用/dev/tty读取用户输入
+        echo -n "继续卸载吗? (y/N): "
+        read -r REPLY < /dev/tty
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            print_info "已取消卸载"
+            exit 0
+        fi
     fi
     
     echo
