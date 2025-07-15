@@ -13,11 +13,7 @@ on:
       - 'setup.py'
       - '.github/workflows/container-build-deploy.yml'
   
-  # 发布新版本时自动构建版本标签
-  release:
-    types: [published]
-  
-  # 接收来自Release工作流的触发
+  # 接收来自Release工作流的触发（包含release发布）
   workflow_run:
     workflows: ["Package Release"]
     types: [completed]
