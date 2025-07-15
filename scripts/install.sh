@@ -367,8 +367,54 @@ install_system_mode() {
     }
     
     print_success "🎉 AIS系统级安装完成！版本: $VERSION"
+    
+    # 检测当前Shell并提供详细的激活指导
+    local shell_name=""
+    local config_file=""
+    
+    if [ -n "$ZSH_VERSION" ]; then
+        shell_name="zsh"
+        config_file="$HOME/.zshrc"
+    elif [ -n "$BASH_VERSION" ]; then
+        shell_name="bash"
+        config_file="$HOME/.bashrc"
+    else
+        # 从SHELL环境变量推断
+        case "$SHELL" in
+            */zsh) 
+                shell_name="zsh"
+                config_file="$HOME/.zshrc"
+                ;;
+            */bash) 
+                shell_name="bash"
+                if [ -f "$HOME/.bashrc" ]; then
+                    config_file="$HOME/.bashrc"
+                else
+                    config_file="$HOME/.bash_profile"
+                fi
+                ;;
+            *) 
+                shell_name="bash"
+                config_file="$HOME/.bashrc"
+                ;;
+        esac
+    fi
+    
+    echo
     print_info "💡 所有用户都可以使用ais命令"
-    print_info "💡 用户可以运行: ais setup 来设置shell集成"
+    print_warning "🔧 重要：ais命令已安装到 /usr/local/bin，但需要重新加载Shell配置："
+    echo
+    print_info "   选择以下方法之一："
+    print_info "   1️⃣  重新打开终端 (推荐)"
+    if [ -n "$config_file" ] && [ -f "$config_file" ]; then
+        print_info "   2️⃣  执行: source $config_file"
+    fi
+    print_info "   3️⃣  执行: hash -r"
+    echo
+    print_info "🚀 然后可以运行以下命令："
+    print_info "   ais setup     # 设置Shell集成和自动错误分析"
+    print_info "   ais config    # 查看和配置AI服务"
+    print_info "   ais ask '你好'  # 快速测试"
 }
 
 # 容器化安装
