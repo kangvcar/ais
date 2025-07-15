@@ -359,25 +359,87 @@ install_system_mode() {
     
     print_success "🎉 AIS系统级安装完成！版本: $VERSION"
     
-    # 自动设置Shell集成（系统级安装也需要为每个用户设置）
-    print_info "🔧 自动设置Shell集成..."
-    if setup_shell_integration_auto; then
-        print_success "Shell集成设置完成"
+    # 系统级安装：配置全局Shell集成，让所有用户都能自动启用
+    print_info "🔧 配置全局Shell集成..."
+    
+    # 获取AIS集成脚本路径
+    local ais_script_path=""
+    if [ -f "/opt/pipx/venvs/ais-terminal/lib/python*/site-packages/ais/shell/integration.sh" ]; then
+        ais_script_path=$(echo /opt/pipx/venvs/ais-terminal/lib/python*/site-packages/ais/shell/integration.sh)
     else
-        print_warning "Shell集成自动设置失败，但可以稍后手动运行: ais setup"
+        ais_script_path=$(python3 -c "
+try:
+    import ais, os
+    script_path = os.path.join(os.path.dirname(ais.__file__), 'shell', 'integration.sh')
+    if os.path.exists(script_path):
+        print(script_path)
+except:
+    pass
+" 2>/dev/null)
+    fi
+    
+    if [ -n "$ais_script_path" ] && [ -f "$ais_script_path" ]; then
+        # 创建全局Shell集成配置
+        local global_config="/etc/profile.d/ais.sh"
+        
+        if [ "$(detect_environment)" = "user" ]; then
+            # 非root用户需要sudo
+            sudo tee "$global_config" > /dev/null << EOF
+#!/bin/bash
+# AIS - AI 智能终端助手全局集成
+# 自动为所有用户启用AIS Shell集成
+
+# 检查AIS集成脚本是否存在
+if [ -f "$ais_script_path" ]; then
+    # 只在交互式shell中加载
+    if [[ \$- == *i* ]]; then
+        source "$ais_script_path"
+    fi
+fi
+EOF
+            sudo chmod +x "$global_config"
+        else
+            # root用户直接创建
+            cat > "$global_config" << EOF
+#!/bin/bash
+# AIS - AI 智能终端助手全局集成
+# 自动为所有用户启用AIS Shell集成
+
+# 检查AIS集成脚本是否存在
+if [ -f "$ais_script_path" ]; then
+    # 只在交互式shell中加载
+    if [[ \$- == *i* ]]; then
+        source "$ais_script_path"
+    fi
+fi
+EOF
+            chmod +x "$global_config"
+        fi
+        
+        print_success "已配置全局Shell集成: $global_config"
+    else
+        print_warning "无法找到AIS集成脚本，全局配置失败"
+    fi
+    
+    # 同时为当前用户配置（确保立即可用）
+    print_info "🔧 为当前用户配置Shell集成..."
+    if setup_shell_integration_auto; then
+        print_success "当前用户Shell集成设置完成"
+    else
+        print_warning "当前用户Shell集成自动设置失败"
     fi
     
     echo
     print_info "💡 所有用户都可以使用ais命令"
-    print_success "🎯 安装和配置已完全完成！"
+    print_success "🎯 系统级安装和全局配置已完全完成！"
     echo
-    print_warning "🔧 重要：请重新打开终端以启用所有功能"
-    print_info "   重新打开终端后，AIS将自动工作，无需额外配置"
+    print_warning "🔧 重要：请重新打开终端或重新登录以启用自动分析"
+    print_info "   所有用户（包括新用户）都将自动启用AIS功能"
     echo
-    print_info "🚀 重新打开终端后可以直接使用："
-    print_info "   ais config    # 查看和配置AI服务"
-    print_info "   ais ask '你好'  # 快速测试"
-    print_info "   任何错误命令  # 将自动显示AI分析"
+    print_info "🚀 重新打开终端后，任何用户都可以直接使用："
+    print_info "   ais config       # 查看和配置AI服务"
+    print_info "   ais ask '你好'    # 快速测试"
+    print_info "   任何错误命令     # 将自动显示AI分析"
 }
 
 # 容器化安装

@@ -90,9 +90,11 @@ uninstall_pipx_system() {
     if [ "$EUID" -eq 0 ]; then
         rm -f /usr/local/bin/ais
         rm -rf /opt/pipx/venvs/ais-terminal 2>/dev/null || true
+        rm -f /etc/profile.d/ais.sh  # 清理全局Shell集成
     else
         sudo rm -f /usr/local/bin/ais
         sudo rm -rf /opt/pipx/venvs/ais-terminal 2>/dev/null || true
+        sudo rm -f /etc/profile.d/ais.sh  # 清理全局Shell集成
     fi
     
     print_success "pipx系统级卸载完成"
@@ -116,12 +118,12 @@ uninstall_system_old() {
         rm -f /usr/local/bin/ais
         rm -rf /opt/ais
         rm -rf /etc/ais
-        rm -f /etc/profile.d/ais.sh
+        rm -f /etc/profile.d/ais.sh  # 清理全局Shell集成
     else
         sudo rm -f /usr/local/bin/ais
         sudo rm -rf /opt/ais
         sudo rm -rf /etc/ais
-        sudo rm -f /etc/profile.d/ais.sh
+        sudo rm -f /etc/profile.d/ais.sh  # 清理全局Shell集成
     fi
     
     print_success "旧系统级安装卸载完成"
