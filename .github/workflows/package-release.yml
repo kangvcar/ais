@@ -213,18 +213,16 @@ jobs:
             # 如果没有，将Unreleased内容移动到新版本章节
             echo "Creating version section for $VERSION in CHANGELOG.md"
             
-            # 创建临时文件
-            cat > temp_changelog.md << 'HEADER'
-# Changelog
-
-所有对此项目的重要更改都将记录在此文件中。
-
-格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/),
-并且此项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/)。
-
-## [Unreleased]
-
-HEADER
+            # 创建临时文件头部
+            echo "# Changelog" > temp_changelog.md
+            echo "" >> temp_changelog.md
+            echo "所有对此项目的重要更改都将记录在此文件中。" >> temp_changelog.md
+            echo "" >> temp_changelog.md
+            echo "格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)," >> temp_changelog.md
+            echo "并且此项目遵循 [语义化版本控制](https://semver.org/lang/zh-CN/)。" >> temp_changelog.md
+            echo "" >> temp_changelog.md
+            echo "## [Unreleased]" >> temp_changelog.md
+            echo "" >> temp_changelog.md
             
             # 添加新版本章节
             echo "## [$VERSION] - $(date '+%Y-%m-%d')" >> temp_changelog.md
@@ -311,11 +309,7 @@ HEADER
         # 检查是否有更改
         if ! git diff --quiet CHANGELOG.md; then
           git add CHANGELOG.md
-          git commit -m "更新CHANGELOG.md for version ${{ needs.build-packages.outputs.version }}
-
-🤖 Generated with [Claude Code](https://claude.ai/code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>"
+          git commit -m "更新CHANGELOG.md for version ${{ needs.build-packages.outputs.version }}"
           git push
           echo "CHANGELOG.md committed and pushed"
         else
