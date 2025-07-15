@@ -278,8 +278,15 @@ def ask(question, help_detail):
         return
 
     try:
+        from ..core.streaming import create_streaming_asker
+
         config = get_config()
-        response = ask_ai(question, config)
+
+        # 创建流式问答器
+        streaming_asker = create_streaming_asker(console)
+
+        # 使用流式输出进行问答
+        response = streaming_asker.ask_with_streaming(ask_ai, question, config)
 
         if response:
             panels.ai_analysis(Markdown(response), "🤖 AI 回答")
@@ -989,6 +996,7 @@ def learn_command(topic, help_detail):
 
     try:
         from ..core.ai import ask_ai
+        from ..core.streaming import create_streaming_learner
 
         if not topic:
             # 显示学习主题
@@ -1013,20 +1021,29 @@ def learn_command(topic, help_detail):
             )
             return
 
-        # 生成学习内容
+        # 获取配置
         config = get_config()
 
-        learning_prompt = f"""
-        用户想学习关于 "{topic}" 的命令行知识。请提供：
-        1. 这个主题的简要介绍和重要性
-        2. 5-10 个最常用的命令和示例
-        3. 每个命令的简单解释和使用场景
-        4. 实践建议和学习路径
+        # 创建学习函数
+        def generate_learning_content(topic: str, config: dict) -> str:
+            learning_prompt = f"""
+            用户想学习关于 "{topic}" 的命令行知识。请提供：
+            1. 这个主题的简要介绍和重要性
+            2. 5-10 个最常用的命令和示例
+            3. 每个命令的简单解释和使用场景
+            4. 实践建议和学习路径
 
-        请用中文回答，使用 Markdown 格式，让内容易于理解和实践。
-        """
+            请用中文回答，使用 Markdown 格式，让内容易于理解和实践。
+            """
+            return ask_ai(learning_prompt, config)
 
-        response = ask_ai(learning_prompt, config)
+        # 创建流式学习器
+        streaming_learner = create_streaming_learner(console)
+
+        # 使用流式输出进行学习内容生成
+        response = streaming_learner.learn_with_streaming(
+            generate_learning_content, topic, config
+        )
 
         if response:
             console.print(
