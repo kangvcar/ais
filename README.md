@@ -6,7 +6,7 @@
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://python.org)
 [![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Package Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/kangvcar/ais)
+[![Package Version](https://img.shields.io/badge/version-0.2.8-blue.svg)](https://github.com/kangvcar/ais)
 [![CI Status](https://img.shields.io/github/workflow/status/kangvcar/ais/CI)](https://github.com/kangvcar/ais/actions)
 
 [📖 安装指南](#installation) · [🚀 快速开始](#quickstart) · [📚 文档](#documentation) · [🤝 贡献](#contributing)

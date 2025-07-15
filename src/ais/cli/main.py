@@ -5,6 +5,7 @@ from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
 
+from .. import __version__
 from ..core.config import get_config, set_config
 from ..core.ai import ask_ai
 from ..ui.panels import panels
@@ -203,7 +204,7 @@ fi
 
 
 @click.group()
-@click.version_option(version="0.1.0", prog_name="ais")
+@click.version_option(version=__version__, prog_name="ais")
 @click.pass_context
 def main(ctx):
     """AIS - AI-powered terminal assistant.
