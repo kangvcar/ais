@@ -152,35 +152,26 @@ setup_shell_integration_auto() {
         return 0
     fi
     
-    # 获取AIS集成脚本路径（更可靠的方法）
+    # 获取AIS集成脚本路径（兼容用户级和系统级安装）
     local ais_script_path=""
     
-    # 方法1：直接从pipx安装位置查找
-    if command_exists pipx; then
+    # 方法1：系统级pipx安装路径
+    if [ -f "/opt/pipx/venvs/ais-terminal/lib/python*/site-packages/ais/shell/integration.sh" ]; then
+        ais_script_path=$(echo /opt/pipx/venvs/ais-terminal/lib/python*/site-packages/ais/shell/integration.sh)
+    fi
+    
+    # 方法2：用户级pipx安装路径
+    if [ -z "$ais_script_path" ] && command_exists pipx; then
         local pipx_venv_path
         pipx_venv_path=$(pipx environment --value PIPX_LOCAL_VENVS 2>/dev/null || echo "$HOME/.local/share/pipx/venvs")
-        ais_script_path="$pipx_venv_path/ais-terminal/lib/python*/site-packages/ais/shell/integration.sh"
-        # 展开通配符
-        ais_script_path=$(echo $ais_script_path)
+        local potential_path="$pipx_venv_path/ais-terminal/lib/python*/site-packages/ais/shell/integration.sh"
+        if [ -f "$(echo $potential_path)" ]; then
+            ais_script_path=$(echo $potential_path)
+        fi
     fi
     
-    # 方法2：通过Python查找
-    if [ ! -f "$ais_script_path" ]; then
-        ais_script_path=$(python3 -c "
-try:
-    import ais, os
-    print(os.path.join(os.path.dirname(ais.__file__), 'shell', 'integration.sh'))
-except:
-    pass
-" 2>/dev/null)
-    fi
-    
-    # 方法3：如果仍然找不到，创建内联脚本
-    if [ ! -f "$ais_script_path" ]; then
-        # 先运行 ais setup 来创建脚本
-        ais setup >/dev/null 2>&1 || true
-        
-        # 再次尝试获取路径
+    # 方法3：通过Python查找
+    if [ -z "$ais_script_path" ]; then
         ais_script_path=$(python3 -c "
 try:
     import ais, os
@@ -368,53 +359,25 @@ install_system_mode() {
     
     print_success "🎉 AIS系统级安装完成！版本: $VERSION"
     
-    # 检测当前Shell并提供详细的激活指导
-    local shell_name=""
-    local config_file=""
-    
-    if [ -n "$ZSH_VERSION" ]; then
-        shell_name="zsh"
-        config_file="$HOME/.zshrc"
-    elif [ -n "$BASH_VERSION" ]; then
-        shell_name="bash"
-        config_file="$HOME/.bashrc"
+    # 自动设置Shell集成（系统级安装也需要为每个用户设置）
+    print_info "🔧 自动设置Shell集成..."
+    if setup_shell_integration_auto; then
+        print_success "Shell集成设置完成"
     else
-        # 从SHELL环境变量推断
-        case "$SHELL" in
-            */zsh) 
-                shell_name="zsh"
-                config_file="$HOME/.zshrc"
-                ;;
-            */bash) 
-                shell_name="bash"
-                if [ -f "$HOME/.bashrc" ]; then
-                    config_file="$HOME/.bashrc"
-                else
-                    config_file="$HOME/.bash_profile"
-                fi
-                ;;
-            *) 
-                shell_name="bash"
-                config_file="$HOME/.bashrc"
-                ;;
-        esac
+        print_warning "Shell集成自动设置失败，但可以稍后手动运行: ais setup"
     fi
     
     echo
     print_info "💡 所有用户都可以使用ais命令"
-    print_warning "🔧 重要：ais命令已安装到 /usr/local/bin，但需要重新加载Shell配置："
+    print_success "🎯 安装和配置已完全完成！"
     echo
-    print_info "   选择以下方法之一："
-    print_info "   1️⃣  重新打开终端 (推荐)"
-    if [ -n "$config_file" ] && [ -f "$config_file" ]; then
-        print_info "   2️⃣  执行: source $config_file"
-    fi
-    print_info "   3️⃣  执行: hash -r"
+    print_warning "🔧 重要：请重新打开终端以启用所有功能"
+    print_info "   重新打开终端后，AIS将自动工作，无需额外配置"
     echo
-    print_info "🚀 然后可以运行以下命令："
-    print_info "   ais setup     # 设置Shell集成和自动错误分析"
+    print_info "🚀 重新打开终端后可以直接使用："
     print_info "   ais config    # 查看和配置AI服务"
     print_info "   ais ask '你好'  # 快速测试"
+    print_info "   任何错误命令  # 将自动显示AI分析"
 }
 
 # 容器化安装
