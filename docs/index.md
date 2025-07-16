@@ -59,12 +59,6 @@ curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh
 pipx install ais-terminal
 ```
 
-安装脚本会自动：
-- 检测运行环境（用户/系统/容器）
-- 选择最佳安装方式（pipx/pip）
-- 配置Shell集成（Bash/Zsh/Fish）
-- 设置PATH环境变量
-- 验证安装成功
 
 ## 🔍 智能错误分析演示
 
