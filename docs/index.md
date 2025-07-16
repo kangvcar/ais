@@ -77,36 +77,31 @@ pipx install ais-terminal
     <div class="terminal-title">终端 — zsh — 80×24</div>
   </div>
   <div class="terminal-body">
-    <pre class="terminal-content">
-<span class="prompt">user@ais:~$</span> <span class="command">docker run hello-world</span>
-<span class="error">docker: Error response from daemon: Unable to find image 'hello-world:latest' locally</span>
-
-<span class="ai-title">🔍 发现相似的历史错误</span>
-  1. docker pull ubuntu (12-15 14:30) - 已解决
-  2. docker run nginx (12-15 14:25) - 已分析
-
-<span class="ai-title">🤖 AI 错误分析</span>
-<span class="diagnosis">🔍 问题诊断:</span>
-您遇到了Docker镜像未找到的问题。Docker尝试运行hello-world镜像，但本地没有该镜像。
-
-<span class="knowledge">📚 知识扩展:</span>
-Docker采用分层存储机制，镜像需要先下载到本地才能运行。
-
-<span class="solution">🎯 解决思路:</span>
-1. 先手动拉取镜像到本地
-2. 检查网络连接和Docker服务状态
-
-<div class="suggestions-box">
-<span class="suggestions-title">💡 AI 基于你的使用习惯和当前环境推荐</span>
-
-<span class="table-header">#  命令                          风险  说明</span>
-<span class="table-row">1  <span class="cmd">docker pull hello-world</span>       🟢   拉取hello-world镜像到本地</span>
-<span class="table-row">2  <span class="cmd">docker images</span>                 🟢   查看已下载的镜像列表</span>
-<span class="table-row">3  <span class="cmd">systemctl status docker</span>       🟢   检查Docker服务状态</span>
-
-<span class="input-prompt">Select an action (1-3/e/q/x): <span class="cursor">█</span></span>
-</div>
-    </pre>
+    <div class="terminal-content">
+      <div class="command-line">
+        <span class="prompt">user@ais:~$</span> <span class="command">docker run hello-world</span>
+      </div>
+      <div class="error">docker: Error response from daemon: Unable to find image 'hello-world:latest' locally</div>
+      <div class="ai-title">🔍 发现相似的历史错误</div>
+      <div class="list-item">  1. docker pull ubuntu (12-15 14:30) - 已解决</div>
+      <div class="list-item">  2. docker run nginx (12-15 14:25) - 已分析</div>
+      <div class="ai-title">🤖 AI 错误分析</div>
+      <div class="diagnosis">🔍 问题诊断:</div>
+      <div class="content-text">您遇到了Docker镜像未找到的问题。Docker尝试运行hello-world镜像，但本地没有该镜像。</div>
+      <div class="knowledge">📚 知识扩展:</div>
+      <div class="content-text">Docker采用分层存储机制，镜像需要先下载到本地才能运行。</div>
+      <div class="solution">🎯 解决思路:</div>
+      <div class="content-text">1. 先手动拉取镜像到本地</div>
+      <div class="content-text">2. 检查网络连接和Docker服务状态</div>
+      <div class="suggestions-box">
+        <div class="suggestions-title">💡 AI 基于你的使用习惯和当前环境推荐</div>
+        <div class="table-header">#  命令                          风险  说明</div>
+        <div class="table-row">1  <span class="cmd">docker pull hello-world</span>       🟢   拉取hello-world镜像到本地</div>
+        <div class="table-row">2  <span class="cmd">docker images</span>                 🟢   查看已下载的镜像列表</div>
+        <div class="table-row">3  <span class="cmd">systemctl status docker</span>       🟢   检查Docker服务状态</div>
+        <div class="input-prompt">Select an action (1-3/e/q/x): <span class="cursor">█</span></div>
+      </div>
+    </div>
   </div>
 </div>
 
