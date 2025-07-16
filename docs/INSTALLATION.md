@@ -1,6 +1,6 @@
 # AIS 安装指南
 
-本文档按用户类型提供 AIS（AI-powered terminal assistant）的最佳安装方式。
+本文档按用户类型提供 AIS（上下文感知的错误分析学习助手）的最佳安装方式。
 
 ## 系统要求
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# AIS - AI智能终端助手
+# AIS - 上下文感知的错误分析学习助手
 # 智能卸载脚本 - 自动检测安装方式并完全清理
 # 
 # 使用方法: curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/uninstall.sh | bash
@@ -252,7 +252,7 @@ verify_uninstall() {
 # 主卸载函数
 main() {
     echo "================================================"
-    echo "        AIS - AI 智能终端助手 卸载器"
+    echo "        AIS - 上下文感知的错误分析学习助手 卸载器"
     echo "================================================"
     echo "自动检测安装方式并完全清理"
     echo

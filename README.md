@@ -1,8 +1,8 @@
-# AIS - AI智能终端助手
+# AIS - 上下文感知的错误分析学习助手
 
 <div align="center">
 
-**让命令行更智能，让学习更高效**
+**让每次报错都是成长**
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://python.org)
 [![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -17,7 +17,7 @@
 
 ## 概述
 
-AIS（AI-powered terminal assistant）是一个革命性的命令行工具，通过AI技术为终端用户提供智能错误分析、学习指导和操作建议。当命令执行失败时，AIS会自动分析原因并提供解决方案，帮助用户快速解决问题并学习相关知识。
+AIS通过深度Shell集成架构，实现多维上下文感知和智能错误分析，自动收集执行环境信息并进行精准问题定位，在终端内直接提供基于上下文的解决方案和系统化学习指导，消除传统错误处理中的搜索跳转和盲目试错，显著提升问题解决效率和技能积累速度。
 
 ### 🌟 核心特性
 
@@ -502,6 +502,6 @@ ais help-all
 [![Stars](https://img.shields.io/github/stars/kangvcar/ais?style=social)](https://github.com/kangvcar/ais/stargazers)
 [![Forks](https://img.shields.io/github/forks/kangvcar/ais?style=social)](https://github.com/kangvcar/ais/network/members)
 
-[回到顶部](#ais---ai智能终端助手)
+[回到顶部](#ais---上下文感知的错误分析学习助手)
 
 </div>

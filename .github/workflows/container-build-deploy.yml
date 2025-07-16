@@ -92,8 +92,8 @@ jobs:
           # 手动触发时使用自定义标签
           type=raw,value={{inputs.tag}},enable=${{ github.event_name == 'workflow_dispatch' }}
         labels: |
-          org.opencontainers.image.title=AIS - AI智能终端助手
-          org.opencontainers.image.description=AI-powered terminal assistant for intelligent error analysis and learning
+          org.opencontainers.image.title=AIS - 上下文感知的错误分析学习助手
+          org.opencontainers.image.description=上下文感知的错误分析学习助手，让每次报错都是成长
           org.opencontainers.image.vendor=AIS Team
 
     - name: Build and push Docker image
@@ -231,7 +231,7 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
         repository: ${{ env.IMAGE_NAME }}
-        short-description: "AIS - AI智能终端助手，让命令行更智能，让学习更高效"
+        short-description: "AIS - 上下文感知的错误分析学习助手，让每次报错都是成长"
         readme-filepath: ./README.md
 
   # 构建成功通知

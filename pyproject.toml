@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "ais-terminal"
 version = "0.1.0"
-description = "AI智能终端助手 - 让命令行更智能，让学习更高效"
+description = "上下文感知的错误分析学习助手 - 让每次报错都是成长"
 readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}

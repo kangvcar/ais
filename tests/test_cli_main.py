@@ -35,7 +35,7 @@ class TestCliBasics:
         result = runner.invoke(main, ["--help"])
 
         assert result.exit_code == 0
-        assert "AIS - AI-powered terminal assistant" in result.output
+        assert "AIS - 上下文感知的错误分析学习助手" in result.output
 
     def test_main_command_version(self):
         """Test main command version."""
@@ -616,4 +616,4 @@ class TestUtilityCommands:
         result = runner.invoke(help_all, [])
 
         assert result.exit_code == 0
-        assert "AIS - AI 智能终端助手 详细帮助汇总" in result.output
+        assert "AIS - 上下文感知的错误分析学习助手 详细帮助汇总" in result.output

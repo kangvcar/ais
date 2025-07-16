@@ -1,4 +1,4 @@
-# AIS - AI智能终端助手 Docker镜像
+# AIS - 上下文感知的错误分析学习助手 Docker镜像
 # 多阶段构建，优化镜像大小
 
 # 构建参数
@@ -69,8 +69,8 @@ CMD ["ais", "--help"]
 
 # 标签信息（符合OCI标准）
 LABEL maintainer="AIS Team <ais@example.com>" \
-      org.opencontainers.image.title="AIS - AI智能终端助手" \
-      org.opencontainers.image.description="AI-powered terminal assistant for intelligent error analysis and learning" \
+      org.opencontainers.image.title="AIS - 上下文感知的错误分析学习助手" \
+      org.opencontainers.image.description="上下文感知的错误分析学习助手，让每次报错都是成长" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.revision="${VCS_REF}" \

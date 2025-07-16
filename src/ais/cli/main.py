@@ -181,7 +181,7 @@ def _auto_setup_unix_integration(package_path, config_dir):
             integration_config = f"""
 
 # START AIS INTEGRATION
-# AIS - AI 智能终端助手自动集成
+# AIS - 上下文感知的错误分析学习助手自动集成
 if [ -f "{script_path}" ]; then
     source "{script_path}"
 fi
@@ -207,9 +207,9 @@ fi
 @click.version_option(version=__version__, prog_name="ais")
 @click.pass_context
 def main(ctx):
-    """AIS - AI-powered terminal assistant.
+    """AIS - 上下文感知的错误分析学习助手。
 
-    智能终端助手，通过 AI 技术帮助用户分析错误、学习命令和提高效率。
+    通过深度Shell集成架构，实现多维上下文感知和智能错误分析，让每次报错都是成长。
 
     💡 提示: 大多数命令都支持 --help-detail 选项查看详细使用说明
 
@@ -1132,7 +1132,7 @@ def test_integration():
 def help_all():
     """显示所有命令的详细帮助汇总。"""
     console.print(
-        "[bold green]🚀 AIS - AI 智能终端助手 详细帮助汇总[/bold green]"
+        "[bold green]🚀 AIS - 上下文感知的错误分析学习助手 详细帮助汇总[/bold green]"
     )
     console.print()
     console.print("[bold]核心功能命令:[/bold]")

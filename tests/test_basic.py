@@ -26,7 +26,7 @@ def test_cli_help():
     """Test CLI help command."""
     result = subprocess.run(["ais", "--help"], capture_output=True, text=True)
     assert result.returncode == 0
-    assert "AIS - AI-powered terminal assistant" in result.stdout
+    assert "AIS - 上下文感知的错误分析学习助手" in result.stdout
 
 
 @patch("ais.core.config.get_config")

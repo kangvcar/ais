@@ -1,5 +1,5 @@
 #!/bin/bash
-# AIS - AI智能终端助手
+# AIS - 上下文感知的错误分析学习助手
 # 智能安装脚本 - 统一推荐pipx安装
 # 
 # 推荐安装: curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
@@ -188,7 +188,7 @@ except:
         cat >> "$config_file" << EOF
 
 # START AIS INTEGRATION
-# AIS - AI 智能终端助手自动集成
+# AIS - 上下文感知的错误分析学习助手自动集成
 if [ -f "$ais_script_path" ]; then
     source "$ais_script_path"
 fi
@@ -386,7 +386,7 @@ except:
             # 非root用户需要sudo
             sudo tee "$global_config" > /dev/null << EOF
 #!/bin/bash
-# AIS - AI 智能终端助手全局集成
+# AIS - 上下文感知的错误分析学习助手全局集成
 # 自动为所有用户启用AIS Shell集成
 
 # 检查AIS集成脚本是否存在
@@ -402,7 +402,7 @@ EOF
             # root用户直接创建
             cat > "$global_config" << EOF
 #!/bin/bash
-# AIS - AI 智能终端助手全局集成
+# AIS - 上下文感知的错误分析学习助手全局集成
 # 自动为所有用户启用AIS Shell集成
 
 # 检查AIS集成脚本是否存在
@@ -469,7 +469,7 @@ EOF
 # 主安装函数
 main() {
     echo "================================================"
-    echo "         AIS - AI 智能终端助手 安装器"
+    echo "         AIS - 上下文感知的错误分析学习助手 安装器"
     echo "================================================"
     echo "版本: $AIS_VERSION"
     echo "GitHub: https://github.com/$GITHUB_REPO"
