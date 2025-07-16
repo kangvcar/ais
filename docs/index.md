@@ -10,13 +10,13 @@ hero:
     alt: AIS Logo
   actions:
     - theme: brand
-      text: 立即体验
+      text: 🚀 立即体验
       link: /getting-started/quick-start
     - theme: alt
-      text: 了解更多
+      text: 📖 了解更多
       link: /features/
     - theme: alt
-      text: GitHub
+      text: 💻 GitHub
       link: https://github.com/kangvcar/ais
 
 features:
