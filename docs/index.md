@@ -226,6 +226,38 @@ $ ais report
       </div>
     </div>
   </div>
+
+  <div class="testimonial-card">
+    <div class="testimonial-content">
+      <div class="quote-icon">💬</div>
+      <p class="testimonial-text">
+        "作为新手，AIS的学习引导功能太棒了！每次报错都能学到新知识，从恐惧命令行到现在的熟练使用。"
+      </p>
+      <div class="testimonial-author">
+        <div class="author-avatar">👩‍💻</div>
+        <div class="author-info">
+          <div class="author-name">小雨</div>
+          <div class="author-role">前端开发实习生</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="testimonial-card">
+    <div class="testimonial-content">
+      <div class="quote-icon">💬</div>
+      <p class="testimonial-text">
+        "团队引入AIS后，初级开发者的上手速度明显提升。错误分析和学习建议帮助大家快速成长。"
+      </p>
+      <div class="testimonial-author">
+        <div class="author-avatar">👨‍🏫</div>
+        <div class="author-info">
+          <div class="author-name">刘老师</div>
+          <div class="author-role">技术团队负责人</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <style>
