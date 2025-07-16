@@ -67,34 +67,249 @@ pipx install ais-terminal
 
 当命令执行失败时，AIS会自动分析并提供解决方案：
 
-```bash
-$ docker run hello-world
-docker: Error response from daemon: Unable to find image 'hello-world:latest' locally
+<div class="terminal-demo">
+  <div class="terminal-header">
+    <div class="terminal-controls">
+      <span class="control-btn close"></span>
+      <span class="control-btn minimize"></span>
+      <span class="control-btn maximize"></span>
+    </div>
+    <div class="terminal-title">终端 — zsh — 80×24</div>
+  </div>
+  <div class="terminal-body">
+    <pre class="terminal-content">
+<span class="prompt">user@ais:~$</span> <span class="command">docker run hello-world</span>
+<span class="error">docker: Error response from daemon: Unable to find image 'hello-world:latest' locally</span>
 
-🔍 发现相似的历史错误
+<span class="ai-title">🔍 发现相似的历史错误</span>
   1. docker pull ubuntu (12-15 14:30) - 已解决
   2. docker run nginx (12-15 14:25) - 已分析
 
-🤖 AI 错误分析
-🔍 问题诊断:
+<span class="ai-title">🤖 AI 错误分析</span>
+<span class="diagnosis">🔍 问题诊断:</span>
 您遇到了Docker镜像未找到的问题。Docker尝试运行hello-world镜像，但本地没有该镜像。
 
-📚 知识扩展:
+<span class="knowledge">📚 知识扩展:</span>
 Docker采用分层存储机制，镜像需要先下载到本地才能运行。
 
-🎯 解决思路:
+<span class="solution">🎯 解决思路:</span>
 1. 先手动拉取镜像到本地
 2. 检查网络连接和Docker服务状态
 
-💡 AI 基于你的使用习惯和当前环境推荐
+<div class="suggestions-box">
+<span class="suggestions-title">💡 AI 基于你的使用习惯和当前环境推荐</span>
 
-#  命令                          风险  说明
-1  docker pull hello-world       🟢   拉取hello-world镜像到本地
-2  docker images                 🟢   查看已下载的镜像列表
-3  systemctl status docker       🟢   检查Docker服务状态
+<span class="table-header">#  命令                          风险  说明</span>
+<span class="table-row">1  <span class="cmd">docker pull hello-world</span>       🟢   拉取hello-world镜像到本地</span>
+<span class="table-row">2  <span class="cmd">docker images</span>                 🟢   查看已下载的镜像列表</span>
+<span class="table-row">3  <span class="cmd">systemctl status docker</span>       🟢   检查Docker服务状态</span>
 
-Select an action (1-3/e/q/x): █
-```
+<span class="input-prompt">Select an action (1-3/e/q/x): <span class="cursor">█</span></span>
+</div>
+    </pre>
+  </div>
+</div>
+
+<style>
+.terminal-demo {
+  background: #1e1e1e;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  margin: 2rem 0;
+  overflow: hidden;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+  max-width: 100%;
+}
+
+.terminal-header {
+  background: #2d2d2d;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #3a3a3a;
+}
+
+.terminal-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.control-btn {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.control-btn.close {
+  background: #ff5f57;
+}
+
+.control-btn.minimize {
+  background: #ffbd2e;
+}
+
+.control-btn.maximize {
+  background: #28ca42;
+}
+
+.terminal-title {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  flex: 1;
+  margin: 0 20px;
+}
+
+.terminal-body {
+  background: #1e1e1e;
+  padding: 20px;
+  min-height: 400px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.terminal-content {
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+  background: transparent;
+  border: none;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.prompt {
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+.command {
+  color: #ffffff;
+}
+
+.error {
+  color: #ff6b6b;
+  display: block;
+  margin: 8px 0;
+}
+
+.ai-title {
+  color: #4CAF50;
+  font-weight: 600;
+  display: block;
+  margin: 16px 0 8px 0;
+}
+
+.diagnosis, .knowledge, .solution {
+  color: #61dafb;
+  font-weight: 600;
+  display: block;
+  margin: 12px 0 4px 0;
+}
+
+.suggestions-box {
+  background: #2a2a2a;
+  padding: 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+.suggestions-title {
+  color: #4CAF50;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.table-header {
+  color: #ffffff;
+  font-weight: 600;
+  display: block;
+  margin: 8px 0;
+  border-bottom: 1px solid #3a3a3a;
+  padding-bottom: 4px;
+}
+
+.table-row {
+  color: #e0e0e0;
+  display: block;
+  margin: 4px 0;
+  padding: 2px 0;
+}
+
+.cmd {
+  color: #61dafb;
+  font-family: monospace;
+}
+
+.input-prompt {
+  color: #4CAF50;
+  font-weight: 600;
+  display: block;
+  margin-top: 16px;
+}
+
+.cursor {
+  color: #ffffff;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .terminal-demo {
+    margin: 1rem 0;
+  }
+  
+  .terminal-body {
+    padding: 16px;
+  }
+  
+  .terminal-content {
+    font-size: 13px;
+  }
+  
+  .terminal-title {
+    font-size: 12px;
+  }
+  
+  .suggestions-box {
+    padding: 12px;
+  }
+}
+
+/* 深色模式适配 */
+.dark .terminal-demo {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* 滚动条样式 */
+.terminal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.terminal-body::-webkit-scrollbar-track {
+  background: #2a2a2a;
+}
+
+.terminal-body::-webkit-scrollbar-thumb {
+  background: #4a4a4a;
+  border-radius: 4px;
+}
+
+.terminal-body::-webkit-scrollbar-thumb:hover {
+  background: #5a5a5a;
+}
+</style>
 
 ## 💬 智能问答演示
 
