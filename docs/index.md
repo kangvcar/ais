@@ -174,13 +174,28 @@ Docker采用分层存储机制，镜像需要先下载到本地才能运行。
 
 .terminal-content {
   color: #ffffff;
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.4;
   margin: 0;
   background: transparent;
   border: none;
-  white-space: pre-wrap;
-  word-wrap: break-word;
+  font-family: inherit;
+}
+
+.command-line {
+  margin-bottom: 8px;
+}
+
+.content-text {
+  color: #e0e0e0;
+  margin: 4px 0;
+  padding-left: 2px;
+}
+
+.list-item {
+  color: #e0e0e0;
+  margin: 2px 0;
+  padding-left: 4px;
 }
 
 .prompt {
@@ -259,6 +274,63 @@ Docker采用分层存储机制，镜像需要先下载到本地才能运行。
   animation: blink 1s infinite;
 }
 
+.loading {
+  color: #4CAF50;
+  font-style: italic;
+  display: block;
+  margin: 8px 0;
+}
+
+.section {
+  color: #61dafb;
+  font-weight: 600;
+  display: block;
+  margin: 12px 0 6px 0;
+}
+
+.highlight {
+  color: #ffbd2e;
+  font-weight: 600;
+}
+
+.hint {
+  color: #e0e0e0;
+  background: #2a2a2a;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border-left: 3px solid #4CAF50;
+  display: block;
+  margin: 12px 0;
+}
+
+.meta {
+  color: #888;
+  font-size: 12px;
+  display: block;
+  margin: 4px 0 12px 0;
+}
+
+.warning {
+  color: #ff6b6b;
+  font-weight: 600;
+  display: block;
+  margin: 8px 0;
+}
+
+.suggestion {
+  color: #ffbd2e;
+  font-weight: 600;
+  display: block;
+  margin: 8px 0;
+}
+
+.footer {
+  color: #888;
+  font-size: 12px;
+  display: block;
+  margin: 4px 0;
+}
+
 @keyframes blink {
   0%, 50% { opacity: 1; }
   51%, 100% { opacity: 0; }
@@ -271,19 +343,31 @@ Docker采用分层存储机制，镜像需要先下载到本地才能运行。
   }
   
   .terminal-body {
-    padding: 16px;
+    padding: 12px;
+    min-height: 300px;
+    max-height: 500px;
   }
   
   .terminal-content {
-    font-size: 13px;
+    font-size: 12px;
+    line-height: 1.3;
   }
   
   .terminal-title {
-    font-size: 12px;
+    font-size: 11px;
   }
   
   .suggestions-box {
-    padding: 12px;
+    padding: 8px;
+  }
+  
+  .hint {
+    padding: 6px 8px;
+    margin: 8px 0;
+  }
+  
+  .meta, .footer {
+    font-size: 11px;
   }
 }
 
@@ -315,64 +399,79 @@ Docker采用分层存储机制，镜像需要先下载到本地才能运行。
 
 使用 `ais ask` 获得即时专业答案：
 
-```bash
-$ ais ask "什么是Docker容器？"
-
-🤖 正在思考您的问题...
-
-## Docker容器是什么？
-
-Docker容器是一种轻量级的、可移植的、自包含的软件运行环境。
-
-### 🏗️ 核心概念
-- **隔离性**: 每个容器都有独立的文件系统、进程空间和网络接口
-- **轻量级**: 比传统虚拟机更少的资源消耗
-- **可移植性**: 一次构建，到处运行
-
-### 🔧 主要特点
-1. **快速启动**: 秒级启动时间
-2. **资源高效**: 共享主机内核，无需完整操作系统
-3. **版本控制**: 镜像分层存储，支持版本管理
-
-想了解更多？试试 `ais learn docker` 获得系统化学习路径！
-```
+<div class="terminal-demo">
+  <div class="terminal-header">
+    <div class="terminal-controls">
+      <span class="control-btn close"></span>
+      <span class="control-btn minimize"></span>
+      <span class="control-btn maximize"></span>
+    </div>
+    <div class="terminal-title">终端 — zsh — 80×24</div>
+  </div>
+  <div class="terminal-body">
+    <div class="terminal-content">
+      <div class="command-line">
+        <span class="prompt">user@ais:~$</span> <span class="command">ais ask "什么是Docker容器？"</span>
+      </div>
+      <div class="loading">🤖 正在思考您的问题...</div>
+      <div class="ai-title">## Docker容器是什么？</div>
+      <div class="content-text">Docker容器是一种轻量级的、可移植的、自包含的软件运行环境。</div>
+      <div class="section">### 🏗️ 核心概念</div>
+      <div class="list-item">- <span class="highlight">隔离性</span>: 每个容器都有独立的文件系统、进程空间和网络接口</div>
+      <div class="list-item">- <span class="highlight">轻量级</span>: 比传统虚拟机更少的资源消耗</div>
+      <div class="list-item">- <span class="highlight">可移植性</span>: 一次构建，到处运行</div>
+      <div class="section">### 🔧 主要特点</div>
+      <div class="list-item">1. <span class="highlight">快速启动</span>: 秒级启动时间</div>
+      <div class="list-item">2. <span class="highlight">资源高效</span>: 共享主机内核，无需完整操作系统</div>
+      <div class="list-item">3. <span class="highlight">版本控制</span>: 镜像分层存储，支持版本管理</div>
+      <div class="hint">想了解更多？试试 <span class="cmd">ais learn docker</span> 获得系统化学习路径！</div>
+    </div>
+  </div>
+</div>
 
 ## 📊 学习报告演示
 
 运行 `ais report` 获得个性化学习分析：
 
-```bash
-$ ais report
-
-# 📊 AIS 学习成长报告
-
-**分析周期**: 最近30天 | **生成时间**: 2024-01-15 10:30:45
-
-## 🔍 错误概览
-- **总错误数**: 23 次
-- **最常出错的命令**: git (8次), docker (5次), npm (4次)
-- **最常见的错误类型**: Git操作错误, Docker操作错误, 权限不足
-
-## 💪 技能评估
-- **当前水平**: 中级用户
-- **优势领域**: 基础命令, 文件操作
-- **需要改进**: Git版本控制, Docker容器
-
-## 💡 改进洞察
-🔥 git 命令需要重点关注
-你在 git 命令上出现了 8 次错误，占总错误的 34.8%
-
-## 🎯 学习建议
-1. 🔥 深入学习 git 命令
-   类型: 命令掌握 | 优先级: 高
-   学习路径:
-   - 学习Git基础概念（工作区、暂存区、仓库）
-   - 掌握常用Git命令（add, commit, push, pull）
-   - 了解分支操作和合并冲突解决
-
-💡 提示: 使用 `ais learn <主题>` 深入学习特定主题
-📚 帮助: 使用 `ais ask <问题>` 获取即时答案
-```
+<div class="terminal-demo">
+  <div class="terminal-header">
+    <div class="terminal-controls">
+      <span class="control-btn close"></span>
+      <span class="control-btn minimize"></span>
+      <span class="control-btn maximize"></span>
+    </div>
+    <div class="terminal-title">终端 — zsh — 80×24</div>
+  </div>
+  <div class="terminal-body">
+    <div class="terminal-content">
+      <div class="command-line">
+        <span class="prompt">user@ais:~$</span> <span class="command">ais report</span>
+      </div>
+      <div class="ai-title"># 📊 AIS 学习成长报告</div>
+      <div class="meta">分析周期: 最近30天 | 生成时间: 2024-01-15 10:30:45</div>
+      <div class="section">## 🔍 错误概览</div>
+      <div class="list-item">- <span class="highlight">总错误数</span>: 23 次</div>
+      <div class="list-item">- <span class="highlight">最常出错的命令</span>: git (8次), docker (5次), npm (4次)</div>
+      <div class="list-item">- <span class="highlight">最常见的错误类型</span>: Git操作错误, Docker操作错误, 权限不足</div>
+      <div class="section">## 💪 技能评估</div>
+      <div class="list-item">- <span class="highlight">当前水平</span>: 中级用户</div>
+      <div class="list-item">- <span class="highlight">优势领域</span>: 基础命令, 文件操作</div>
+      <div class="list-item">- <span class="highlight">需要改进</span>: Git版本控制, Docker容器</div>
+      <div class="section">## 💡 改进洞察</div>
+      <div class="warning">🔥 git 命令需要重点关注</div>
+      <div class="content-text">你在 git 命令上出现了 8 次错误，占总错误的 34.8%</div>
+      <div class="section">## 🎯 学习建议</div>
+      <div class="suggestion">1. 🔥 深入学习 git 命令</div>
+      <div class="content-text">   类型: 命令掌握 | 优先级: 高</div>
+      <div class="content-text">   学习路径:</div>
+      <div class="content-text">   - 学习Git基础概念（工作区、暂存区、仓库）</div>
+      <div class="content-text">   - 掌握常用Git命令（add, commit, push, pull）</div>
+      <div class="content-text">   - 了解分支操作和合并冲突解决</div>
+      <div class="footer">💡 提示: 使用 <span class="cmd">ais learn &lt;主题&gt;</span> 深入学习特定主题</div>
+      <div class="footer">📚 帮助: 使用 <span class="cmd">ais ask &lt;问题&gt;</span> 获取即时答案</div>
+    </div>
+  </div>
+</div>
 
 
 ## 🌟 用户评价
