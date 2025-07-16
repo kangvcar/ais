@@ -67,8 +67,10 @@ class LearningReportGenerator:
                 {
                     "type": "频率警告",
                     "title": "错误频率较高",
-                    "description": f"在过去{
-                        self.days_back}天里发生了{total_errors}次错误，建议重点关注常见错误的预防。",
+                    "description": (
+                        f"在过去{self.days_back}天里发生了{total_errors}次错误，"
+                        "建议重点关注常见错误的预防。"
+                    ),
                     "severity": "高",
                 }
             )
@@ -77,8 +79,10 @@ class LearningReportGenerator:
                 {
                     "type": "频率提醒",
                     "title": "错误频率适中",
-                    "description": f"在过去{
-                        self.days_back}天里发生了{total_errors}次错误，整体表现良好，可以进一步优化。",
+                    "description": (
+                        f"在过去{self.days_back}天里发生了{total_errors}次错误，"
+                        "整体表现良好，可以进一步优化。"
+                    ),
                     "severity": "中",
                 }
             )
@@ -87,8 +91,10 @@ class LearningReportGenerator:
                 {
                     "type": "频率良好",
                     "title": "错误频率较低",
-                    "description": f"在过去{
-                        self.days_back}天里仅发生了{total_errors}次错误，表现优秀！",
+                    "description": (
+                        f"在过去{self.days_back}天里仅发生了{total_errors}次错误，"
+                        "表现优秀！"
+                    ),
                     "severity": "低",
                 }
             )
@@ -101,10 +107,10 @@ class LearningReportGenerator:
                     {
                         "type": "命令集中",
                         "title": f"{top_command} 命令需要重点关注",
-                        "description": f"你在 {top_command} 命令上出现了 {top_count} 次错误，占总错误的 {
-                            top_count /
-                            total_errors *
-                            100:.1f}%。",
+                        "description": (
+                            f"你在 {top_command} 命令上出现了 {top_count} 次错误，"
+                            f"占总错误的 {top_count / total_errors * 100:.1f}%。"
+                        ),
                         "severity": "高",
                     }
                 )
@@ -117,7 +123,10 @@ class LearningReportGenerator:
                     {
                         "type": "错误类型",
                         "title": f"{top_error_type}是主要问题",
-                        "description": f"你遇到了 {top_error_count} 次{top_error_type}，建议学习相关的预防技巧。",
+                        "description": (
+                            f"你遇到了 {top_error_count} 次{top_error_type}，"
+                            "建议学习相关的预防技巧。"
+                        ),
                         "severity": "中",
                     }
                 )
@@ -132,7 +141,10 @@ class LearningReportGenerator:
                     {
                         "type": "趋势改善",
                         "title": "错误趋势正在改善",
-                        "description": f"最近一周的错误数量({recent_errors})比前一周({previous_errors})有所减少，继续保持！",
+                        "description": (
+                            f"最近一周的错误数量({recent_errors})比前一周"
+                            f"({previous_errors})有所减少，继续保持！"
+                        ),
                         "severity": "低",
                     }
                 )
@@ -141,7 +153,10 @@ class LearningReportGenerator:
                     {
                         "type": "趋势警告",
                         "title": "错误趋势需要注意",
-                        "description": f"最近一周的错误数量({recent_errors})比前一周({previous_errors})有所增加，需要关注。",
+                        "description": (
+                            f"最近一周的错误数量({recent_errors})比前一周"
+                            f"({previous_errors})有所增加，需要关注。"
+                        ),
                         "severity": "中",
                     }
                 )
@@ -208,7 +223,8 @@ class LearningReportGenerator:
         lines.append(
             f"**生成时间**: {
                 datetime.fromisoformat(
-                    report['report_info']['generated_at']).strftime('%Y-%m-%d %H:%M:%S')}"
+                    report['report_info']['generated_at']
+                ).strftime('%Y-%m-%d %H:%M:%S')}"
         )
         lines.append("")
 

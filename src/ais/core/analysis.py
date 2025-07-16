@@ -250,7 +250,8 @@ class ErrorAnalyzer:
                 {
                     "type": "命令掌握",
                     "title": f"深入学习 {cmd} 命令",
-                    "description": f"你在 {cmd} 命令上出现了 {count} 次错误，建议系统学习这个命令的用法。",
+                    "description": f"你在 {cmd} 命令上出现了 {count} 次错误，"
+                    f"建议系统学习这个命令的用法。",
                     "priority": "高" if count >= 3 else "中",
                     "learning_path": self._get_learning_path(cmd),
                 }
