@@ -1,207 +1,279 @@
 # 安装指南
 
-本文档将指导您完成 AIS 的安装过程。AIS 支持多种安装方式，您可以根据自己的需求选择最适合的方案。
+AIS 支持多种安装方式，推荐使用 `pipx` 进行安装以获得最佳的依赖隔离效果。
 
-## 系统要求
+## 📦 安装方式
 
-在开始安装之前，请确保您的系统满足以下要求：
-
-### 操作系统
-- **Linux**: Ubuntu 18.04+, CentOS 7+, Debian 10+, 或其他现代 Linux 发行版
-- **macOS**: macOS 10.15+ (Catalina)
-- **Windows**: Windows 10+ (通过 WSL2)
-
-### Python 版本
-- Python 3.8 或更高版本
-- pip 包管理器
-
-### Shell 环境
-- Bash 4.0+ 或 Zsh 5.0+
-- 终端支持 ANSI 颜色代码
-
-## 安装方法
-
-### 方法一：使用 pip 安装（推荐）
-
-这是最简单和推荐的安装方式：
+### 方式 1: 使用 pipx 安装（推荐）
 
 ```bash
-# 安装 AIS
+# 安装 pipx（如果尚未安装）
+pip install pipx
+
+# 使用 pipx 安装 AIS
+pipx install ais-terminal
+
+# 验证安装
+ais --version
+```
+
+### 方式 2: 使用 pip 安装
+
+```bash
+# 全局安装
 pip install ais-terminal
 
-# 验证安装
-ais --version
+# 用户安装
+pip install --user ais-terminal
 ```
 
-### 方法二：使用 uv 安装（推荐，速度更快）
-
-如果您使用 uv 包管理器，可以获得更快的安装速度：
-
-```bash
-# 如果还没有安装 uv
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# 使用 uv 安装 AIS
-uv pip install ais-terminal
-
-# 验证安装
-ais --version
-```
-
-### 方法三：从源码安装
-
-如果您想使用最新的开发版本：
+### 方式 3: 从源码安装
 
 ```bash
 # 克隆仓库
 git clone https://github.com/kangvcar/ais.git
 cd ais
 
-# 创建虚拟环境
-python -m venv .venv
-source .venv/bin/activate  # Linux/macOS
-# 或者在 Windows 上: .venv\Scripts\activate
-
-# 安装依赖并安装 AIS
+# 安装依赖
 pip install -e .
 
 # 验证安装
 ais --version
 ```
 
-### 方法四：使用 Docker
-
-如果您熟悉 Docker，可以使用容器方式运行：
+### 方式 4: 使用 Docker
 
 ```bash
-# 拉取 Docker 镜像
+# 拉取镜像
 docker pull kangvcar/ais:latest
 
-# 运行 AIS 容器
-docker run -it --rm kangvcar/ais:latest
-
-# 或者使用 docker-compose
-git clone https://github.com/kangvcar/ais.git
-cd ais
-docker-compose up -d
+# 运行容器
+docker run -it kangvcar/ais:latest
 ```
 
-## 验证安装
+## 🔧 系统要求
 
-安装完成后，您可以通过以下命令验证 AIS 是否正确安装：
+### 支持的操作系统
+- **Linux**: Ubuntu 18.04+, CentOS 7+, Debian 10+
+- **macOS**: macOS 10.14+
+- **Windows**: Windows 10+ (通过 WSL)
 
+### 依赖要求
+- **Python**: 3.8 或更高版本
+- **Shell**: Bash 4.0+, Zsh 5.0+, Fish 3.0+
+
+### 必要依赖
 ```bash
-# 检查版本
+# Ubuntu/Debian
+sudo apt-get install python3 python3-pip curl
+
+# CentOS/RHEL
+sudo yum install python3 python3-pip curl
+
+# macOS
+brew install python3 curl
+```
+
+## 🚀 快速验证
+
+### 检查安装
+```bash
+# 检查 AIS 版本
 ais --version
+
+# 检查系统兼容性
+ais test-integration
 
 # 查看帮助信息
 ais --help
-
-# 测试基本功能
-ais ask "Hello AIS"
 ```
 
-如果看到版本信息和帮助信息，说明安装成功！
+### 基本功能测试
+```bash
+# 测试 AI 问答功能
+ais ask "什么是 AIS？"
 
-## 常见问题
+# 测试配置功能
+ais config show
 
-### 权限问题
+# 测试历史记录
+ais history --limit 5
+```
 
-如果在安装过程中遇到权限问题：
+## ⚙️ 初始配置
+
+### 1. 配置 AI 服务提供商
+
+AIS 需要 AI 服务才能正常工作，支持多种提供商：
+
+#### OpenAI
+```bash
+# 添加 OpenAI 提供商
+ais provider-add openai \
+  --url https://api.openai.com/v1/chat/completions \
+  --model gpt-3.5-turbo \
+  --api-key YOUR_OPENAI_API_KEY
+
+# 设置为默认提供商
+ais provider-use openai
+```
+
+#### Ollama（本地 AI）
+```bash
+# 确保 Ollama 正在运行
+ollama serve
+
+# 添加 Ollama 提供商
+ais provider-add ollama \
+  --url http://localhost:11434/v1/chat/completions \
+  --model llama2
+
+# 设置为默认提供商
+ais provider-use ollama
+```
+
+#### 自定义提供商
+```bash
+# 添加自定义提供商
+ais provider-add custom \
+  --url https://your-api-endpoint.com/v1/chat/completions \
+  --model your-model \
+  --api-key YOUR_API_KEY
+```
+
+### 2. 配置 Shell 集成
+
+Shell 集成是 AIS 的核心功能，用于自动捕获命令错误：
 
 ```bash
-# 使用 --user 标志安装到用户目录
+# 自动配置 Shell 集成
+ais setup
+
+# 手动配置（如果自动配置失败）
+echo 'eval "$(ais shell-integration bash)"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### 3. 基本配置
+
+```bash
+# 查看当前配置
+ais config show
+
+# 设置上下文收集级别
+ais config set context-level standard
+
+# 开启自动分析
+ais on
+
+# 设置语言
+ais config set language zh-CN
+```
+
+## 🔍 故障排除
+
+### 常见问题
+
+#### 1. 命令未找到
+```bash
+# 检查 PATH 环境变量
+echo $PATH
+
+# 重新安装并检查
+pip install --upgrade ais-terminal
+which ais
+```
+
+#### 2. Python 版本问题
+```bash
+# 检查 Python 版本
+python3 --version
+
+# 使用特定 Python 版本安装
+python3.9 -m pip install ais-terminal
+```
+
+#### 3. 权限问题
+```bash
+# 使用用户安装
 pip install --user ais-terminal
 
 # 或者使用 sudo（不推荐）
 sudo pip install ais-terminal
 ```
 
-### Python 版本问题
-
-如果系统默认 Python 版本过低：
-
+#### 4. 网络问题
 ```bash
-# 检查 Python 版本
-python --version
-python3 --version
-
-# 使用 python3 和 pip3
-python3 -m pip install ais-terminal
-```
-
-### 网络问题
-
-如果遇到网络连接问题：
-
-```bash
-# 使用国内镜像源
+# 使用镜像源
 pip install -i https://pypi.tuna.tsinghua.edu.cn/simple ais-terminal
 
-# 或者使用阿里云镜像
-pip install -i https://mirrors.aliyun.com/pypi/simple ais-terminal
+# 或者使用代理
+pip install --proxy http://proxy.example.com:8080 ais-terminal
 ```
 
-### 虚拟环境问题
-
-建议在虚拟环境中安装 AIS：
+### 获取帮助
 
 ```bash
-# 创建虚拟环境
-python -m venv ais-env
+# 查看详细帮助
+ais --help
 
-# 激活虚拟环境
-source ais-env/bin/activate  # Linux/macOS
-# ais-env\Scripts\activate  # Windows
+# 查看特定命令帮助
+ais ask --help
 
-# 在虚拟环境中安装
-pip install ais-terminal
+# 查看系统信息
+ais test-integration --verbose
+
+# 查看日志
+ais config show | grep log
 ```
 
-## 升级和卸载
+## 🔄 升级和卸载
 
 ### 升级 AIS
-
 ```bash
-# 升级到最新版本
+# 使用 pipx 升级
+pipx upgrade ais-terminal
+
+# 使用 pip 升级
 pip install --upgrade ais-terminal
 
-# 或者使用 uv
-uv pip install --upgrade ais-terminal
+# 从源码升级
+git pull origin main
+pip install -e .
 ```
 
 ### 卸载 AIS
-
 ```bash
-# 卸载 AIS
+# 使用 pipx 卸载
+pipx uninstall ais-terminal
+
+# 使用 pip 卸载
 pip uninstall ais-terminal
 
 # 清理配置文件（可选）
 rm -rf ~/.config/ais
+rm -rf ~/.local/share/ais
 ```
 
-## 下一步
+## 📚 下一步
 
-安装完成后，建议您：
+安装完成后，建议按以下顺序进行：
 
-1. 阅读[首次配置指南](./initial-setup.md)
-2. 查看[基本使用教程](./basic-usage.md)
-3. 了解[常见问题解答](./faq.md)
-
-## 获取帮助
-
-如果在安装过程中遇到问题，可以：
-
-- 查看[故障排除指南](../guide/troubleshooting.md)
-- 在 [GitHub Issues](https://github.com/kangvcar/ais/issues) 中提问
-- 查看[常见问题解答](./faq.md)
+1. [快速开始](./quick-start.md) - 5 分钟快速上手
+2. [基本使用](./basic-usage.md) - 了解基本功能
+3. [Shell 集成](../configuration/shell-integration.md) - 配置 Shell 集成
+4. [基本配置](../configuration/basic-config.md) - 个性化配置
 
 ---
 
 ::: tip 提示
-建议在安装后立即进行[首次配置](./initial-setup.md)，这将帮助您快速开始使用 AIS。
+推荐使用 pipx 安装，它能提供更好的依赖隔离，避免与系统 Python 包冲突。
+:::
+
+::: info 本地 AI
+如果您担心隐私问题，可以使用 Ollama 等本地 AI 服务，无需将数据发送到外部服务器。
 :::
 
 ::: warning 注意
-请确保您的系统满足所有系统要求，否则可能会遇到兼容性问题。
+首次使用前，请确保配置至少一个 AI 服务提供商，否则 AIS 无法正常工作。
 :::

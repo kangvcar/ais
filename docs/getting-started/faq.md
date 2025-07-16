@@ -306,7 +306,7 @@ ais provider-use custom
 4. 发起 Pull Request
 5. 参与代码审查
 
-详情请参考[贡献指南](../contributing/)。
+详情请参考[贡献指南](../development/contributing)。
 
 ### Q: 如何报告安全漏洞？
 
@@ -321,8 +321,8 @@ ais provider-use custom
 
 如果以上 FAQ 没有解决您的问题：
 
-1. 查看[用户指南](../guide/)
-2. 查看[故障排除](../guide/troubleshooting)
+1. 查看[基本使用](./basic-usage)
+2. 查看[故障排除](../troubleshooting/common-issues)
 3. 在 [GitHub Issues](https://github.com/kangvcar/ais/issues) 中搜索
 4. 提交新的 Issue
 5. 加入社区讨论

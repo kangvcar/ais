@@ -269,7 +269,7 @@ chmod 644 ~/.config/ais/config.toml
 
 1. 阅读[基本使用教程](./basic-usage.md)
 2. 查看[功能特性详解](../features/)
-3. 参考[用户指南](../guide/)
+3. 参考[基本使用](./basic-usage)
 
 ---
 
