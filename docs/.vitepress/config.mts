@@ -7,13 +7,13 @@ export default defineConfig({
   base: '/ais/',
   
   head: [
-    ['link', { rel: 'icon', href: '/ais/logo-icon.ico' }],
-    ['link', { rel: 'shortcut icon', href: '/ais/logo-icon.ico' }],
-    ['link', { rel: 'apple-touch-icon', href: '/ais/logo-icon.ico' }]
+    ['link', { rel: 'icon', href: '/logo-icon.ico' }],
+    ['link', { rel: 'shortcut icon', href: '/logo-icon.ico' }],
+    ['link', { rel: 'apple-touch-icon', href: '/logo-icon.ico' }]
   ],
   
   themeConfig: {
-    logo: '/ais/logo.png',
+    logo: '/logo.png',
     siteTitle: false,
     
     nav: [
@@ -81,7 +81,7 @@ export default defineConfig({
 
     footer: {
       message: '基于 MIT 许可证发布',
-      copyright: 'Copyright © 2024 AIS Team'
+      copyright: 'Copyright © 2025 AIS Team'
     },
 
     search: {
