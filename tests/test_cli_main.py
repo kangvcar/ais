@@ -616,4 +616,6 @@ class TestUtilityCommands:
         result = runner.invoke(help_all, [])
 
         assert result.exit_code == 0
-        assert "AIS - 上下文感知的错误分析学习助手 详细帮助汇总" in result.output
+        assert (
+            "AIS - 上下文感知的错误分析学习助手 详细帮助汇总" in result.output
+        )
