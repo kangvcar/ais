@@ -29,7 +29,9 @@ class TestErrorAnalyzer:
 
         log = Mock(spec=CommandLog)
         log.original_command = "ls /nonexistent"
-        log.stderr_output = "ls: cannot access '/nonexistent': No such file or directory"
+        log.stderr_output = (
+            "ls: cannot access '/nonexistent': No such file or directory"
+        )
 
         result = analyzer._classify_error(log)
         assert result == "文件/目录不存在"
@@ -49,7 +51,7 @@ class TestErrorAnalyzer:
         """测试无错误时的技能评估。"""
         analyzer = ErrorAnalyzer()
 
-        with patch.object(analyzer, 'get_error_logs', return_value=[]):
+        with patch.object(analyzer, "get_error_logs", return_value=[]):
             assessment = analyzer.generate_skill_assessment()
 
             assert assessment["skill_level"] == "初学者"
@@ -57,7 +59,7 @@ class TestErrorAnalyzer:
             assert assessment["weaknesses"] == []
             assert assessment["knowledge_gaps"] == []
 
-    @patch('ais.core.analysis.get_recent_logs')
+    @patch("ais.core.analysis.get_recent_logs")
     def test_error_patterns_analysis(self, mock_get_logs):
         """测试错误模式分析。"""
         # 创建模拟数据
@@ -66,7 +68,9 @@ class TestErrorAnalyzer:
             log = Mock(spec=CommandLog)
             log.original_command = "ls /nonexistent"
             log.exit_code = 2
-            log.stderr_output = "ls: cannot access '/nonexistent': No such file or directory"
+            log.stderr_output = (
+                "ls: cannot access '/nonexistent': No such file or directory"
+            )
             log.timestamp = datetime.now() - timedelta(days=i)
             mock_logs.append(log)
 
@@ -88,21 +92,33 @@ class TestLearningReportGenerator:
         """测试报告结构。"""
         generator = LearningReportGenerator(days_back=30)
 
-        with patch.object(generator.analyzer, 'analyze_error_patterns', return_value={
-            "total_errors": 0,
-            "common_commands": [],
-            "error_types": [],
-            "time_distribution": {},
-            "improvement_trend": [],
-            "analysis_period": "30天"
-        }):
-            with patch.object(generator.analyzer, 'generate_skill_assessment', return_value={
-                "skill_level": "初学者",
-                "strengths": [],
-                "weaknesses": [],
-                "knowledge_gaps": []
-            }):
-                with patch.object(generator.analyzer, 'generate_learning_recommendations', return_value=[]):
+        with patch.object(
+            generator.analyzer,
+            "analyze_error_patterns",
+            return_value={
+                "total_errors": 0,
+                "common_commands": [],
+                "error_types": [],
+                "time_distribution": {},
+                "improvement_trend": [],
+                "analysis_period": "30天",
+            },
+        ):
+            with patch.object(
+                generator.analyzer,
+                "generate_skill_assessment",
+                return_value={
+                    "skill_level": "初学者",
+                    "strengths": [],
+                    "weaknesses": [],
+                    "knowledge_gaps": [],
+                },
+            ):
+                with patch.object(
+                    generator.analyzer,
+                    "generate_learning_recommendations",
+                    return_value=[],
+                ):
                     report = generator.generate_report()
 
                     # 验证报告结构
@@ -122,23 +138,23 @@ class TestLearningReportGenerator:
             "report_info": {
                 "generated_at": datetime.now().isoformat(),
                 "analysis_period": "最近30天",
-                "report_type": "学习成长报告"
+                "report_type": "学习成长报告",
             },
             "error_summary": {
                 "total_errors": 5,
                 "analysis_period": "30天",
                 "most_common_commands": [("ls", 2), ("git", 1)],
-                "most_common_error_types": [("文件/目录不存在", 2)]
+                "most_common_error_types": [("文件/目录不存在", 2)],
             },
             "skill_assessment": {
                 "skill_level": "中级用户",
                 "strengths": [],
                 "weaknesses": [],
-                "knowledge_gaps": ["基础命令"]
+                "knowledge_gaps": ["基础命令"],
             },
             "learning_recommendations": [],
             "improvement_insights": [],
-            "next_steps": ["继续保持良好的命令行使用习惯"]
+            "next_steps": ["继续保持良好的命令行使用习惯"],
         }
 
         formatted = generator.format_report_for_display(test_report)
@@ -160,7 +176,7 @@ class TestLearningReportGenerator:
             "total_errors": 3,
             "common_commands": [("ls", 2)],
             "error_types": [("文件/目录不存在", 2)],
-            "improvement_trend": []
+            "improvement_trend": [],
         }
 
         insights = generator._generate_improvement_insights(error_patterns)
@@ -181,15 +197,10 @@ class TestLearningReportGenerator:
 
         # 测试有建议时的下一步
         recommendations = [
-            {
-                "type": "命令掌握",
-                "title": "深入学习 ls 命令",
-                "priority": "高"
-            }
+            {"type": "命令掌握", "title": "深入学习 ls 命令", "priority": "高"}
         ]
 
         next_steps = generator._generate_next_steps(recommendations)
 
         assert len(next_steps) > 0
         assert any("优先学习" in step for step in next_steps)
-

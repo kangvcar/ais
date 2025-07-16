@@ -70,7 +70,8 @@ class LearningReportGenerator:
                     "description": f"在过去{
                         self.days_back}天里发生了{total_errors}次错误，建议重点关注常见错误的预防。",
                     "severity": "高",
-                })
+                }
+            )
         elif total_errors > 10:
             insights.append(
                 {
@@ -79,7 +80,8 @@ class LearningReportGenerator:
                     "description": f"在过去{
                         self.days_back}天里发生了{total_errors}次错误，整体表现良好，可以进一步优化。",
                     "severity": "中",
-                })
+                }
+            )
         elif total_errors > 0:
             insights.append(
                 {
@@ -88,7 +90,8 @@ class LearningReportGenerator:
                     "description": f"在过去{
                         self.days_back}天里仅发生了{total_errors}次错误，表现优秀！",
                     "severity": "低",
-                })
+                }
+            )
 
         # 命令集中度洞察
         if common_commands:
@@ -103,7 +106,8 @@ class LearningReportGenerator:
                             total_errors *
                             100:.1f}%。",
                         "severity": "高",
-                    })
+                    }
+                )
 
         # 错误类型分布洞察
         if error_types:
@@ -115,7 +119,8 @@ class LearningReportGenerator:
                         "title": f"{top_error_type}是主要问题",
                         "description": f"你遇到了 {top_error_count} 次{top_error_type}，建议学习相关的预防技巧。",
                         "severity": "中",
-                    })
+                    }
+                )
 
         # 趋势洞察
         if len(improvement_trend) >= 2:
@@ -129,7 +134,8 @@ class LearningReportGenerator:
                         "title": "错误趋势正在改善",
                         "description": f"最近一周的错误数量({recent_errors})比前一周({previous_errors})有所减少，继续保持！",
                         "severity": "低",
-                    })
+                    }
+                )
             elif recent_errors > previous_errors:
                 insights.append(
                     {
@@ -137,7 +143,8 @@ class LearningReportGenerator:
                         "title": "错误趋势需要注意",
                         "description": f"最近一周的错误数量({recent_errors})比前一周({previous_errors})有所增加，需要关注。",
                         "severity": "中",
-                    })
+                    }
+                )
 
         return insights
 
@@ -201,7 +208,8 @@ class LearningReportGenerator:
         lines.append(
             f"**生成时间**: {
                 datetime.fromisoformat(
-                    report['report_info']['generated_at']).strftime('%Y-%m-%d %H:%M:%S')}")
+                    report['report_info']['generated_at']).strftime('%Y-%m-%d %H:%M:%S')}"
+        )
         lines.append("")
 
         # 错误概览

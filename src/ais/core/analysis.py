@@ -253,7 +253,8 @@ class ErrorAnalyzer:
                     "description": f"你在 {cmd} 命令上出现了 {count} 次错误，建议系统学习这个命令的用法。",
                     "priority": "高" if count >= 3 else "中",
                     "learning_path": self._get_learning_path(cmd),
-                })
+                }
+            )
 
         # 基于错误类型的建议
         error_types = error_patterns["error_types"][:3]

@@ -9,11 +9,11 @@ source .venv/bin/activate && python3 -m pip install -e .
 ## 自动代码格式化（推荐）
 使用 autopep8 进行自动化代码格式化，这是最高效的方法：
 ```bash
-# 安装 autopep8
-pip install autopep8
+# 安装 autopep8 black flake8
+pip install autopep8 black flake8
 
 # 自动修复所有代码格式问题
-source .venv/bin/activate && autopep8 --in-place --aggressive --aggressive --max-line-length=79 src/ tests/ -r
+source .venv/bin/activate && black src/ tests/ && autopep8 --in-place --aggressive --aggressive --max-line-length=79 src/ tests/ -r && flake8 src/ tests/ --max-line-length=79
 ```
 
 ## 标准代码检查流程

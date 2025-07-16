@@ -1134,15 +1134,15 @@ def generate_report():
     try:
         from ..core.report import LearningReportGenerator
         from rich.markdown import Markdown
-        
+
         console.print("[bold blue]📊 生成学习成长报告...[/bold blue]")
-        
+
         # 创建报告生成器
         report_generator = LearningReportGenerator(days_back=30)
-        
+
         # 生成报告
         report = report_generator.generate_report()
-        
+
         # 检查是否有数据
         if report["error_summary"]["total_errors"] == 0:
             console.print("\n[yellow]📝 暂无错误历史数据[/yellow]")
@@ -1151,16 +1151,13 @@ def generate_report():
             console.print("- 运行一些命令后再使用 'ais report' 查看学习报告")
             console.print("- 你也可以手动运行 'ais analyze' 分析特定错误")
             return
-        
+
         # 格式化并显示报告
         formatted_report = report_generator.format_report_for_display(report)
-        
+
         # 使用Panel显示报告
-        panels.learning_content(
-            Markdown(formatted_report),
-            "📊 学习成长报告"
-        )
-        
+        panels.learning_content(Markdown(formatted_report), "📊 学习成长报告")
+
     except Exception as e:
         console.print(f"[red]报告生成失败: {e}[/red]")
         console.print("[dim]提示: 请确保已有命令执行历史记录[/dim]")
