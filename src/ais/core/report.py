@@ -220,12 +220,10 @@ class LearningReportGenerator:
         lines.append(
             f"**分析周期**: {report['report_info']['analysis_period']}"
         )
-        lines.append(
-            f"**生成时间**: {
-                datetime.fromisoformat(
-                    report['report_info']['generated_at']
-                ).strftime('%Y-%m-%d %H:%M:%S')}"
-        )
+        generated_time = datetime.fromisoformat(
+            report["report_info"]["generated_at"]
+        ).strftime("%Y-%m-%d %H:%M:%S")
+        lines.append(f"**生成时间**: {generated_time}")
         lines.append("")
 
         # 错误概览
