@@ -1,0 +1,129 @@
+/**
+ * 自定义主题颜色 - AIS 绿色 #3BC618
+ */
+
+:root {
+  --vp-c-brand: #3BC618;
+  --vp-c-brand-light: #4FD326;
+  --vp-c-brand-lighter: #6EE043;
+  --vp-c-brand-lightest: #8FED65;
+  --vp-c-brand-dark: #2FA414;
+  --vp-c-brand-darker: #258210;
+  --vp-c-brand-darkest: #1B600C;
+  
+  --vp-c-brand-1: var(--vp-c-brand-light);
+  --vp-c-brand-2: var(--vp-c-brand);
+  --vp-c-brand-3: var(--vp-c-brand-dark);
+  
+  --vp-c-brand-soft: rgba(59, 198, 24, 0.14);
+  --vp-c-brand-mute: rgba(59, 198, 24, 0.08);
+}
+
+/* 深色模式下的颜色调整 */
+.dark {
+  --vp-c-brand: #4FD326;
+  --vp-c-brand-light: #6EE043;
+  --vp-c-brand-lighter: #8FED65;
+  --vp-c-brand-lightest: #B1F488;
+  --vp-c-brand-dark: #3BC618;
+  --vp-c-brand-darker: #2FA414;
+  --vp-c-brand-darkest: #258210;
+  
+  --vp-c-brand-1: var(--vp-c-brand-light);
+  --vp-c-brand-2: var(--vp-c-brand);
+  --vp-c-brand-3: var(--vp-c-brand-dark);
+  
+  --vp-c-brand-soft: rgba(79, 211, 38, 0.16);
+  --vp-c-brand-mute: rgba(79, 211, 38, 0.1);
+}
+
+/* 确保按钮和链接使用新的品牌色 */
+.vp-button.brand {
+  background-color: var(--vp-c-brand);
+  border-color: var(--vp-c-brand);
+}
+
+.vp-button.brand:hover {
+  background-color: var(--vp-c-brand-light);
+  border-color: var(--vp-c-brand-light);
+}
+
+.vp-button.brand:active {
+  background-color: var(--vp-c-brand-dark);
+  border-color: var(--vp-c-brand-dark);
+}
+
+/* 首页hero区域按钮 */
+.VPButton.brand {
+  background-color: var(--vp-c-brand);
+  border-color: var(--vp-c-brand);
+}
+
+.VPButton.brand:hover {
+  background-color: var(--vp-c-brand-light);
+  border-color: var(--vp-c-brand-light);
+}
+
+/* 导航栏活动项 */
+.VPNavBarMenuLink.active .link {
+  color: var(--vp-c-brand);
+}
+
+/* 侧边栏活动项 */
+.VPSidebarItem.is-active > .item .link {
+  color: var(--vp-c-brand);
+}
+
+/* 链接颜色 */
+.vp-doc a {
+  color: var(--vp-c-brand);
+}
+
+.vp-doc a:hover {
+  color: var(--vp-c-brand-light);
+}
+
+/* 代码块高亮 */
+.vp-code-group .tabs label.active {
+  color: var(--vp-c-brand);
+}
+
+/* 自定义块边框颜色 */
+.custom-block.tip {
+  border-color: var(--vp-c-brand);
+}
+
+.custom-block.tip .custom-block-title {
+  color: var(--vp-c-brand);
+}
+
+/* 表格头部颜色 */
+.vp-doc table th {
+  background-color: var(--vp-c-brand-soft);
+}
+
+/* 搜索按钮 */
+.DocSearch-Button {
+  background-color: var(--vp-c-brand-mute);
+}
+
+.DocSearch-Button:hover {
+  background-color: var(--vp-c-brand-soft);
+}
+
+/* 首页features图标颜色调整 */
+.VPFeature .icon {
+  font-size: 2rem;
+}
+
+/* 网格项目标题颜色 */
+.grid-item h3 {
+  color: var(--vp-c-brand) !important;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .VPButton.brand {
+    padding: 0.5rem 1rem;
+  }
+}

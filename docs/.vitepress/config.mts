@@ -5,7 +5,16 @@ export default defineConfig({
   description: 'AIS - 上下文感知的错误分析学习助手',
   lang: 'zh-CN',
   
+  head: [
+    ['link', { rel: 'icon', href: '/logo-icon.ico' }],
+    ['link', { rel: 'shortcut icon', href: '/logo-icon.ico' }],
+    ['link', { rel: 'apple-touch-icon', href: '/logo-icon.ico' }]
+  ],
+  
   themeConfig: {
+    logo: '/logo.png',
+    siteTitle: false,
+    
     nav: [
       { text: '首页', link: '/' },
       { text: '快速开始', link: '/getting-started/installation' },
