@@ -9,7 +9,7 @@
 [![Package Version](https://img.shields.io/badge/version-0.2.8-blue.svg)](https://github.com/kangvcar/ais)
 [![CI Status](https://img.shields.io/github/workflow/status/kangvcar/ais/CI)](https://github.com/kangvcar/ais/actions)
 
-[📖 安装指南](#installation) · [🚀 快速开始](#quickstart) · [📚 文档](#documentation) · [🤝 贡献](#contributing)
+[📖 安装指南](#installation) · [🚀 快速开始](#quickstart) · [🤝 贡献](#contributing)
 
 </div>
 
@@ -343,27 +343,6 @@ ais/
 - **UI模块** (`src/ais/ui/`): Rich库显示面板和格式化
 
 ---
-
-## <a id="documentation"></a>📚 文档
-
-### 详细指南
-
-- 📖 [安装指南](docs/INSTALLATION.md) - 各种环境的详细安装说明
-- 🐳 [Docker部署指南](docs/DOCKER_GUIDE.md) - 容器化部署
-- 🏢 [企业部署指南](docs/DEPLOYMENT_GUIDE.md) - 生产环境部署
-- 🔧 [开发指南](docs/DEVELOPMENT.md) - 开发环境设置和贡献代码
-
-### API文档
-
-所有命令都支持详细帮助：
-
-```bash
-ais ask --help-detail         # AI问答详细说明
-ais learn --help-detail       # 学习功能详细说明
-ais config --help-context     # 配置管理详细说明
-ais history --help-detail     # 历史记录详细说明
-ais provider-add --help-detail # 服务商管理详细说明
-```
 
 ---
 
