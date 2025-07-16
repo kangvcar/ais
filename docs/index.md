@@ -15,6 +15,9 @@ hero:
     - theme: alt
       text: 了解更多
       link: /features/
+    - theme: alt
+      text: GitHub
+      link: https://github.com/kangvcar/ais
 
 features:
   - icon: 🧠
