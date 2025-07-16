@@ -7,9 +7,9 @@ export default defineConfig({
   base: '/ais/',
   
   head: [
-    ['link', { rel: 'icon', href: '/logo-icon.ico' }],
-    ['link', { rel: 'shortcut icon', href: '/logo-icon.ico' }],
-    ['link', { rel: 'apple-touch-icon', href: '/logo-icon.ico' }]
+    ['link', { rel: 'icon', href: '/ais/logo-icon.ico' }],
+    ['link', { rel: 'shortcut icon', href: '/ais/logo-icon.ico' }],
+    ['link', { rel: 'apple-touch-icon', href: '/ais/logo-icon.ico' }]
   ],
   
   themeConfig: {
