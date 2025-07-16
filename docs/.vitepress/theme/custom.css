@@ -121,9 +121,62 @@
   color: var(--vp-c-brand) !important;
 }
 
+/* 导航栏边距修复 */
+.VPNavBar {
+  padding: 0 24px !important;
+  height: 64px !important;
+  line-height: 64px !important;
+  border-bottom: 1px solid var(--vp-c-divider) !important;
+  position: relative !important;
+  top: 0 !important;
+  margin: 0 !important;
+}
+
+.VPNavBar .VPNavBarTitle {
+  display: flex !important;
+  align-items: center !important;
+  height: 64px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.VPNavBar .VPNavBarTitle .title {
+  line-height: 1.5 !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+}
+
+.VPNavBar .VPNavBarMenu {
+  display: flex !important;
+  align-items: center !important;
+  height: 64px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.VPNavBar .VPNavBarMenu .VPNavBarMenuLink {
+  display: flex !important;
+  align-items: center !important;
+  height: 64px !important;
+  padding: 0 12px !important;
+  margin: 0 !important;
+  line-height: 1.5 !important;
+}
+
+.VPNavBar .logo {
+  margin-right: 16px !important;
+  height: 24px !important;
+  width: auto !important;
+}
+
 /* 响应式调整 */
 @media (max-width: 768px) {
   .VPButton.brand {
     padding: 0.5rem 1rem;
+  }
+  
+  .VPNavBar .container {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
   }
 }
