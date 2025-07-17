@@ -68,28 +68,32 @@ pipx install ais-terminal
     <span data-ty="input">docker run hello-world</span>
     <span data-ty style="color: #ff6b6b;">docker: Error response from daemon: Unable to find image 'hello-world:latest' locally</span>
     <span data-ty="progress"></span>
-    <span data-ty style="color: #4CAF50; font-weight: bold;">🔍 发现相似的历史错误</span>
+    <span data-ty>🔍 发现相似的历史错误</span>
     <span data-ty>  1. docker pull ubuntu (12-15 14:30) - 已解决</span>
     <span data-ty>  2. docker run nginx (12-15 14:25) - 已分析</span>
-    <span data-ty style="color: #4CAF50; font-weight: bold;">🤖 AI 错误分析</span>
-    <span data-ty style="color: #61dafb; font-weight: bold;">🔍 问题诊断:</span>
+    <span data-ty></span>
+    <span data-ty>🤖 AI 错误分析</span>
+    <span data-ty>🔍 问题诊断:</span>
     <span data-ty>您遇到了Docker镜像未找到的问题。Docker尝试运行hello-world镜像，但本地没有该镜像。</span>
-    <span data-ty style="color: #61dafb; font-weight: bold;">📚 知识扩展:</span>
+    <span data-ty></span>
+    <span data-ty>📚 知识扩展:</span>
     <span data-ty>Docker采用分层存储机制，镜像需要先下载到本地才能运行。</span>
-    <span data-ty style="color: #61dafb; font-weight: bold;">🎯 解决思路:</span>
+    <span data-ty></span>
+    <span data-ty>🎯 解决思路:</span>
     <span data-ty>1. 先手动拉取镜像到本地</span>
     <span data-ty>2. 检查网络连接和Docker服务状态</span>
-    <span data-ty style="color: #4CAF50; font-weight: bold;">💡 AI 基于你的使用习惯和当前环境推荐</span>
+    <span data-ty></span>
+    <span data-ty>💡 AI 基于你的使用习惯和当前环境推荐</span>
     <span data-ty>#  命令                          风险  说明</span>
-    <span data-ty>1  <span style="color: #61dafb;">docker pull hello-world</span>       🟢   拉取hello-world镜像到本地</span>
-    <span data-ty>2  <span style="color: #61dafb;">docker images</span>                 🟢   查看已下载的镜像列表</span>
-    <span data-ty>3  <span style="color: #61dafb;">systemctl status docker</span>       🟢   检查Docker服务状态</span>
+    <span data-ty>1  docker pull hello-world       🟢   拉取hello-world镜像到本地</span>
+    <span data-ty>2  docker images                 🟢   查看已下载的镜像列表</span>
+    <span data-ty>3  systemctl status docker       🟢   检查Docker服务状态</span>
     <span data-ty="input" data-ty-prompt="Select an action (1-3/e/q/x): ">1</span>
     <span data-ty="input">docker pull hello-world</span>
     <span data-ty>Using default tag: latest</span>
     <span data-ty>latest: Pulling from library/hello-world</span>
     <span data-ty>Status: Downloaded newer image for hello-world:latest</span>
-    <span data-ty style="color: #4CAF50;">✅ 问题解决！镜像已成功下载，现在可以运行容器了。</span>
+    <span data-ty>✅ 问题解决！镜像已成功下载，现在可以运行容器了。</span>
 </div>
 
 
@@ -99,34 +103,42 @@ pipx install ais-terminal
 
 <div id="qa-demo" data-termynal data-ty-typeDelay="40" data-ty-lineDelay="700">
     <span data-ty="input">ais ask "什么是Docker容器？"</span>
-    <span data-ty style="color: #4CAF50; font-style: italic;">🤖 正在思考您的问题...</span>
+    <span data-ty>🤖 正在思考您的问题...</span>
     <span data-ty="progress"></span>
-    <span data-ty style="color: #4CAF50; font-weight: bold; font-size: 18px;">## Docker容器是什么？</span>
+    <span data-ty></span>
+    <span data-ty>## Docker容器是什么？</span>
     <span data-ty>Docker容器是一种轻量级的、可移植的、自包含的软件运行环境。</span>
-    <span data-ty style="color: #61dafb; font-weight: bold;">### 🏗️ 核心概念</span>
-    <span data-ty>- <span style="color: #ffbd2e; font-weight: bold;">隔离性</span>: 每个容器都有独立的文件系统、进程空间和网络接口</span>
-    <span data-ty>- <span style="color: #ffbd2e; font-weight: bold;">轻量级</span>: 比传统虚拟机更少的资源消耗</span>
-    <span data-ty>- <span style="color: #ffbd2e; font-weight: bold;">可移植性</span>: 一次构建，到处运行</span>
-    <span data-ty style="color: #61dafb; font-weight: bold;">### 🔧 主要特点</span>
-    <span data-ty>1. <span style="color: #ffbd2e; font-weight: bold;">快速启动</span>: 秒级启动时间</span>
-    <span data-ty>2. <span style="color: #ffbd2e; font-weight: bold;">资源高效</span>: 共享主机内核，无需完整操作系统</span>
-    <span data-ty>3. <span style="color: #ffbd2e; font-weight: bold;">版本控制</span>: 镜像分层存储，支持版本管理</span>
-    <span data-ty style="background: #2a2a2a; padding: 8px; border-radius: 4px; border-left: 3px solid #4CAF50; display: block; margin: 12px 0;">💡 想了解更多？试试 <span style="color: #61dafb;">ais learn docker</span> 获得系统化学习路径！</span>
+    <span data-ty></span>
+    <span data-ty>### 🏗️ 核心概念</span>
+    <span data-ty>- 隔离性: 每个容器都有独立的文件系统、进程空间和网络接口</span>
+    <span data-ty>- 轻量级: 比传统虚拟机更少的资源消耗</span>
+    <span data-ty>- 可移植性: 一次构建，到处运行</span>
+    <span data-ty></span>
+    <span data-ty>### 🔧 主要特点</span>
+    <span data-ty>1. 快速启动: 秒级启动时间</span>
+    <span data-ty>2. 资源高效: 共享主机内核，无需完整操作系统</span>
+    <span data-ty>3. 版本控制: 镜像分层存储，支持版本管理</span>
+    <span data-ty></span>
+    <span data-ty>💡 想了解更多？试试 ais learn docker 获得系统化学习路径！</span>
+    <span data-ty></span>
     <span data-ty="input">ais ask "如何优化Docker镜像大小？"</span>
-    <span data-ty style="color: #4CAF50; font-style: italic;">🤖 正在分析最佳实践...</span>
+    <span data-ty>🤖 正在分析最佳实践...</span>
     <span data-ty="progress"></span>
-    <span data-ty style="color: #4CAF50; font-weight: bold;">## Docker镜像优化技巧</span>
-    <span data-ty style="color: #61dafb; font-weight: bold;">### 🎯 核心策略</span>
+    <span data-ty></span>
+    <span data-ty>## Docker镜像优化技巧</span>
+    <span data-ty>### 🎯 核心策略</span>
     <span data-ty>1. 使用多阶段构建 (Multi-stage builds)</span>
     <span data-ty>2. 选择合适的基础镜像 (如 alpine)</span>
     <span data-ty>3. 合并RUN指令减少层数</span>
     <span data-ty>4. 清理缓存和临时文件</span>
-    <span data-ty style="color: #61dafb; font-weight: bold;">### 📝 实践示例</span>
-    <span data-ty style="color: #61dafb;">FROM alpine:3.18 AS builder</span>
-    <span data-ty style="color: #61dafb;">RUN apk add --no-cache build-dependencies && \</span>
-    <span data-ty style="color: #61dafb;">    build-app && \</span>
-    <span data-ty style="color: #61dafb;">    apk del build-dependencies</span>
-    <span data-ty style="color: #4CAF50;">✨ 这样可以将镜像从500MB减少到50MB！</span>
+    <span data-ty></span>
+    <span data-ty>### 📝 实践示例</span>
+    <span data-ty>FROM alpine:3.18 AS builder</span>
+    <span data-ty>RUN apk add --no-cache build-dependencies && \</span>
+    <span data-ty>    build-app && \</span>
+    <span data-ty>    apk del build-dependencies</span>
+    <span data-ty></span>
+    <span data-ty>✨ 这样可以将镜像从500MB减少到50MB！</span>
 </div>
 
 ## 📊 学习报告演示
@@ -135,43 +147,52 @@ pipx install ais-terminal
 
 <div id="report-demo" data-termynal data-ty-typeDelay="40" data-ty-lineDelay="700">
     <span data-ty="input">ais report</span>
-    <span data-ty style="color: #4CAF50; font-style: italic;">🔍 正在分析您的学习数据...</span>
+    <span data-ty>🔍 正在分析您的学习数据...</span>
     <span data-ty="progress"></span>
-    <span data-ty style="color: #4CAF50; font-weight: bold; font-size: 20px;"># 📊 AIS 学习成长报告</span>
-    <span data-ty style="color: #888; font-size: 12px;">分析周期: 最近30天 | 生成时间: 2025-01-15 10:30:45</span>
-    <span data-ty style="color: #61dafb; font-weight: bold;">## 🔍 错误概览</span>
-    <span data-ty>- <span style="color: #ffbd2e; font-weight: bold;">总错误数</span>: 23 次</span>
-    <span data-ty>- <span style="color: #ffbd2e; font-weight: bold;">最常出错的命令</span>: git (8次), docker (5次), npm (4次)</span>
-    <span data-ty>- <span style="color: #ffbd2e; font-weight: bold;">最常见的错误类型</span>: Git操作错误, Docker操作错误, 权限不足</span>
-    <span data-ty style="color: #61dafb; font-weight: bold;">## 💪 技能评估</span>
-    <span data-ty>- <span style="color: #ffbd2e; font-weight: bold;">当前水平</span>: 中级用户</span>
-    <span data-ty>- <span style="color: #ffbd2e; font-weight: bold;">优势领域</span>: 基础命令, 文件操作</span>
-    <span data-ty>- <span style="color: #ffbd2e; font-weight: bold;">需要改进</span>: Git版本控制, Docker容器</span>
-    <span data-ty style="color: #61dafb; font-weight: bold;">## 💡 改进洞察</span>
-    <span data-ty style="color: #ff6b6b; font-weight: bold;">🔥 git 命令需要重点关注</span>
+    <span data-ty></span>
+    <span data-ty># 📊 AIS 学习成长报告</span>
+    <span data-ty>分析周期: 最近30天 | 生成时间: 2025-01-15 10:30:45</span>
+    <span data-ty></span>
+    <span data-ty>## 🔍 错误概览</span>
+    <span data-ty>- 总错误数: 23 次</span>
+    <span data-ty>- 最常出错的命令: git (8次), docker (5次), npm (4次)</span>
+    <span data-ty>- 最常见的错误类型: Git操作错误, Docker操作错误, 权限不足</span>
+    <span data-ty></span>
+    <span data-ty>## 💪 技能评估</span>
+    <span data-ty>- 当前水平: 中级用户</span>
+    <span data-ty>- 优势领域: 基础命令, 文件操作</span>
+    <span data-ty>- 需要改进: Git版本控制, Docker容器</span>
+    <span data-ty></span>
+    <span data-ty>## 💡 改进洞察</span>
+    <span data-ty>🔥 git 命令需要重点关注</span>
     <span data-ty>你在 git 命令上出现了 8 次错误，占总错误的 34.8%</span>
-    <span data-ty style="color: #61dafb; font-weight: bold;">## 🎯 学习建议</span>
-    <span data-ty style="color: #ffbd2e; font-weight: bold;">1. 🔥 深入学习 git 命令</span>
+    <span data-ty></span>
+    <span data-ty>## 🎯 学习建议</span>
+    <span data-ty>1. 🔥 深入学习 git 命令</span>
     <span data-ty>   类型: 命令掌握 | 优先级: 高</span>
     <span data-ty>   学习路径:</span>
     <span data-ty>   - 学习Git基础概念（工作区、暂存区、仓库）</span>
     <span data-ty>   - 掌握常用Git命令（add, commit, push, pull）</span>
     <span data-ty>   - 了解分支操作和合并冲突解决</span>
-    <span data-ty style="color: #ffbd2e; font-weight: bold;">2. 🐳 提升 Docker 操作技能</span>
+    <span data-ty></span>
+    <span data-ty>2. 🐳 提升 Docker 操作技能</span>
     <span data-ty>   类型: 容器化技术 | 优先级: 中</span>
     <span data-ty>   学习路径:</span>
     <span data-ty>   - 掌握Docker基础命令和概念</span>
     <span data-ty>   - 学习Dockerfile编写和镜像构建</span>
     <span data-ty>   - 了解容器网络和数据卷管理</span>
-    <span data-ty style="color: #61dafb; font-weight: bold;">## 📈 进步趋势</span>
-    <span data-ty>本月相比上月错误率下降了 <span style="color: #4CAF50; font-weight: bold;">15%</span> 🎉</span>
-    <span data-ty>最常解决的问题类型: <span style="color: #4CAF50;">权限问题</span></span>
-    <span data-ty>新掌握的技能: <span style="color: #4CAF50;">npm包管理, 文件权限管理</span></span>
-    <span data-ty style="color: #888; font-size: 12px;">💡 提示: 使用 <span style="color: #61dafb;">ais learn &lt;主题&gt;</span> 深入学习特定主题</span>
-    <span data-ty style="color: #888; font-size: 12px;">📚 帮助: 使用 <span style="color: #61dafb;">ais ask &lt;问题&gt;</span> 获取即时答案</span>
+    <span data-ty></span>
+    <span data-ty>## 📈 进步趋势</span>
+    <span data-ty>本月相比上月错误率下降了 15% 🎉</span>
+    <span data-ty>最常解决的问题类型: 权限问题</span>
+    <span data-ty>新掌握的技能: npm包管理, 文件权限管理</span>
+    <span data-ty></span>
+    <span data-ty>💡 提示: 使用 ais learn <主题> 深入学习特定主题</span>
+    <span data-ty>📚 帮助: 使用 ais ask <问题> 获取即时答案</span>
+    <span data-ty></span>
     <span data-ty="input">ais learn git</span>
-    <span data-ty style="color: #4CAF50; font-style: italic;">🎓 正在为您生成Git学习计划...</span>
-    <span data-ty style="color: #4CAF50;">✅ 已生成个性化Git学习路径，包含15个实战练习！</span>
+    <span data-ty>🎓 正在为您生成Git学习计划...</span>
+    <span data-ty>✅ 已生成个性化Git学习路径，包含15个实战练习！</span>
 </div>
 
 
