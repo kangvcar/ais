@@ -170,13 +170,75 @@
 }
 
 /* 响应式调整 */
+@media (max-width: 960px) {
+  /* 移除导航栏的强制样式，让VitePress的默认响应式生效 */
+  .VPNavBar {
+    padding: 0 16px !important;
+    height: auto !important;
+    line-height: normal !important;
+  }
+  
+  .VPNavBar .VPNavBarTitle {
+    height: auto !important;
+  }
+  
+  .VPNavBar .VPNavBarMenu {
+    height: auto !important;
+  }
+  
+  .VPNavBar .VPNavBarMenuLink {
+    height: auto !important;
+    padding: 8px 12px !important;
+  }
+  
+  /* 确保logo在移动端适当调整 */
+  .VPNavBar .logo {
+    height: 20px !important;
+    margin-right: 12px !important;
+  }
+}
+
 @media (max-width: 768px) {
   .VPButton.brand {
     padding: 0.5rem 1rem;
   }
   
-  .VPNavBar .container {
-    padding-top: 0.5rem !important;
-    padding-bottom: 0.5rem !important;
+  /* 移动端导航栏优化 */
+  .VPNavBar {
+    padding: 0 12px !important;
+  }
+  
+  .VPNavBar .logo {
+    height: 18px !important;
+    margin-right: 8px !important;
+  }
+  
+  /* 确保移动端汉堡菜单可见 */
+  .VPNavBarHamburger {
+    display: block !important;
+  }
+  
+  /* 移动端菜单样式 */
+  .VPNavBarMenu {
+    display: none !important;
+  }
+  
+  .VPNavBarMenuGroup {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .VPNavBar {
+    padding: 0 8px !important;
+  }
+  
+  .VPNavBar .VPNavBarTitle .title {
+    font-size: 14px !important;
+  }
+  
+  .VPNavBar .logo {
+    height: 16px !important;
+    margin-right: 6px !important;
   }
 }
