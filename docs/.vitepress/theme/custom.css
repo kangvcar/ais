@@ -33,7 +33,7 @@
   background: var(--termynal-color-bg);
   color: var(--termynal-color-text);
   font-size: 16px;
-  font-family: 'Fira Mono', 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', Consolas, Menlo, Monaco, 'Courier New', Courier, monospace;
+  font-family: 'Fira Code', 'JetBrains Mono', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', Consolas, 'Liberation Mono', Menlo, 'Courier New', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', Courier, monospace;
   border-radius: 6px;
   padding: 75px 45px 35px;
   position: relative;
@@ -99,6 +99,18 @@
 
 [data-ty="input"][data-ty-prompt]:before {
   content: attr(data-ty-prompt) ' ';
+}
+
+/* 确保表情符号正确显示 */
+[data-termynal] * {
+  font-variant-emoji: emoji;
+  font-feature-settings: "clig" 0, "liga" 0;
+}
+
+[data-termynal] {
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
 }
 
 /* AIS 主题适配 */

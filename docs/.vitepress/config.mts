@@ -20,9 +20,7 @@ export default defineConfig({
       { text: '首页', link: '/' },
       { text: '快速开始', link: '/getting-started/installation' },
       { text: '功能特性', link: '/features/' },
-      { text: '配置指南', link: '/configuration/' },
-      { text: '开发者', link: '/development/' },
-      { text: 'GitHub', link: 'https://github.com/kangvcar/ais' }
+      { text: '配置指南', link: '/configuration/' }
     ],
 
     sidebar: [

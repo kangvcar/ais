@@ -83,9 +83,10 @@ class InlineTermynal {
       element.appendChild(promptSpan)
     }
     
-    // 打字动画
-    for (let i = 0; i < text.length; i++) {
-      const char = text[i]
+    // 打字动画 - 支持表情符号
+    const chars = Array.from(text) // 使用Array.from正确分割表情符号
+    for (let i = 0; i < chars.length; i++) {
+      const char = chars[i]
       element.appendChild(document.createTextNode(char))
       await this.delay(this.options.typeDelay)
     }
