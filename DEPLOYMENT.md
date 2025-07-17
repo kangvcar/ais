@@ -80,7 +80,7 @@ netlify deploy --prod
 ```
 
 ### 4. Cloudflare Pages
-#### 方法1：控制面板部署
+#### 方法1：控制面板部署（推荐）
 1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)
 2. 进入 "Pages" → "Create a project"
 3. 选择 "Connect to Git" → 选择你的仓库
@@ -101,9 +101,14 @@ npm i -g wrangler
 # 登录
 wrangler login
 
-# 部署
+# 构建项目
+VITEPRESS_BASE=/ npm run docs:build
+
+# 部署（直接上传构建结果）
 wrangler pages deploy docs/.vitepress/dist --project-name=ais-docs
 ```
+
+> **注意**：由于Cloudflare Pages的配置格式变化，推荐使用控制面板部署方式，更加稳定可靠。
 
 ## 🧪 本地测试
 
