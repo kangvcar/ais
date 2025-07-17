@@ -6,7 +6,7 @@ class InlineTermynal {
   constructor(container, options = {}) {
     this.container = container
     this.options = {
-      typeDelay: options.typeDelay || 40,
+      typeDelay: options.typeDelay || 20,
       lineDelay: options.lineDelay || 700,
       cursor: options.cursor || '▋',
       ...options

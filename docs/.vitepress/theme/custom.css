@@ -221,80 +221,44 @@
   color: var(--vp-c-brand) !important;
 }
 
-/* 导航栏边距修复 */
+/* 导航栏基础样式 - 避免过度强制 */
 .VPNavBar {
-  padding: 0 24px !important;
-  height: 64px !important;
-  line-height: 64px !important;
-  border-bottom: 1px solid var(--vp-c-divider) !important;
-  position: relative !important;
-  top: 0 !important;
-  margin: 0 !important;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--vp-c-divider);
 }
 
 .VPNavBar .VPNavBarTitle {
-  display: flex !important;
-  align-items: center !important;
-  height: 64px !important;
-  padding: 0 !important;
-  margin: 0 !important;
+  display: flex;
+  align-items: center;
 }
 
 .VPNavBar .VPNavBarTitle .title {
-  line-height: 1.5 !important;
-  font-size: 16px !important;
-  font-weight: 600 !important;
+  line-height: 1.5;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .VPNavBar .VPNavBarMenu {
-  display: flex !important;
-  align-items: center !important;
-  height: 64px !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-.VPNavBar .VPNavBarMenu .VPNavBarMenuLink {
-  display: flex !important;
-  align-items: center !important;
-  height: 64px !important;
-  padding: 0 12px !important;
-  margin: 0 !important;
-  line-height: 1.5 !important;
+  display: flex;
+  align-items: center;
 }
 
 .VPNavBar .logo {
-  margin-right: 16px !important;
-  height: 24px !important;
-  width: auto !important;
+  margin-right: 16px;
+  height: 24px;
+  width: auto;
 }
 
-/* 响应式调整 */
+/* 响应式调整 - 简化移动端导航栏样式 */
 @media (max-width: 960px) {
-  /* 移除导航栏的强制样式，让VitePress的默认响应式生效 */
+  /* 让VitePress默认响应式行为生效，只保留必要的调整 */
   .VPNavBar {
-    padding: 0 16px !important;
-    height: auto !important;
-    line-height: normal !important;
+    padding: 0 16px;
   }
   
-  .VPNavBar .VPNavBarTitle {
-    height: auto !important;
-  }
-  
-  .VPNavBar .VPNavBarMenu {
-    height: auto !important;
-  }
-  
-  .VPNavBar .VPNavBarMenuLink {
-    height: auto !important;
-    padding: 8px 12px !important;
-  }
-  
-  /* 确保logo在移动端适当调整 */
   .VPNavBar .logo {
-    height: 20px !important;
-    margin-right: 12px !important;
+    height: 20px;
+    margin-right: 12px;
   }
 }
 
@@ -303,43 +267,29 @@
     padding: 0.5rem 1rem;
   }
   
-  /* 移动端导航栏优化 */
+  /* 移动端导航栏基础样式 */
   .VPNavBar {
-    padding: 0 12px !important;
+    padding: 0 12px;
   }
   
   .VPNavBar .logo {
-    height: 18px !important;
-    margin-right: 8px !important;
-  }
-  
-  /* 确保移动端汉堡菜单可见 */
-  .VPNavBarHamburger {
-    display: block !important;
-  }
-  
-  /* 移动端菜单样式 */
-  .VPNavBarMenu {
-    display: none !important;
-  }
-  
-  .VPNavBarMenuGroup {
-    display: none !important;
+    height: 18px;
+    margin-right: 8px;
   }
 }
 
 @media (max-width: 480px) {
   .VPNavBar {
-    padding: 0 8px !important;
+    padding: 0 8px;
   }
   
   .VPNavBar .VPNavBarTitle .title {
-    font-size: 14px !important;
+    font-size: 14px;
   }
   
   .VPNavBar .logo {
-    height: 16px !important;
-    margin-right: 6px !important;
+    height: 16px;
+    margin-right: 6px;
   }
 }
 
