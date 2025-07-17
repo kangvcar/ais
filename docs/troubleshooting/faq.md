@@ -34,11 +34,14 @@ AIS 本身是开源免费的，但某些 AI 服务（如 OpenAI、Claude）需�
 
 ### 如何安装 AIS？
 ```bash
-# 推荐使用 pipx
-pipx install ais-terminal
+# 一键安装（推荐）
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
 
-# 或使用 pip
-pip install ais-terminal
+# 国内用户可使用Gitee镜像
+curl -sSL https://gitee.com/kangvcar/ais/raw/main/scripts/install.sh | bash
+
+# 或手动安装
+pipx install ais-terminal
 
 # 验证安装
 ais --version

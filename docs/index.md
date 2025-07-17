@@ -55,6 +55,9 @@ features:
 # 推荐：一键安装脚本（自动检测环境）
 curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
 
+# 国内用户可使用Gitee镜像（更快更稳定）
+curl -sSL https://gitee.com/kangvcar/ais/raw/main/scripts/install.sh | bash
+
 # 或手动安装
 pipx install ais-terminal
 ```

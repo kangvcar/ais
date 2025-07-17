@@ -60,6 +60,9 @@ AIS通过深度Shell集成架构，实现多维上下文感知和智能错误分
 ```bash
 # 智能安装 - 自动检测环境并选择最佳方式
 curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
+
+# 国内用户可使用Gitee镜像（更快更稳定）
+curl -sSL https://gitee.com/kangvcar/ais/raw/main/scripts/install.sh | bash
 ```
 
 **安装脚本会自动：**
@@ -74,6 +77,9 @@ curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh
 ```bash
 # 智能卸载 - 自动检测安装方式并完全清理
 curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/uninstall.sh | bash
+
+# 国内用户可使用Gitee镜像
+curl -sSL https://gitee.com/kangvcar/ais/raw/main/scripts/uninstall.sh | bash
 ```
 
 **卸载脚本会自动：**
@@ -112,6 +118,9 @@ docker-compose exec ais bash
 # 用户级安装（最安全）
 curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --user
 
+# 国内用户可使用Gitee镜像
+curl -sSL https://gitee.com/kangvcar/ais/raw/main/scripts/install.sh | bash -s -- --user
+
 # 或手动安装
 pipx install ais-terminal
 ais setup
@@ -127,6 +136,9 @@ ais setup
 ```bash
 # 系统级安装（所有用户可用）
 curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --system
+
+# 国内用户可使用Gitee镜像
+curl -sSL https://gitee.com/kangvcar/ais/raw/main/scripts/install.sh | bash -s -- --system
 ```
 
 **优势**: 所有用户可用，保持安全隔离，集中管理和更新

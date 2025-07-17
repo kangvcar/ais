@@ -16,6 +16,10 @@
   - 通过环境变量`VITEPRESS_BASE`实现多平台兼容的路径配置
   - 增强配置检查脚本，支持检查所有平台的部署配置状态
   - 确保GitHub Pages、Vercel、Netlify、Cloudflare Pages四个平台都能正常部署
+- 🇨🇳 **国内用户友好支持**：为网络受限用户提供Gitee镜像安装脚本
+  - 在所有文档中添加Gitee镜像安装脚本地址
+  - 提供更快更稳定的国内访问体验
+  - 覆盖README.md、文档首页、FAQ等所有安装相关位置
 
 ### Changed
 - 🔧 **VitePress配置优化**：支持动态base路径配置
