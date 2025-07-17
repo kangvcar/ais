@@ -64,405 +64,114 @@ pipx install ais-terminal
 
 当命令执行失败时，AIS会自动分析并提供解决方案：
 
-<div class="terminal-demo">
-  <div class="terminal-header">
-    <div class="terminal-controls">
-      <span class="control-btn close"></span>
-      <span class="control-btn minimize"></span>
-      <span class="control-btn maximize"></span>
-    </div>
-    <div class="terminal-title">终端 — zsh — 80×24</div>
-  </div>
-  <div class="terminal-body">
-    <div class="terminal-content">
-      <div class="command-line">
-        <span class="prompt">user@ais:~$</span> <span class="command">docker run hello-world</span>
-      </div>
-      <div class="error">docker: Error response from daemon: Unable to find image 'hello-world:latest' locally</div>
-      <div class="ai-title">🔍 发现相似的历史错误</div>
-      <div class="list-item">  1. docker pull ubuntu (12-15 14:30) - 已解决</div>
-      <div class="list-item">  2. docker run nginx (12-15 14:25) - 已分析</div>
-      <div class="ai-title">🤖 AI 错误分析</div>
-      <div class="diagnosis">🔍 问题诊断:</div>
-      <div class="content-text">您遇到了Docker镜像未找到的问题。Docker尝试运行hello-world镜像，但本地没有该镜像。</div>
-      <div class="knowledge">📚 知识扩展:</div>
-      <div class="content-text">Docker采用分层存储机制，镜像需要先下载到本地才能运行。</div>
-      <div class="solution">🎯 解决思路:</div>
-      <div class="content-text">1. 先手动拉取镜像到本地</div>
-      <div class="content-text">2. 检查网络连接和Docker服务状态</div>
-      <div class="suggestions-box">
-        <div class="suggestions-title">💡 AI 基于你的使用习惯和当前环境推荐</div>
-        <div class="table-header">#  命令                          风险  说明</div>
-        <div class="table-row">1  <span class="cmd">docker pull hello-world</span>       🟢   拉取hello-world镜像到本地</div>
-        <div class="table-row">2  <span class="cmd">docker images</span>                 🟢   查看已下载的镜像列表</div>
-        <div class="table-row">3  <span class="cmd">systemctl status docker</span>       🟢   检查Docker服务状态</div>
-        <div class="input-prompt">Select an action (1-3/e/q/x): <span class="cursor">█</span></div>
-      </div>
-    </div>
-  </div>
+<div id="error-analysis-demo" data-termynal data-ty-typeDelay="40" data-ty-lineDelay="700">
+    <span data-ty="input">docker run hello-world</span>
+    <span data-ty style="color: #ff6b6b;">docker: Error response from daemon: Unable to find image 'hello-world:latest' locally</span>
+    <span data-ty="progress"></span>
+    <span data-ty style="color: #4CAF50; font-weight: bold;">🔍 发现相似的历史错误</span>
+    <span data-ty>  1. docker pull ubuntu (12-15 14:30) - 已解决</span>
+    <span data-ty>  2. docker run nginx (12-15 14:25) - 已分析</span>
+    <span data-ty style="color: #4CAF50; font-weight: bold;">🤖 AI 错误分析</span>
+    <span data-ty style="color: #61dafb; font-weight: bold;">🔍 问题诊断:</span>
+    <span data-ty>您遇到了Docker镜像未找到的问题。Docker尝试运行hello-world镜像，但本地没有该镜像。</span>
+    <span data-ty style="color: #61dafb; font-weight: bold;">📚 知识扩展:</span>
+    <span data-ty>Docker采用分层存储机制，镜像需要先下载到本地才能运行。</span>
+    <span data-ty style="color: #61dafb; font-weight: bold;">🎯 解决思路:</span>
+    <span data-ty>1. 先手动拉取镜像到本地</span>
+    <span data-ty>2. 检查网络连接和Docker服务状态</span>
+    <span data-ty style="color: #4CAF50; font-weight: bold;">💡 AI 基于你的使用习惯和当前环境推荐</span>
+    <span data-ty>#  命令                          风险  说明</span>
+    <span data-ty>1  <span style="color: #61dafb;">docker pull hello-world</span>       🟢   拉取hello-world镜像到本地</span>
+    <span data-ty>2  <span style="color: #61dafb;">docker images</span>                 🟢   查看已下载的镜像列表</span>
+    <span data-ty>3  <span style="color: #61dafb;">systemctl status docker</span>       🟢   检查Docker服务状态</span>
+    <span data-ty="input" data-ty-prompt="Select an action (1-3/e/q/x): ">1</span>
+    <span data-ty="input">docker pull hello-world</span>
+    <span data-ty>Using default tag: latest</span>
+    <span data-ty>latest: Pulling from library/hello-world</span>
+    <span data-ty>Status: Downloaded newer image for hello-world:latest</span>
+    <span data-ty style="color: #4CAF50;">✅ 问题解决！镜像已成功下载，现在可以运行容器了。</span>
 </div>
 
-<style>
-.terminal-demo {
-  background: #1e1e1e;
-  border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  margin: 2rem 0;
-  overflow: hidden;
-  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
-  max-width: 100%;
-}
-
-.terminal-header {
-  background: #2d2d2d;
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid #3a3a3a;
-}
-
-.terminal-controls {
-  display: flex;
-  gap: 8px;
-}
-
-.control-btn {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: inline-block;
-}
-
-.control-btn.close {
-  background: #ff5f57;
-}
-
-.control-btn.minimize {
-  background: #ffbd2e;
-}
-
-.control-btn.maximize {
-  background: #28ca42;
-}
-
-.terminal-title {
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 500;
-  text-align: center;
-  flex: 1;
-  margin: 0 20px;
-}
-
-.terminal-body {
-  background: #1e1e1e;
-  padding: 20px;
-  min-height: 400px;
-  max-height: 600px;
-  overflow-y: auto;
-}
-
-.terminal-content {
-  color: #ffffff;
-  font-size: 13px;
-  line-height: 1.4;
-  margin: 0;
-  background: transparent;
-  border: none;
-  font-family: inherit;
-}
-
-.command-line {
-  margin-bottom: 8px;
-}
-
-.content-text {
-  color: #e0e0e0;
-  margin: 4px 0;
-  padding-left: 2px;
-}
-
-.list-item {
-  color: #e0e0e0;
-  margin: 2px 0;
-  padding-left: 4px;
-}
-
-.prompt {
-  color: #4CAF50;
-  font-weight: 600;
-}
-
-.command {
-  color: #ffffff;
-}
-
-.error {
-  color: #ff6b6b;
-  display: block;
-  margin: 8px 0;
-}
-
-.ai-title {
-  color: #4CAF50;
-  font-weight: 600;
-  display: block;
-  margin: 16px 0 8px 0;
-}
-
-.diagnosis, .knowledge, .solution {
-  color: #61dafb;
-  font-weight: 600;
-  display: block;
-  margin: 12px 0 4px 0;
-}
-
-.suggestions-box {
-  background: #2a2a2a;
-  padding: 16px;
-  border-radius: 8px;
-  margin: 16px 0;
-}
-
-.suggestions-title {
-  color: #4CAF50;
-  font-weight: 600;
-  display: block;
-  margin-bottom: 12px;
-}
-
-.table-header {
-  color: #ffffff;
-  font-weight: 600;
-  display: block;
-  margin: 8px 0;
-  border-bottom: 1px solid #3a3a3a;
-  padding-bottom: 4px;
-}
-
-.table-row {
-  color: #e0e0e0;
-  display: block;
-  margin: 4px 0;
-  padding: 2px 0;
-}
-
-.cmd {
-  color: #61dafb;
-  font-family: monospace;
-}
-
-.input-prompt {
-  color: #4CAF50;
-  font-weight: 600;
-  display: block;
-  margin-top: 16px;
-}
-
-.cursor {
-  color: #ffffff;
-  animation: blink 1s infinite;
-}
-
-.loading {
-  color: #4CAF50;
-  font-style: italic;
-  display: block;
-  margin: 8px 0;
-}
-
-.section {
-  color: #61dafb;
-  font-weight: 600;
-  display: block;
-  margin: 12px 0 6px 0;
-}
-
-.highlight {
-  color: #ffbd2e;
-  font-weight: 600;
-}
-
-.hint {
-  color: #e0e0e0;
-  background: #2a2a2a;
-  padding: 8px 12px;
-  border-radius: 4px;
-  border-left: 3px solid #4CAF50;
-  display: block;
-  margin: 12px 0;
-}
-
-.meta {
-  color: #888;
-  font-size: 12px;
-  display: block;
-  margin: 4px 0 12px 0;
-}
-
-.warning {
-  color: #ff6b6b;
-  font-weight: 600;
-  display: block;
-  margin: 8px 0;
-}
-
-.suggestion {
-  color: #ffbd2e;
-  font-weight: 600;
-  display: block;
-  margin: 8px 0;
-}
-
-.footer {
-  color: #888;
-  font-size: 12px;
-  display: block;
-  margin: 4px 0;
-}
-
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .terminal-demo {
-    margin: 1rem 0;
-  }
-  
-  .terminal-body {
-    padding: 12px;
-    min-height: 300px;
-    max-height: 500px;
-  }
-  
-  .terminal-content {
-    font-size: 12px;
-    line-height: 1.3;
-  }
-  
-  .terminal-title {
-    font-size: 11px;
-  }
-  
-  .suggestions-box {
-    padding: 8px;
-  }
-  
-  .hint {
-    padding: 6px 8px;
-    margin: 8px 0;
-  }
-  
-  .meta, .footer {
-    font-size: 11px;
-  }
-}
-
-/* 深色模式适配 */
-.dark .terminal-demo {
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-/* 滚动条样式 */
-.terminal-body::-webkit-scrollbar {
-  width: 8px;
-}
-
-.terminal-body::-webkit-scrollbar-track {
-  background: #2a2a2a;
-}
-
-.terminal-body::-webkit-scrollbar-thumb {
-  background: #4a4a4a;
-  border-radius: 4px;
-}
-
-.terminal-body::-webkit-scrollbar-thumb:hover {
-  background: #5a5a5a;
-}
-</style>
 
 ## 💬 智能问答演示
 
 使用 `ais ask` 获得即时专业答案：
 
-<div class="terminal-demo">
-  <div class="terminal-header">
-    <div class="terminal-controls">
-      <span class="control-btn close"></span>
-      <span class="control-btn minimize"></span>
-      <span class="control-btn maximize"></span>
-    </div>
-    <div class="terminal-title">终端 — zsh — 80×24</div>
-  </div>
-  <div class="terminal-body">
-    <div class="terminal-content">
-      <div class="command-line">
-        <span class="prompt">user@ais:~$</span> <span class="command">ais ask "什么是Docker容器？"</span>
-      </div>
-      <div class="loading">🤖 正在思考您的问题...</div>
-      <div class="ai-title">## Docker容器是什么？</div>
-      <div class="content-text">Docker容器是一种轻量级的、可移植的、自包含的软件运行环境。</div>
-      <div class="section">### 🏗️ 核心概念</div>
-      <div class="list-item">- <span class="highlight">隔离性</span>: 每个容器都有独立的文件系统、进程空间和网络接口</div>
-      <div class="list-item">- <span class="highlight">轻量级</span>: 比传统虚拟机更少的资源消耗</div>
-      <div class="list-item">- <span class="highlight">可移植性</span>: 一次构建，到处运行</div>
-      <div class="section">### 🔧 主要特点</div>
-      <div class="list-item">1. <span class="highlight">快速启动</span>: 秒级启动时间</div>
-      <div class="list-item">2. <span class="highlight">资源高效</span>: 共享主机内核，无需完整操作系统</div>
-      <div class="list-item">3. <span class="highlight">版本控制</span>: 镜像分层存储，支持版本管理</div>
-      <div class="hint">想了解更多？试试 <span class="cmd">ais learn docker</span> 获得系统化学习路径！</div>
-    </div>
-  </div>
+<div id="qa-demo" data-termynal data-ty-typeDelay="40" data-ty-lineDelay="700">
+    <span data-ty="input">ais ask "什么是Docker容器？"</span>
+    <span data-ty style="color: #4CAF50; font-style: italic;">🤖 正在思考您的问题...</span>
+    <span data-ty="progress"></span>
+    <span data-ty style="color: #4CAF50; font-weight: bold; font-size: 18px;">## Docker容器是什么？</span>
+    <span data-ty>Docker容器是一种轻量级的、可移植的、自包含的软件运行环境。</span>
+    <span data-ty style="color: #61dafb; font-weight: bold;">### 🏗️ 核心概念</span>
+    <span data-ty>- <span style="color: #ffbd2e; font-weight: bold;">隔离性</span>: 每个容器都有独立的文件系统、进程空间和网络接口</span>
+    <span data-ty>- <span style="color: #ffbd2e; font-weight: bold;">轻量级</span>: 比传统虚拟机更少的资源消耗</span>
+    <span data-ty>- <span style="color: #ffbd2e; font-weight: bold;">可移植性</span>: 一次构建，到处运行</span>
+    <span data-ty style="color: #61dafb; font-weight: bold;">### 🔧 主要特点</span>
+    <span data-ty>1. <span style="color: #ffbd2e; font-weight: bold;">快速启动</span>: 秒级启动时间</span>
+    <span data-ty>2. <span style="color: #ffbd2e; font-weight: bold;">资源高效</span>: 共享主机内核，无需完整操作系统</span>
+    <span data-ty>3. <span style="color: #ffbd2e; font-weight: bold;">版本控制</span>: 镜像分层存储，支持版本管理</span>
+    <span data-ty style="background: #2a2a2a; padding: 8px; border-radius: 4px; border-left: 3px solid #4CAF50; display: block; margin: 12px 0;">💡 想了解更多？试试 <span style="color: #61dafb;">ais learn docker</span> 获得系统化学习路径！</span>
+    <span data-ty="input">ais ask "如何优化Docker镜像大小？"</span>
+    <span data-ty style="color: #4CAF50; font-style: italic;">🤖 正在分析最佳实践...</span>
+    <span data-ty="progress"></span>
+    <span data-ty style="color: #4CAF50; font-weight: bold;">## Docker镜像优化技巧</span>
+    <span data-ty style="color: #61dafb; font-weight: bold;">### 🎯 核心策略</span>
+    <span data-ty>1. 使用多阶段构建 (Multi-stage builds)</span>
+    <span data-ty>2. 选择合适的基础镜像 (如 alpine)</span>
+    <span data-ty>3. 合并RUN指令减少层数</span>
+    <span data-ty>4. 清理缓存和临时文件</span>
+    <span data-ty style="color: #61dafb; font-weight: bold;">### 📝 实践示例</span>
+    <span data-ty style="color: #61dafb;">FROM alpine:3.18 AS builder</span>
+    <span data-ty style="color: #61dafb;">RUN apk add --no-cache build-dependencies && \</span>
+    <span data-ty style="color: #61dafb;">    build-app && \</span>
+    <span data-ty style="color: #61dafb;">    apk del build-dependencies</span>
+    <span data-ty style="color: #4CAF50;">✨ 这样可以将镜像从500MB减少到50MB！</span>
 </div>
 
 ## 📊 学习报告演示
 
 运行 `ais report` 获得个性化学习分析：
 
-<div class="terminal-demo">
-  <div class="terminal-header">
-    <div class="terminal-controls">
-      <span class="control-btn close"></span>
-      <span class="control-btn minimize"></span>
-      <span class="control-btn maximize"></span>
-    </div>
-    <div class="terminal-title">终端 — zsh — 80×24</div>
-  </div>
-  <div class="terminal-body">
-    <div class="terminal-content">
-      <div class="command-line">
-        <span class="prompt">user@ais:~$</span> <span class="command">ais report</span>
-      </div>
-      <div class="ai-title"># 📊 AIS 学习成长报告</div>
-      <div class="meta">分析周期: 最近30天 | 生成时间: 2024-01-15 10:30:45</div>
-      <div class="section">## 🔍 错误概览</div>
-      <div class="list-item">- <span class="highlight">总错误数</span>: 23 次</div>
-      <div class="list-item">- <span class="highlight">最常出错的命令</span>: git (8次), docker (5次), npm (4次)</div>
-      <div class="list-item">- <span class="highlight">最常见的错误类型</span>: Git操作错误, Docker操作错误, 权限不足</div>
-      <div class="section">## 💪 技能评估</div>
-      <div class="list-item">- <span class="highlight">当前水平</span>: 中级用户</div>
-      <div class="list-item">- <span class="highlight">优势领域</span>: 基础命令, 文件操作</div>
-      <div class="list-item">- <span class="highlight">需要改进</span>: Git版本控制, Docker容器</div>
-      <div class="section">## 💡 改进洞察</div>
-      <div class="warning">🔥 git 命令需要重点关注</div>
-      <div class="content-text">你在 git 命令上出现了 8 次错误，占总错误的 34.8%</div>
-      <div class="section">## 🎯 学习建议</div>
-      <div class="suggestion">1. 🔥 深入学习 git 命令</div>
-      <div class="content-text">   类型: 命令掌握 | 优先级: 高</div>
-      <div class="content-text">   学习路径:</div>
-      <div class="content-text">   - 学习Git基础概念（工作区、暂存区、仓库）</div>
-      <div class="content-text">   - 掌握常用Git命令（add, commit, push, pull）</div>
-      <div class="content-text">   - 了解分支操作和合并冲突解决</div>
-      <div class="footer">💡 提示: 使用 <span class="cmd">ais learn &lt;主题&gt;</span> 深入学习特定主题</div>
-      <div class="footer">📚 帮助: 使用 <span class="cmd">ais ask &lt;问题&gt;</span> 获取即时答案</div>
-    </div>
-  </div>
+<div id="report-demo" data-termynal data-ty-typeDelay="40" data-ty-lineDelay="700">
+    <span data-ty="input">ais report</span>
+    <span data-ty style="color: #4CAF50; font-style: italic;">🔍 正在分析您的学习数据...</span>
+    <span data-ty="progress"></span>
+    <span data-ty style="color: #4CAF50; font-weight: bold; font-size: 20px;"># 📊 AIS 学习成长报告</span>
+    <span data-ty style="color: #888; font-size: 12px;">分析周期: 最近30天 | 生成时间: 2025-01-15 10:30:45</span>
+    <span data-ty style="color: #61dafb; font-weight: bold;">## 🔍 错误概览</span>
+    <span data-ty>- <span style="color: #ffbd2e; font-weight: bold;">总错误数</span>: 23 次</span>
+    <span data-ty>- <span style="color: #ffbd2e; font-weight: bold;">最常出错的命令</span>: git (8次), docker (5次), npm (4次)</span>
+    <span data-ty>- <span style="color: #ffbd2e; font-weight: bold;">最常见的错误类型</span>: Git操作错误, Docker操作错误, 权限不足</span>
+    <span data-ty style="color: #61dafb; font-weight: bold;">## 💪 技能评估</span>
+    <span data-ty>- <span style="color: #ffbd2e; font-weight: bold;">当前水平</span>: 中级用户</span>
+    <span data-ty>- <span style="color: #ffbd2e; font-weight: bold;">优势领域</span>: 基础命令, 文件操作</span>
+    <span data-ty>- <span style="color: #ffbd2e; font-weight: bold;">需要改进</span>: Git版本控制, Docker容器</span>
+    <span data-ty style="color: #61dafb; font-weight: bold;">## 💡 改进洞察</span>
+    <span data-ty style="color: #ff6b6b; font-weight: bold;">🔥 git 命令需要重点关注</span>
+    <span data-ty>你在 git 命令上出现了 8 次错误，占总错误的 34.8%</span>
+    <span data-ty style="color: #61dafb; font-weight: bold;">## 🎯 学习建议</span>
+    <span data-ty style="color: #ffbd2e; font-weight: bold;">1. 🔥 深入学习 git 命令</span>
+    <span data-ty>   类型: 命令掌握 | 优先级: 高</span>
+    <span data-ty>   学习路径:</span>
+    <span data-ty>   - 学习Git基础概念（工作区、暂存区、仓库）</span>
+    <span data-ty>   - 掌握常用Git命令（add, commit, push, pull）</span>
+    <span data-ty>   - 了解分支操作和合并冲突解决</span>
+    <span data-ty style="color: #ffbd2e; font-weight: bold;">2. 🐳 提升 Docker 操作技能</span>
+    <span data-ty>   类型: 容器化技术 | 优先级: 中</span>
+    <span data-ty>   学习路径:</span>
+    <span data-ty>   - 掌握Docker基础命令和概念</span>
+    <span data-ty>   - 学习Dockerfile编写和镜像构建</span>
+    <span data-ty>   - 了解容器网络和数据卷管理</span>
+    <span data-ty style="color: #61dafb; font-weight: bold;">## 📈 进步趋势</span>
+    <span data-ty>本月相比上月错误率下降了 <span style="color: #4CAF50; font-weight: bold;">15%</span> 🎉</span>
+    <span data-ty>最常解决的问题类型: <span style="color: #4CAF50;">权限问题</span></span>
+    <span data-ty>新掌握的技能: <span style="color: #4CAF50;">npm包管理, 文件权限管理</span></span>
+    <span data-ty style="color: #888; font-size: 12px;">💡 提示: 使用 <span style="color: #61dafb;">ais learn &lt;主题&gt;</span> 深入学习特定主题</span>
+    <span data-ty style="color: #888; font-size: 12px;">📚 帮助: 使用 <span style="color: #61dafb;">ais ask &lt;问题&gt;</span> 获取即时答案</span>
+    <span data-ty="input">ais learn git</span>
+    <span data-ty style="color: #4CAF50; font-style: italic;">🎓 正在为您生成Git学习计划...</span>
+    <span data-ty style="color: #4CAF50;">✅ 已生成个性化Git学习路径，包含15个实战练习！</span>
 </div>
 
 
