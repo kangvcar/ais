@@ -233,37 +233,21 @@
   color: var(--vp-c-brand) !important;
 }
 
-/* 导航栏基础样式 - 避免过度强制 */
+/* 响应式导航栏优化 */
 .VPNavBar {
   padding: 0 24px;
   border-bottom: 1px solid var(--vp-c-divider);
 }
 
-.VPNavBar .VPNavBarTitle {
-  display: flex;
-  align-items: center;
-}
-
-.VPNavBar .VPNavBarTitle .title {
-  line-height: 1.5;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.VPNavBar .VPNavBarMenu {
-  display: flex;
-  align-items: center;
-}
-
+/* Logo 样式优化 */
 .VPNavBar .logo {
   margin-right: 16px;
   height: 24px;
   width: auto;
 }
 
-/* 响应式调整 - 简化移动端导航栏样式 */
+/* 移动端响应式调整 */
 @media (max-width: 960px) {
-  /* 让VitePress默认响应式行为生效，只保留必要的调整 */
   .VPNavBar {
     padding: 0 16px;
   }
@@ -279,7 +263,6 @@
     padding: 0.5rem 1rem;
   }
   
-  /* 移动端导航栏基础样式 */
   .VPNavBar {
     padding: 0 12px;
   }
@@ -288,15 +271,26 @@
     height: 18px;
     margin-right: 8px;
   }
+  
+  /* 确保移动端菜单正常工作 */
+  .VPNavBarHamburger {
+    display: block;
+  }
+  
+  /* 隐藏桌面端导航菜单，显示汉堡菜单 */
+  .VPNavBarMenu {
+    display: none;
+  }
+  
+  /* 移动端菜单样式 */
+  .VPNavScreenMenu {
+    display: block;
+  }
 }
 
 @media (max-width: 480px) {
   .VPNavBar {
     padding: 0 8px;
-  }
-  
-  .VPNavBar .VPNavBarTitle .title {
-    font-size: 14px;
   }
   
   .VPNavBar .logo {

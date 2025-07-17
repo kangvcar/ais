@@ -18,9 +18,21 @@ export default defineConfig({
     
     nav: [
       { text: '首页', link: '/' },
-      { text: '快速开始', link: '/getting-started/installation' },
-      { text: '功能特性', link: '/features/' },
-      { text: '配置指南', link: '/configuration/' }
+      { 
+        text: '快速开始', 
+        link: '/getting-started/installation',
+        activeMatch: '^/getting-started/'
+      },
+      { 
+        text: '功能特性', 
+        link: '/features/',
+        activeMatch: '^/features/'
+      },
+      { 
+        text: '配置指南', 
+        link: '/configuration/',
+        activeMatch: '^/configuration/'
+      }
     ],
 
     sidebar: [
@@ -84,6 +96,11 @@ export default defineConfig({
 
     search: {
       provider: 'local'
+    },
+
+    // 移动端导航配置
+    outline: {
+      level: [2, 3]
     }
   }
 })
