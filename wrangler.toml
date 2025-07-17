@@ -1,0 +1,24 @@
+# Cloudflare Pages 配置文件
+# 此文件可用于 Wrangler CLI 部署，也可作为控制面板配置的参考
+
+name = "ais-docs"
+compatibility_date = "2024-01-01"
+
+[build]
+command = "npm run docs:build"
+cwd = "."
+
+[build.upload]
+format = "directory"
+dir = "docs/.vitepress/dist"
+
+# 环境变量配置
+[env.production.vars]
+VITEPRESS_BASE = "/"
+
+[env.preview.vars]
+VITEPRESS_BASE = "/"
+
+# 页面规则
+[[pages_build_output_dir]]
+value = "docs/.vitepress/dist"

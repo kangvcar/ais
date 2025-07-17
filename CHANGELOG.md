@@ -7,6 +7,28 @@
 
 ## [Unreleased]
 
+### Added
+- 🚀 **多平台部署支持**：新增对Vercel、Netlify、Cloudflare Pages的完整部署配置
+  - 添加`vercel.json`配置文件，支持Vercel自动部署
+  - 添加`netlify.toml`配置文件，支持Netlify自动部署并优化缓存
+  - 添加`wrangler.toml`配置文件，支持Cloudflare Pages部署
+  - 创建`DEPLOYMENT.md`部署指南，详细说明各平台的部署步骤
+  - 通过环境变量`VITEPRESS_BASE`实现多平台兼容的路径配置
+  - 增强配置检查脚本，支持检查所有平台的部署配置状态
+  - 确保GitHub Pages、Vercel、Netlify、Cloudflare Pages四个平台都能正常部署
+
+### Changed
+- 🔧 **VitePress配置优化**：支持动态base路径配置
+  - 修改`config.mts`支持通过环境变量动态设置base路径
+  - 优化图标路径配置，确保在不同平台上正确显示
+  - 保持GitHub Pages部署的向后兼容性
+
+### Fixed
+- 🎨 **Vercel样式加载问题修复**：解决Vercel部署时样式和资源无法正常加载的问题
+  - 通过环境变量配置解决base路径冲突
+  - 确保CSS和静态资源在所有平台上正确加载
+  - 优化资源缓存策略，提升网站性能
+
 ## [1.0.0] - 2025-07-16
 
 ### Added
