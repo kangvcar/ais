@@ -4,12 +4,12 @@ export default defineConfig({
   title: 'AIS 文档',
   description: 'AIS - 上下文感知的错误分析学习助手',
   lang: 'zh-CN',
-  base: '/ais/',
+  base: process.env.VITEPRESS_BASE || '/ais/',
   
   head: [
-    ['link', { rel: 'icon', href: '/ais/logo-icon.ico' }],
-    ['link', { rel: 'shortcut icon', href: '/ais/logo-icon.ico' }],
-    ['link', { rel: 'apple-touch-icon', href: '/ais/logo-icon.ico' }]
+    ['link', { rel: 'icon', href: `${process.env.VITEPRESS_BASE || '/ais/'}logo-icon.ico` }],
+    ['link', { rel: 'shortcut icon', href: `${process.env.VITEPRESS_BASE || '/ais/'}logo-icon.ico` }],
+    ['link', { rel: 'apple-touch-icon', href: `${process.env.VITEPRESS_BASE || '/ais/'}logo-icon.ico` }]
   ],
   
   themeConfig: {
