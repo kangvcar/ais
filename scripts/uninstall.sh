@@ -45,6 +45,12 @@ detect_installation_method() {
     # 检查pipx系统级安装
     elif [ -d "/opt/pipx" ] && [ -f "/usr/local/bin/ais" ]; then
         method="pipx-system"
+    # 检查编译安装的Python 3.10.9环境
+    elif [ -x "/usr/local/python3.10/bin/ais" ] && [ -x "/usr/local/python3.10/bin/python3.10" ]; then
+        method="compiled-python310"
+    # 检查编译安装的Python 3.9环境
+    elif [ -x "/usr/local/python3.9/bin/ais" ] && [ -x "/usr/local/python3.9/bin/python3.9" ]; then
+        method="compiled-python39"
     # 检查pip安装
     elif python3 -m pip list 2>/dev/null | grep -q "ais-terminal"; then
         method="pip"
@@ -140,6 +146,108 @@ uninstall_container() {
     rm -f /usr/local/bin/ais 2>/dev/null || true
     
     print_success "容器环境卸载完成"
+}
+
+# 卸载编译安装的Python 3.10.9环境
+uninstall_compiled_python310() {
+    print_info "🔄 卸载编译安装的Python 3.10.9环境..."
+    
+    # 卸载AIS包
+    if [ -x "/usr/local/python3.10/bin/pip3.10" ]; then
+        /usr/local/python3.10/bin/pip3.10 uninstall -y ais-terminal 2>/dev/null || print_warning "pip卸载失败"
+    fi
+    
+    # 清理软链接
+    if [ "$EUID" -eq 0 ]; then
+        rm -f /usr/local/bin/ais 2>/dev/null || true
+    else
+        sudo rm -f /usr/local/bin/ais 2>/dev/null || true
+    fi
+    
+    # 询问是否删除编译安装的Python环境
+    echo
+    print_warning "⚠️  检测到编译安装的Python 3.10.9环境"
+    print_info "位置: /usr/local/python3.10/"
+    
+    local remove_python=0
+    if [ -t 0 ]; then
+        read -p "是否同时删除编译安装的Python 3.10.9环境? (y/N): "
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            remove_python=1
+        fi
+    else
+        echo -n "是否同时删除编译安装的Python 3.10.9环境? (y/N): "
+        read -r REPLY < /dev/tty
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            remove_python=1
+        fi
+    fi
+    
+    if [ $remove_python -eq 1 ]; then
+        print_info "正在删除Python 3.10.9环境..."
+        if [ "$EUID" -eq 0 ]; then
+            rm -rf /usr/local/python3.10 2>/dev/null || true
+        else
+            sudo rm -rf /usr/local/python3.10 2>/dev/null || true
+        fi
+        print_success "Python 3.10.9环境已删除"
+    else
+        print_info "保留Python 3.10.9环境"
+    fi
+    
+    print_success "编译安装的Python 3.10.9环境卸载完成"
+}
+
+# 卸载编译安装的Python 3.9环境
+uninstall_compiled_python39() {
+    print_info "🔄 卸载编译安装的Python 3.9环境..."
+    
+    # 卸载AIS包
+    if [ -x "/usr/local/python3.9/bin/pip3.9" ]; then
+        /usr/local/python3.9/bin/pip3.9 uninstall -y ais-terminal 2>/dev/null || print_warning "pip卸载失败"
+    elif [ -x "/usr/local/python3.9/bin/pip3" ]; then
+        /usr/local/python3.9/bin/pip3 uninstall -y ais-terminal 2>/dev/null || print_warning "pip卸载失败"
+    fi
+    
+    # 清理软链接
+    if [ "$EUID" -eq 0 ]; then
+        rm -f /usr/local/bin/ais 2>/dev/null || true
+    else
+        sudo rm -f /usr/local/bin/ais 2>/dev/null || true
+    fi
+    
+    # 询问是否删除编译安装的Python环境
+    echo
+    print_warning "⚠️  检测到编译安装的Python 3.9环境"
+    print_info "位置: /usr/local/python3.9/"
+    
+    local remove_python=0
+    if [ -t 0 ]; then
+        read -p "是否同时删除编译安装的Python 3.9环境? (y/N): "
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            remove_python=1
+        fi
+    else
+        echo -n "是否同时删除编译安装的Python 3.9环境? (y/N): "
+        read -r REPLY < /dev/tty
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            remove_python=1
+        fi
+    fi
+    
+    if [ $remove_python -eq 1 ]; then
+        print_info "正在删除Python 3.9环境..."
+        if [ "$EUID" -eq 0 ]; then
+            rm -rf /usr/local/python3.9 2>/dev/null || true
+        else
+            sudo rm -rf /usr/local/python3.9 2>/dev/null || true
+        fi
+        print_success "Python 3.9环境已删除"
+    else
+        print_info "保留Python 3.9环境"
+    fi
+    
+    print_success "编译安装的Python 3.9环境卸载完成"
 }
 
 # 清理用户配置和数据
@@ -292,6 +400,12 @@ main() {
         "pipx-system")
             uninstall_pipx_system
             ;;
+        "compiled-python310")
+            uninstall_compiled_python310
+            ;;
+        "compiled-python39")
+            uninstall_compiled_python39
+            ;;
         "pip")
             uninstall_pip
             ;;
@@ -306,6 +420,8 @@ main() {
             # 尝试所有卸载方式
             uninstall_pipx_user 2>/dev/null || true
             uninstall_pipx_system 2>/dev/null || true
+            uninstall_compiled_python310 2>/dev/null || true
+            uninstall_compiled_python39 2>/dev/null || true
             uninstall_pip 2>/dev/null || true
             uninstall_system_old 2>/dev/null || true
             ;;
@@ -344,6 +460,8 @@ case "${1:-}" in
         echo "支持的安装方式:"
         echo "  - pipx用户级安装"
         echo "  - pipx系统级安装"
+        echo "  - 编译安装的Python 3.10.9环境"
+        echo "  - 编译安装的Python 3.9环境"
         echo "  - pip安装"
         echo "  - 系统级安装（旧方式）"
         echo "  - 容器安装"
