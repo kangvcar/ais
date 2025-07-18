@@ -7,12 +7,13 @@
 
 ## [Unreleased]
 
+## [1.2.0] - 2025-07-18
+
 ### Added
 - 📋 **系统适配测试文档**：新增完整的多发行版测试验证文档
   - 添加 `.cursor/rules/test.md` 测试文档，涵盖Rocky Linux、Ubuntu、CentOS、Fedora、Debian、openEuler和Kylin Linux等多个版本
   - 提供详细的Python环境安装和配置步骤，确保用户能够顺利安装ais-terminal
   - 统一文档格式，提升可读性和易用性
-
 ### Changed
 - 🎯 **安装脚本架构全面优化**：基于实际测试验证，重构一键安装脚本
   - **脚本整合**：将 `install_optimized.sh` 合并为主安装脚本 `install.sh`，简化维护
@@ -52,7 +53,6 @@
     - 修正代码示例为实际项目结构的导入路径
     - 更新代码质量检查命令为项目实际使用的工具链
     - 强调Keep a Changelog最佳实践和详细的git commit要求
-
 ### Fixed
 - 🐛 **CentOS 7 Python编译错误修复**：智能版本适配解决老系统兼容性问题
   - 新增 GCC 版本自动检测，GCC < 5.0 或 CentOS ≤ 7 自动使用 Python 3.9.18
