@@ -33,14 +33,15 @@ git clone https://github.com/YOUR_USERNAME/ais.git
 cd ais
 
 # 2. 创建虚拟环境
-python -m venv venv
-source venv/bin/activate
+python -m venv .venv
+source .venv/bin/activate
 
 # 3. 安装开发依赖
-pip install -e ".[dev]"
+source .venv/bin/activate && python3 -m pip install -e .
 
 # 4. 验证安装
-pytest tests/ -v
+python -m pytest tests/ -v
+ais --version
 ```
 
 ### 开发工具配置
@@ -48,11 +49,11 @@ pytest tests/ -v
 # 安装代码质量工具
 pip install black flake8 autopep8 mypy
 
-# 配置 Git 钩子
-pre-commit install
+# 运行代码质量检查
+source .venv/bin/activate && black src/ tests/ && autopep8 --in-place --aggressive --aggressive --max-line-length=79 src/ tests/ -r && flake8 src/ tests/ --max-line-length=79
 
-# 验证环境
-ais --version
+# 运行测试
+python -m pytest tests/ -v
 ```
 
 ## 📝 代码规范
@@ -68,15 +69,13 @@ ais --version
 
 ### 代码格式化
 ```bash
-# 自动格式化代码
+# 自动格式化代码（建议使用项目配置的命令）
+source .venv/bin/activate && black src/ tests/ && autopep8 --in-place --aggressive --aggressive --max-line-length=79 src/ tests/ -r && flake8 src/ tests/ --max-line-length=79
+
+# 单独运行各个工具
 black src/ tests/
 autopep8 --in-place --aggressive --aggressive --max-line-length=79 src/ tests/ -r
-
-# 检查代码风格
 flake8 src/ tests/ --max-line-length=79
-
-# 类型检查
-mypy src/ais/
 ```
 
 ### 导入规范
@@ -90,9 +89,10 @@ from pathlib import Path
 import click
 from rich.console import Console
 
-# 本地导入
-from ais.core.config import Config
-from ais.utils.logger import logger
+# 本地导入（基于实际项目结构）
+from ..core.config import get_config
+from ..core.ai import ask_ai
+from ..ui.panels import panels
 ```
 
 ## 🧪 测试要求
@@ -110,37 +110,43 @@ from ais.utils.logger import logger
 
 import pytest
 from unittest.mock import Mock, patch
-from ais.commands.ask import AskCommand
+from ais.core.ai import ask_ai
+from ais.core.config import get_config
 
-class TestAskCommand:
-    def test_ask_command_basic(self):
+class TestAIModule:
+    def test_ask_ai_basic(self):
         """测试基本问答功能"""
-        cmd = AskCommand()
-        result = cmd.execute("test question")
+        config = get_config()
+        result = ask_ai("test question", config)
         assert result is not None
         
-    @patch('ais.ai.client.OpenAIClient')
-    def test_ask_command_with_mock(self, mock_client):
+    @patch('ais.core.ai.httpx')
+    def test_ask_ai_with_mock(self, mock_httpx):
         """测试带模拟的问答功能"""
-        mock_client.return_value.chat.return_value = "test response"
-        cmd = AskCommand()
-        result = cmd.execute("test question")
-        assert result == "test response"
+        mock_response = Mock()
+        mock_response.json.return_value = {
+            "choices": [{"message": {"content": "test response"}}]
+        }
+        mock_httpx.post.return_value = mock_response
+        
+        config = get_config()
+        result = ask_ai("test question", config)
+        assert "test response" in result
 ```
 
 ### 运行测试
 ```bash
 # 运行所有测试
-pytest tests/
+python -m pytest tests/ -v
 
 # 运行特定测试文件
-pytest tests/test_commands.py
+python -m pytest tests/test_ai.py -v
 
 # 运行特定测试
-pytest tests/test_commands.py::TestAskCommand::test_ask_command_basic
+python -m pytest tests/test_ai.py::TestAIModule::test_ask_ai_basic -v
 
 # 运行覆盖率测试
-pytest tests/ --cov=src/ais --cov-report=html
+python -m pytest tests/ --cov=src/ais --cov-report=html
 ```
 
 ## 📋 提交规范
@@ -346,17 +352,23 @@ safety check
 ## 🚀 发布流程
 
 ### 版本号规范
+遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/) 最佳实践：
 - **主版本**: 重大变更，不兼容更新
 - **次版本**: 新功能，向后兼容
 - **修订版本**: Bug 修复，向后兼容
 
 ### 发布步骤
-1. 更新版本号
-2. 更新 CHANGELOG.md
-3. 运行完整测试
+1. 更新 `CHANGELOG.md`（必须）
+2. 运行完整测试和代码质量检查
+3. 提交详细的 git commit
 4. 创建发布标签
 5. 推送到远程仓库
-6. 触发 CI/CD 流程
+6. 触发 Package Release 工作流
+
+### 注意事项
+- 每次改动后必须提交详细的 git commit
+- git commit 中不要包含 `🤖 Generated with Claude Code` 等标识
+- 发布前后要同步远程仓库以避免冲突
 
 ## 🎉 贡献者认可
 

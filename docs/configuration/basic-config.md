@@ -1,63 +1,65 @@
 # 基本配置
 
-AIS 的基本配置包括语言、主题、输出格式等核心设置，这些设置影响 AIS 的整体行为和用户体验。
+AIS 的基本配置通过 TOML 格式的配置文件进行管理，支持多种自定义选项以满足不同用户的需求。
 
-## 🌍 语言设置
+## 📍 配置文件位置
 
-### 支持的语言
+### 配置文件路径
 ```bash
-# 中文（默认）
-ais config set language zh-CN
+# 配置文件位置
+~/.config/ais/config.toml
 
-# 英文
-ais config set language en-US
+# 数据库位置
+~/.local/share/ais/history.db
 
-# 查看当前语言
-ais config show language
+# 查看当前配置
+ais config
 ```
 
-### 语言影响范围
-- **命令输出**：所有命令的输出信息
-- **错误分析**：错误分析结果和建议
-- **AI 问答**：AI 回答的语言
-- **学习内容**：学习材料的语言
+### 配置文件结构
+```toml
+# 默认配置文件内容
+default_provider = "default_free"
+auto_analysis = true
+context_level = "detailed"
+sensitive_dirs = ["~/.ssh", "~/.config/ais", "~/.aws"]
 
-## 🎨 主题和输出
+[providers.default_free]
+base_url = "https://api.deepbricks.ai/v1/chat/completions"
+model_name = "gpt-4o-mini"
+api_key = "sk-97RxyS9R2dsqFTUxcUZOpZwhnbjQCSOaFboooKDeTv5nHJgg"
 
-### 主题设置
-```bash
-# 自动主题（跟随系统）
-ais config set theme auto
+[ui]
+enable_colors = true
+max_history_display = 10
 
-# 深色主题
-ais config set theme dark
-
-# 浅色主题
-ais config set theme light
+[advanced]
+max_context_length = 4000
+async_analysis = true
+cache_analysis = true
 ```
 
-### 输出格式
+## 🔄 自动分析设置
+
+### 全局开关
 ```bash
-# Rich 格式（推荐）
-ais config set output-format rich
+# 开启自动分析
+ais on
 
-# 简单文本格式
-ais config set output-format plain
+# 关闭自动分析
+ais off
 
-# JSON 格式（适合脚本）
-ais config set output-format json
+# 查看当前状态
+ais config
 ```
 
-### 输出详细程度
+### 配置自动分析
 ```bash
-# 详细输出
-ais config set verbosity verbose
+# 设置自动分析开关
+ais config --set auto_analysis=true
 
-# 标准输出（默认）
-ais config set verbosity normal
-
-# 简洁输出
-ais config set verbosity quiet
+# 查看配置状态
+ais config --get auto_analysis
 ```
 
 ## 🔄 自动分析设置
@@ -91,156 +93,155 @@ ais config set max-analysis-time 30
 ### 收集级别
 ```bash
 # 最小收集
-ais config set context-level minimal
+ais config --set context_level=minimal
 
 # 标准收集（推荐）
-ais config set context-level standard
+ais config --set context_level=standard
 
-# 详细收集
-ais config set context-level detailed
+# 详细收集（默认）
+ais config --set context_level=detailed
+
+# 查看配置帮助
+ais config --help-context
 ```
 
 ### 收集级别说明
 
 #### minimal（最小）
-- 基本系统信息
-- 命令和退出码
-- 最小环境变量
+- 基本信息（命令、退出码、目录）
+- 性能最好，隐私性最强
 
 #### standard（标准）
-- 完整系统信息
-- 网络状态检查
-- 项目类型检测
-- 常用环境变量
+- 基本信息 + 命令历史、文件列表、Git状态
+- 平衡性能和分析精度
 
 #### detailed（详细）
-- 完整环境快照
-- 详细网络诊断
-- 完整权限检查
-- 所有相关环境变量
+- 标准信息 + 系统信息、环境变量、完整目录
+- 分析最精准，但会收集更多信息
 
-## 📊 性能设置
+## 🔧 AI 提供商管理
 
-### 缓存配置
+### 查看提供商
 ```bash
-# 设置缓存大小（MB）
-ais config set cache-size 100
+# 列出所有提供商
+ais provider-list
 
-# 设置缓存过期时间（小时）
-ais config set cache-ttl 24
-
-# 清空缓存
-ais config clear-cache
+# 查看详细帮助
+ais provider-list --help-detail
 ```
 
-### 并发设置
+### 添加提供商
 ```bash
-# 设置最大并发数
-ais config set max-concurrent 3
+# 添加 OpenAI 提供商
+ais provider-add openai \
+  --url https://api.openai.com/v1/chat/completions \
+  --model gpt-4o-mini \
+  --key YOUR_API_KEY
 
-# 设置超时时间（秒）
-ais config set timeout 30
+# 添加本地 Ollama 提供商
+ais provider-add ollama \
+  --url http://localhost:11434/v1/chat/completions \
+  --model llama3
+
+# 查看添加帮助
+ais provider-add --help-detail
 ```
 
-## 🔔 通知设置
-
-### 通知类型
+### 切换提供商
 ```bash
-# 开启桌面通知
-ais config set desktop-notifications true
+# 切换到指定提供商
+ais provider-use openai
 
-# 开启声音通知
-ais config set sound-notifications true
+# 切换到本地提供商
+ais provider-use ollama
 
-# 开启完成通知
-ais config set completion-notifications true
-```
-
-### 通知级别
-```bash
-# 只通知错误
-ais config set notification-level error
-
-# 通知警告和错误
-ais config set notification-level warning
-
-# 通知所有信息
-ais config set notification-level info
+# 切换回默认免费服务
+ais provider-use default_free
 ```
 
 ## 💾 数据存储
 
 ### 存储位置
 ```bash
-# 查看数据目录
-ais config show data-dir
+# 配置文件：~/.config/ais/config.toml
+# 数据库：~/.local/share/ais/history.db
+# 缓存：~/.cache/ais/
 
-# 设置自定义数据目录
-ais config set data-dir /custom/path
+# 查看历史记录
+ais history
 
-# 重置为默认位置
-ais config reset data-dir
+# 查看特定记录详情
+ais history 1
 ```
 
-### 历史记录
+### 历史记录管理
 ```bash
-# 设置历史记录保留天数
-ais config set history-retention 30
+# 查看最近10条记录
+ais history
 
-# 设置最大历史记录数
-ais config set max-history 1000
+# 查看最近20条记录
+ais history -n 20
 
-# 清空历史记录
-ais history clear
+# 只查看失败的命令
+ais history --failed-only
+
+# 按命令过滤
+ais history --command-filter git
 ```
 
-## 🛡️ 安全设置
+## 🛡️ 隐私和安全
 
-### 安全级别
+### 敏感数据保护
 ```bash
-# 严格模式（推荐）
-ais config set security-level strict
+# 查看敏感目录配置
+ais config
 
-# 标准模式
-ais config set security-level standard
-
-# 宽松模式
-ais config set security-level relaxed
+# 敏感目录已默认配置：
+# - ~/.ssh （SSH密钥）
+# - ~/.config/ais （AIS配置）
+# - ~/.aws （AWS凭证）
 ```
 
-### 安全选项
+### 本地化选项
 ```bash
-# 启用命令确认
-ais config set require-confirmation true
+# 使用本地AI模型（完全离线）
+ais provider-add ollama \
+  --url http://localhost:11434/v1/chat/completions \
+  --model llama3
 
-# 启用危险命令警告
-ais config set dangerous-command-warning true
+ais provider-use ollama
 
-# 启用网络请求确认
-ais config set network-request-confirmation true
+# 所有数据本地存储
+# 配置文件：~/.config/ais/
+# 数据库：~/.local/share/ais/
 ```
 
 ## 🔧 高级设置
 
-### 调试模式
+### 系统集成测试
 ```bash
-# 开启调试模式
-ais config set debug true
+# 测试系统集成
+ais test-integration
 
-# 设置日志级别
-ais config set log-level debug
+# 手动设置Shell集成
+ais setup
 
-# 查看日志文件
-ais config show log-file
+# 查看完整帮助
+ais help-all
 ```
 
-### 实验性功能
+### 学习和分析功能
 ```bash
-# 开启实验性功能
-ais config set experimental true
+# 生成学习报告
+ais report
 
-# 查看可用的实验性功能
-ais config list-experimental
+# 学习特定主题
+ais learn git
+ais learn docker
+ais learn vim
+
+# 查看学习帮助
+ais learn --help-detail
 ```
 
 ## 📋 配置模板
@@ -248,74 +249,54 @@ ais config list-experimental
 ### 开发者配置
 ```bash
 # 适合开发者的配置
-ais config set context-level detailed
-ais config set verbosity verbose
-ais config set debug true
-ais config set experimental true
+ais config --set context_level=detailed
+ais config --set auto_analysis=true
+ais provider-add openai --url ... --model gpt-4o-mini --key YOUR_KEY
 ```
 
-### 生产环境配置
+### 隐私保护配置
 ```bash
-# 适合生产环境的配置
-ais config set context-level minimal
-ais config set verbosity quiet
-ais config set security-level strict
-ais config set auto-analysis false
+# 适合隐私敏感用户的配置
+ais config --set context_level=minimal
+ais provider-add ollama --url http://localhost:11434/v1/chat/completions --model llama3
+ais provider-use ollama
 ```
 
 ### 学习者配置
 ```bash
 # 适合学习者的配置
-ais config set context-level standard
-ais config set verbosity verbose
-ais config set completion-notifications true
-ais config set require-confirmation true
+ais config --set context_level=standard
+ais config --set auto_analysis=true
+# 使用默认免费服务即可
 ```
 
 ## 🔍 配置验证
 
 ### 验证配置
 ```bash
-# 验证所有配置
-ais config validate
+# 查看当前配置
+ais config
 
-# 验证特定配置
-ais config validate auto-analysis
+# 测试系统集成
+ais test-integration
 
-# 检查配置冲突
-ais config check-conflicts
+# 查看提供商状态
+ais provider-list
 ```
 
-### 配置诊断
+### 实际使用测试
 ```bash
-# 诊断配置问题
-ais config diagnose
+# 测试AI问答
+ais ask "什么是AIS？"
 
-# 修复配置问题
-ais config repair
+# 测试错误分析（故意触发错误）
+nonexistent-command
 
-# 生成配置报告
-ais config report
-```
+# 测试学习功能
+ais learn git
 
-## 📤 配置导入导出
-
-### 导出配置
-```bash
-# 导出所有配置
-ais config export config.yaml
-
-# 导出特定配置
-ais config export --section basic config.yaml
-```
-
-### 导入配置
-```bash
-# 导入配置
-ais config import config.yaml
-
-# 合并配置
-ais config import --merge config.yaml
+# 测试历史记录
+ais history
 ```
 
 ---

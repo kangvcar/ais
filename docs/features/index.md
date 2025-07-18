@@ -29,29 +29,35 @@ AIS (AI Shell) 是一个**上下文感知的错误分析学习助手**，通过�
 - **趋势分析**：展示用户的学习进步趋势
 
 ### 5. 多 AI 提供商管理
-- **灵活切换**：支持多种 AI 服务提供商
+- **内置免费服务**：安装后即可使用，无需配置API密钥
+- **灵活切换**：支持多种 AI 服务提供商（OpenAI、Ollama等）
 - **统一接口**：通过统一的命令行接口管理所有 AI 服务
-- **智能路由**：根据任务类型自动选择最适合的 AI 模型
-- **本地模型支持**：支持 Ollama 等本地 AI 模型
+- **本地模型支持**：支持 Ollama 等本地 AI 模型，保护隐私
 
 ## 🚀 快速开始
 
 ### 安装 AIS
 ```bash
-# 使用 pip 安装
-pip install ais-terminal
+# 一键安装脚本（推荐）
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
 
-# 或者使用 pipx 安装（推荐）
+# 国内用户可使用Gitee镜像
+curl -sSL https://gitee.com/kangvcar/ais/raw/main/scripts/install.sh | bash
+
+# 或者使用 pipx 安装
 pipx install ais-terminal
 ```
 
-### 配置 Shell 集成
+### 自动配置完成
 ```bash
-# 自动配置 Shell 集成
-ais setup
+# 安装脚本会自动配置：
+# - Shell 集成（自动错误分析）
+# - AI 服务（内置免费服务）
+# - 配置文件和数据库
 
-# 重启终端或重新加载配置
-source ~/.bashrc  # 或 ~/.zshrc
+# 验证安装
+ais --version
+ais test-integration
 ```
 
 ### 开始使用
@@ -68,6 +74,9 @@ ais learn git
 
 # 查看学习报告
 ais report
+
+# 查看历史记录
+ais history
 ```
 
 ## 🌟 使用场景
@@ -112,14 +121,15 @@ ais report
 - **异步处理**：高性能的异步 I/O 处理
 
 ### 多平台支持
-- **跨平台**：支持 Linux、macOS、Windows
-- **多 Shell 支持**：支持 Bash、Zsh、Fish、PowerShell
+- **跨平台**：支持 Linux、macOS、Windows（WSL）
+- **多 Shell 支持**：支持 Bash、Zsh，自动检测Shell类型
 - **容器化**：提供 Docker 镜像，支持容器化部署
+- **多发行版支持**：自动适配Ubuntu、CentOS、Debian、Rocky Linux等20+发行版
 
 ### 数据管理
-- **本地数据库**：使用 SQLite 存储用户数据
-- **数据备份**：支持数据备份和恢复
-- **数据迁移**：支持版本升级时的数据迁移
+- **本地数据库**：使用 SQLite 存储用户数据（`~/.local/share/ais/`）
+- **配置管理**：TOML格式配置文件（`~/.config/ais/config.toml`）
+- **隐私保护**：敏感数据过滤，支持本地AI模型
 
 ---
 
@@ -154,5 +164,5 @@ AIS 是一个开源项目，欢迎大家贡献代码和建议。
 :::
 
 ::: warning 注意
-使用 AIS 前，请先阅读隐私政策，了解数据收集和使用方式。
+AIS 优先保护用户隐私，所有数据本地存储，支持完全离线使用。
 :::

@@ -1,70 +1,33 @@
 # 快速开始
 
-欢迎使用 AIS！本指南将帮助您在 5 分钟内完成 AIS 的安装和基本配置，快速体验智能错误分析的强大功能。
+欢迎使用 AIS！本指南将帮助您在 2 分钟内完成 AIS 的安装和基本配置，快速体验智能错误分析的强大功能。
 
-## 🚀 5 分钟快速上手
+## 🚀 2 分钟快速上手
 
-### 第 1 步：安装 AIS
+### 第 1 步：一键安装
 ```bash
-# 使用 pipx 安装（推荐）
-pipx install ais-terminal
+# 推荐：一键安装脚本（自动检测环境）
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
 
-# 或使用 pip 安装
-pip install ais-terminal
+# 国内用户可使用Gitee镜像（更快更稳定）
+curl -sSL https://gitee.com/kangvcar/ais/raw/main/scripts/install.sh | bash
 
 # 验证安装
 ais --version
 ```
 
-### 第 2 步：配置 Shell 集成
+### 第 2 步：自动配置完成
 ```bash
-# 自动配置 Shell 集成
-ais setup
-
-# 重启终端或重新加载配置
-source ~/.bashrc  # Bash 用户
-source ~/.zshrc   # Zsh 用户
-exec fish        # Fish 用户
-```
-
-### 第 3 步：配置 AI 提供商
-```bash
-# 选择一个 AI 提供商（三选一）
-
-# 选项 1: OpenAI（需要 API 密钥）
-ais provider-add openai \
-  --url https://api.openai.com/v1/chat/completions \
-  --model gpt-3.5-turbo \
-  --api-key YOUR_OPENAI_API_KEY
-
-# 选项 2: Ollama（本地免费）
-# 先安装 Ollama: curl -fsSL https://ollama.ai/install.sh | sh
-ollama serve &
-ollama pull llama2
-ais provider-add ollama \
-  --url http://localhost:11434/v1/chat/completions \
-  --model llama2
-
-# 选项 3: Claude（需要 API 密钥）
-ais provider-add claude \
-  --url https://api.anthropic.com/v1/messages \
-  --model claude-3-sonnet-20240229 \
-  --api-key YOUR_ANTHROPIC_API_KEY
-
-# 设置默认提供商
-ais provider-use openai  # 或 ollama、claude
-```
-
-### 第 4 步：启用自动分析
-```bash
-# 开启自动错误分析
-ais on
+# 一键安装脚本已自动配置：
+# ✅ Shell 集成（自动错误分析）
+# ✅ AI 服务（内置免费服务）
+# ✅ 配置文件和数据库
 
 # 验证配置
-ais status
+ais test-integration
 ```
 
-### 第 5 步：测试功能
+### 第 3 步：立即使用
 ```bash
 # 测试 AI 问答
 ais ask "如何使用 Docker 创建容器？"
@@ -75,6 +38,16 @@ nonexistent-command
 
 # 测试学习功能
 ais learn git
+```
+
+### 手动安装（可选）
+```bash
+# 如果需要手动安装，可以使用：
+pipx install ais-terminal
+
+# 然后手动配置Shell集成
+ais setup
+source ~/.bashrc
 ```
 
 ## 🎯 核心功能快速体验
@@ -146,8 +119,8 @@ ais --help
 # 查看版本
 ais --version
 
-# 查看状态
-ais status
+# 测试系统集成
+ais test-integration
 
 # 开启/关闭自动分析
 ais on
@@ -159,8 +132,8 @@ ais off
 # AI 问答
 ais ask "你的问题"
 
-# 错误分析
-ais analyze
+# 手动错误分析
+ais analyze --exit-code 1 --command "failed-command"
 
 # 学习功能
 ais learn 主题
@@ -172,13 +145,13 @@ ais report
 ### 配置管理
 ```bash
 # 查看配置
-ais config show
+ais config
 
 # 设置配置
-ais config set 键 值
+ais config --set key=value
 
-# 重置配置
-ais config reset
+# 查看配置帮助
+ais config --help-context
 ```
 
 ### 提供商管理
@@ -189,68 +162,76 @@ ais provider-list
 # 切换提供商
 ais provider-use 提供商名称
 
-# 测试提供商
-ais provider-test 提供商名称
+# 添加提供商
+ais provider-add --help-detail
 ```
 
 ## 🔧 个性化配置
 
 ### 基本设置
 ```bash
-# 设置语言
-ais config set language zh-CN
-
 # 设置上下文收集级别
-ais config set context-level standard
+ais config --set context_level=standard
 
-# 设置输出格式
-ais config set output-format rich
+# 开启/关闭自动分析
+ais config --set auto_analysis=true
+
+# 查看所有配置选项
+ais config --help-context
 ```
 
 ### 隐私设置
 ```bash
-# 添加敏感信息过滤
-ais config add-sensitive-pattern "*password*"
-ais config add-sensitive-pattern "*token*"
+# 查看当前敏感目录配置
+ais config
 
-# 添加排除目录
-ais config add-excluded-dir ~/.ssh
-ais config add-excluded-dir ~/.aws
+# 敏感目录已默认配置：
+# - ~/.ssh
+# - ~/.config/ais
+# - ~/.aws
 ```
 
-### 学习偏好
+### AI 提供商配置
 ```bash
-# 设置学习级别
-ais config set learning-level intermediate
+# 添加OpenAI提供商
+ais provider-add openai \
+  --url https://api.openai.com/v1/chat/completions \
+  --model gpt-4o-mini \
+  --key YOUR_API_KEY
 
-# 设置学习格式
-ais config set learning-format markdown
+# 添加本地Ollama提供商
+ais provider-add ollama \
+  --url http://localhost:11434/v1/chat/completions \
+  --model llama3
 
-# 启用学习进度跟踪
-ais config set track-learning-progress true
+# 切换提供商
+ais provider-use ollama
 ```
 
 ## 🎨 界面美化
 
-### 启用 Rich 输出
+### Rich 输出（内置）
 ```bash
-# 启用彩色输出
-ais config set output-format rich
+# AIS 默认启用了 Rich 美化输出：
+# ✅ 彩色输出和语法高亮
+# ✅ 进度条和流式输出
+# ✅ 表格格式和面板显示
+# ✅ 交互式菜单
 
-# 启用进度条
-ais config set show-progress true
-
-# 启用表格格式
-ais config set table-format fancy
+# 查看美化效果
+ais ask "什么是Docker？"
+ais history
 ```
 
-### 流式输出
+### 流式输出（内置）
 ```bash
-# 启用流式输出
-ais config set enable-streaming true
+# AIS 默认启用了流式输出：
+# ✅ 实时显示AI分析进度
+# ✅ 渐进式内容显示
+# ✅ 动态进度指示器
 
-# 设置流式输出模式
-ais config set stream-mode progressive
+# 体验流式输出
+ais learn git
 ```
 
 ## 💡 使用技巧
@@ -261,19 +242,25 @@ ais config set stream-mode progressive
    alias aa='ais ask'
    alias al='ais learn'
    alias ar='ais report'
+   alias ah='ais history'
    ```
 
 2. **配置多个提供商**：为不同用途配置不同的 AI 提供商
    ```bash
-   ais config set ask-provider openai
-   ais config set analyze-provider claude
-   ais config set learn-provider ollama
+   # 添加多个提供商
+   ais provider-add openai --url ... --model gpt-4o-mini --key YOUR_KEY
+   ais provider-add ollama --url http://localhost:11434/v1/chat/completions --model llama3
+   
+   # 根据需要切换
+   ais provider-use openai    # 使用OpenAI
+   ais provider-use ollama    # 使用本地Ollama
    ```
 
-3. **启用缓存**：加速重复查询
+3. **查看详细帮助**：使用内置的详细帮助
    ```bash
-   ais config set enable-cache true
-   ais config set cache-ttl 3600
+   ais ask --help-detail
+   ais learn --help-detail
+   ais provider-add --help-detail
    ```
 
 ### 学习建议
@@ -294,22 +281,25 @@ ais config set stream-mode progressive
 export PATH="$PATH:$HOME/.local/bin"
 
 # 如果 Shell 集成不工作
-ais setup --force
+ais setup
+source ~/.bashrc
 
-# 如果 AI 提供商连接失败
-ais provider-test 提供商名称
+# 如果 AI 服务连接失败
+ais provider-list
+ais test-integration
 ```
 
 ### 获取帮助
 ```bash
 # 查看详细帮助
-ais command --help
+ais --help
+ais ask --help-detail
 
-# 生成诊断报告
-ais diagnose
+# 测试系统集成
+ais test-integration
 
-# 查看日志
-tail -f ~/.local/share/ais/ais.log
+# 查看历史记录
+ais history
 ```
 
 ## 🎉 成功！
@@ -342,5 +332,5 @@ AIS 会随着使用变得更加智能。建议在日常工作中持续使用，�
 :::
 
 ::: warning 注意
-首次使用 AI 功能时，响应可能稍慢。这是正常现象，后续使用会更加流畅。
+AIS 内置了免费的AI服务，安装后即可使用。如需更好的AI体验，可配置OpenAI或使用本地Ollama。
 :::

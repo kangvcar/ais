@@ -1,8 +1,36 @@
 # 安装指南
 
-AIS 支持多种安装方式，推荐使用 `pipx` 进行安装以获得最佳的依赖隔离效果。
+AIS 支持多种安装方式，推荐使用一键安装脚本自动检测环境并选择最佳安装方式。
 
-## 📦 安装方式
+## 🚀 一键安装（推荐）
+
+### 国内外通用安装
+```bash
+# 推荐：一键安装脚本（自动检测环境）
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
+
+# 国内用户可使用Gitee镜像（更快更稳定）
+curl -sSL https://gitee.com/kangvcar/ais/raw/main/scripts/install.sh | bash
+```
+
+### 特定安装模式
+```bash
+# 用户级安装（推荐）
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --user
+
+# 系统级安装（需要sudo权限）
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash -s -- --system
+```
+
+**一键安装脚本特性：**
+- 🔍 自动检测操作系统和Python版本
+- 📦 智能选择最佳安装方式（pipx/pip/编译）
+- 🛠️ 自动处理依赖安装和环境配置
+- 🚀 自动设置Shell集成
+- 📊 支持20+种Linux发行版
+- 🏗️ 自动编译Python（CentOS 7.x/Kylin Linux）
+
+## 📦 手动安装方式
 
 ### 方式 1: 使用 pipx 安装（推荐）
 
@@ -34,8 +62,8 @@ pip install --user ais-terminal
 git clone https://github.com/kangvcar/ais.git
 cd ais
 
-# 安装依赖
-pip install -e .
+# 创建虚拟环境并安装
+source .venv/bin/activate && python3 -m pip install -e .
 
 # 验证安装
 ais --version
@@ -44,23 +72,40 @@ ais --version
 ### 方式 4: 使用 Docker
 
 ```bash
-# 拉取镜像
-docker pull kangvcar/ais:latest
+# 使用Docker快速安装脚本
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/docker-install.sh | bash
 
-# 运行容器
+# 或手动拉取镜像
+docker pull kangvcar/ais:latest
 docker run -it kangvcar/ais:latest
 ```
 
 ## 🔧 系统要求
 
 ### 支持的操作系统
-- **Linux**: Ubuntu 18.04+, CentOS 7+, Debian 10+
+- **Linux**: Ubuntu 18.04+, CentOS 7+, Debian 10+, Rocky Linux 8+, openEuler 22+, Kylin Linux V10
 - **macOS**: macOS 10.14+
 - **Windows**: Windows 10+ (通过 WSL)
 
 ### 依赖要求
-- **Python**: 3.8 或更高版本
-- **Shell**: Bash 4.0+, Zsh 5.0+, Fish 3.0+
+- **Python**: 3.8 或更高版本（一键安装脚本会自动处理旧版本）
+- **Shell**: Bash 4.0+, Zsh 5.0+
+
+### 支持的Linux发行版
+**自动检测和适配的发行版：**
+- Ubuntu 20.04/22.04/24.04
+- CentOS 7.x/8.x/9.x
+- Rocky Linux 8.x/9.x
+- CentOS Stream 8/9
+- Fedora 33-41
+- Debian 11.x/12.x
+- openEuler 22.x/24.x
+- Kylin Linux Advanced Server V10
+
+**特殊处理：**
+- CentOS 7.x: 自动编译Python 3.10.9（含OpenSSL 1.1补丁）
+- Kylin Linux V10: 自动编译Python 3.10.9（优化编译）
+- Ubuntu 24.04/Debian 12: 自动使用pipx（避免externally-managed-environment错误）
 
 ### 必要依赖
 ```bash
@@ -104,21 +149,32 @@ ais history --limit 5
 
 ### 1. 配置 AI 服务提供商
 
-AIS 需要 AI 服务才能正常工作，支持多种提供商：
+AIS 内置了免费的AI服务，开箱即用。也支持配置自定义AI服务提供商：
 
-#### OpenAI
+#### 内置免费服务（开箱即用）
+```bash
+# 查看当前配置（包含内置免费服务）
+ais config
+
+# 内置服务已配置：
+# - 提供商：default_free
+# - 模型：gpt-4o-mini
+# - 免费API密钥：已内置
+```
+
+#### 添加 OpenAI 服务
 ```bash
 # 添加 OpenAI 提供商
 ais provider-add openai \
   --url https://api.openai.com/v1/chat/completions \
-  --model gpt-3.5-turbo \
-  --api-key YOUR_OPENAI_API_KEY
+  --model gpt-4o-mini \
+  --key YOUR_OPENAI_API_KEY
 
 # 设置为默认提供商
 ais provider-use openai
 ```
 
-#### Ollama（本地 AI）
+#### 添加 Ollama（本地 AI）
 ```bash
 # 确保 Ollama 正在运行
 ollama serve
@@ -126,48 +182,52 @@ ollama serve
 # 添加 Ollama 提供商
 ais provider-add ollama \
   --url http://localhost:11434/v1/chat/completions \
-  --model llama2
+  --model llama3
 
 # 设置为默认提供商
 ais provider-use ollama
 ```
 
-#### 自定义提供商
+#### 添加自定义提供商
 ```bash
 # 添加自定义提供商
 ais provider-add custom \
   --url https://your-api-endpoint.com/v1/chat/completions \
   --model your-model \
-  --api-key YOUR_API_KEY
+  --key YOUR_API_KEY
 ```
 
-### 2. 配置 Shell 集成
+### 2. Shell 集成（自动配置）
 
 Shell 集成是 AIS 的核心功能，用于自动捕获命令错误：
 
+**一键安装脚本会自动配置Shell集成，无需手动操作。**
+
 ```bash
-# 自动配置 Shell 集成
-ais setup
+# 检查Shell集成状态
+ais test-integration
 
 # 手动配置（如果自动配置失败）
-echo 'eval "$(ais shell-integration bash)"' >> ~/.bashrc
-source ~/.bashrc
+ais setup
+
+# 重新加载Shell配置
+source ~/.bashrc  # 或 source ~/.zshrc
 ```
 
 ### 3. 基本配置
 
 ```bash
 # 查看当前配置
-ais config show
+ais config
 
 # 设置上下文收集级别
-ais config set context-level standard
+ais config --set context_level=standard
 
-# 开启自动分析
+# 开启自动分析（默认已开启）
 ais on
 
-# 设置语言
-ais config set language zh-CN
+# 查看可用的配置选项
+ais config --help-context
 ```
 
 ## 🔍 故障排除
@@ -244,13 +304,17 @@ pip install -e .
 
 ### 卸载 AIS
 ```bash
+# 使用智能卸载脚本（推荐）
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/uninstall.sh | bash
+
+# 或手动卸载
 # 使用 pipx 卸载
 pipx uninstall ais-terminal
 
 # 使用 pip 卸载
 pip uninstall ais-terminal
 
-# 清理配置文件（可选）
+# 清理配置文件
 rm -rf ~/.config/ais
 rm -rf ~/.local/share/ais
 ```
@@ -275,5 +339,5 @@ rm -rf ~/.local/share/ais
 :::
 
 ::: warning 注意
-首次使用前，请确保配置至少一个 AI 服务提供商，否则 AIS 无法正常工作。
+AIS 内置了免费的AI服务，安装后即可使用。如需使用自定义AI服务，请参考上面的配置说明。
 :::

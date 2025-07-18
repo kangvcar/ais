@@ -38,19 +38,14 @@ ais setup
 source ~/.bashrc
 
 # CentOS 7.x (系统自带Python 3.6)
-安装 Python 3.11.13
-yum groupinstall -y "Development Tools"
-yum install epel-release
+安装 Python 3.10.9
+yum install -y epel-release
 yum install -y gcc make patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel  tk-devel libffi-devel xz-devel openssl11 openssl11-devel openssl11-libs ncurses-devel tk-devel gdbm-devel db4-devel libpcap-devel expat-devel
 wget https://repo.huaweicloud.com/artifactory/python-local/3.10.9/Python-3.10.9.tgz
 tar zxf Python-3.10.9.tgz && cd Python-3.10.9
-export PKG_CONFIG_PATH="/usr/lib64/pkgconfig:$PKG_CONFIG_PATH"
-export LDFLAGS="-L/usr/lib64"
-export CPPFLAGS="-I/usr/include"
-./configure --prefix=/usr/local/python3.12 --with-openssl=/usr --with-openssl-rpath=auto
-make -j$(nproc) && make install
-ln -s /usr/local/python3.10/bin/python3.10 /usr/local/bin/python3.10
-ln -s /usr/local/python3.10/bin/pip3.10 /usr/local/bin/pip3.10
+sed -i 's/PKG_CONFIG openssl /PKG_CONFIG openssl11 /g' configure
+./configure
+make && make altinstall
 python3.10 -m pip install ais-terminal
 ais setup
 source ~/.bashrc
@@ -96,21 +91,12 @@ ais setup
 source ~/.bashrc
 
 # Kylin Linux Advanced Server V10（系统自带Python 3.7）
-安装Python 3.11.13
-yum install -y gcc make patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel git
-mkdir $HOME/.pyenv
-git clone https://gitee.com/mirrors/pyenv.git ~/.pyenv
-echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
-echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
-echo 'eval "$(pyenv init -)"' >> ~/.bashrc
-source ~/.bashrc
-mkdir -p ~/.pyenv/cache
-wget https://repo.huaweicloud.com/python/3.11.13/Python-3.11.13.tar.xz -O ~/.pyenv/cache/Python-3.11.13.tar.xz
-pyenv install 3.11.13
-mkdir -p ~/ais_project
-cd ~/ais_project
-pyenv local 3.11.13
-$HOME/.pyenv/versions/3.11.13/bin/pip install ais-terminal
-sudo ln -sf $HOME/.pyenv/versions/3.11.13/bin/ais /usr/local/bin/ais
+安装 Python 3.10.9
+yum install -y gcc make patch zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel libffi-devel
+wget https://repo.huaweicloud.com/artifactory/python-local/3.10.9/Python-3.10.9.tgz
+tar zxf Python-3.10.9.tgz && cd Python-3.10.9
+./configure --enable-optimizations
+make && make altinstall
+python3.10 -m pip install ais-terminal
 ais setup
 source ~/.bashrc
