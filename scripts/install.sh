@@ -55,6 +55,7 @@ show_progress() {
     local current=$1
     local total=$2
     local message=$3
+    local force_newline=${4:-auto}  # auto, true, false
     local percentage=$((current * 100 / total))
     local filled=$((current * PROGRESS_WIDTH / total))
     local empty=$((PROGRESS_WIDTH - filled))
@@ -71,8 +72,8 @@ show_progress() {
     # 清空整行并在同一行更新显示
     printf "\r\033[K${CYAN}[${bar}] ${percentage}%% ${NC}${message}${NC}"
     
-    # 如果完成，换行
-    if [ "$current" -eq "$total" ]; then
+    # 根据参数决定是否换行
+    if [ "$force_newline" = "true" ] || ([ "$force_newline" = "auto" ] && [ "$current" -eq "$total" ]); then
         echo
     fi
 }
@@ -696,7 +697,7 @@ setup_python_environment() {
             
             # 下载Python 3.10.9源码
             local python_url="https://repo.huaweicloud.com/artifactory/python-local/3.10.9/Python-3.10.9.tgz"
-            if ! run_with_spinner "正在下载Python 3.10.9源码..." "wget -q $python_url" "dots" "Python源码下载完成"; then
+            if ! run_with_spinner "正在下载Python 3.10.9源码..." "wget -q $python_url" "dots" "Python 3.10.9源码下载完成"; then
                 print_error "Python源码下载失败"
                 return 1
             fi
@@ -772,7 +773,7 @@ setup_python_environment() {
             cd /
             rm -rf "$temp_dir"
             
-            print_info "Python 3.10.9编译安装完成"
+            print_success "Python 3.10.9编译安装完成"
             ;;
         "python_upgrade")
             # 使用升级的Python版本
@@ -832,9 +833,7 @@ install_ais() {
             fi
             
             # 验证ais命令可用
-            if [ -x "/usr/local/bin/ais" ]; then
-                print_info "AIS命令已创建软链接: /usr/local/bin/ais"
-            else
+            if [ ! -x "/usr/local/bin/ais" ]; then
                 print_warning "软链接创建失败，请手动添加Python路径到PATH"
             fi
             ;;
@@ -861,9 +860,7 @@ install_ais() {
             fi
             
             # 验证ais命令可用
-            if [ -x "/usr/local/bin/ais" ]; then
-                print_info "AIS命令已创建软链接: /usr/local/bin/ais"
-            else
+            if [ ! -x "/usr/local/bin/ais" ]; then
                 print_warning "软链接创建失败，请手动添加Python路径到PATH"
             fi
             ;;
@@ -969,20 +966,24 @@ verify_installation() {
 
 # 主安装函数
 main() {
-    echo "================================================"
-    echo "         AIS - 上下文感知的错误分析学习助手 安装器"
-    echo "              基于多发行版测试验证优化"
-    echo "================================================"
-    echo "版本: $AIS_VERSION"
-    echo "GitHub: https://github.com/$GITHUB_REPO"
+    echo
+    echo -e "${CYAN}    ██████╗ ██╗███████╗"
+    echo -e "   ██╔══██╗██║██╔════╝"
+    echo -e "   ███████║██║███████╗"
+    echo -e "   ██╔══██║██║╚════██║"
+    echo -e "   ██║  ██║██║███████║"
+    echo -e "   ╚═╝  ╚═╝╚═╝╚══════╝${NC}"
+    echo
+    echo -e "${GREEN}上下文感知的错误分析学习助手 - 智能安装器${NC}"
+    echo -e "${BLUE}版本: $AIS_VERSION | GitHub: https://github.com/$GITHUB_REPO${NC}"
     echo
     
     # 初始化进度条
-    show_progress 0 $PROGRESS_TOTAL "正在初始化..."
+    show_progress 0 $PROGRESS_TOTAL "正在初始化..." "false"
     sleep 0.5
     
     # 检测系统环境
-    update_progress 10 "正在检测系统环境..."
+    show_progress 10 $PROGRESS_TOTAL "正在检测系统环境..." "false"
     local env
     env=$(detect_environment)
     local strategy
@@ -991,26 +992,29 @@ main() {
     system_info=$(get_system_info)
     IFS='|' read -r os_name os_version python_version <<< "$system_info"
     
-    update_progress 5 "检测到系统: $os_name $os_version, Python: $python_version"
+    show_progress 15 $PROGRESS_TOTAL "检测到系统: $os_name $os_version, Python: $python_version" "false"
+    PROGRESS_CURRENT=15
     
     # 根据策略安装
     case "$strategy" in
         "pipx_native")
-            update_progress 5 "使用pipx原生安装策略"
+            show_progress 20 $PROGRESS_TOTAL "使用pipx原生安装策略" "false"
             ;;
         "pip_direct")
-            update_progress 5 "使用pip直接安装策略"
+            show_progress 20 $PROGRESS_TOTAL "使用pip直接安装策略" "false"
             ;;
         "python_upgrade")
-            update_progress 5 "使用Python升级安装策略"
+            show_progress 20 $PROGRESS_TOTAL "使用Python升级安装策略" "false"
             ;;
         "compile_python39")
-            update_progress 5 "使用Python 3.9.23编译安装策略"
+            show_progress 20 $PROGRESS_TOTAL "使用Python 3.9.23编译安装策略" "false"
             ;;
         "compile_python310")
-            update_progress 5 "使用Python 3.10.9编译安装策略"
+            show_progress 20 $PROGRESS_TOTAL "使用Python 3.10.9编译安装策略" "false"
             ;;
     esac
+    PROGRESS_CURRENT=20
+    sleep 0.5
     
     # 执行安装步骤
     install_system_dependencies "$strategy"
