@@ -216,25 +216,25 @@ def _check_shell_integration():
     """策略3: 检查shell集成是否已配置"""
     import os
     from pathlib import Path
-    
+
     # 检测shell配置文件
     shell = os.environ.get("SHELL", "/bin/bash")
     shell_name = os.path.basename(shell)
-    
+
     config_files = {
         "bash": [Path.home() / ".bashrc", Path.home() / ".bash_profile"],
         "zsh": [Path.home() / ".zshrc"],
     }
-    
+
     target_files = config_files.get(shell_name, [Path.home() / ".bashrc"])
-    
+
     # 检查是否已配置
     for config_file in target_files:
         if config_file.exists():
             content = config_file.read_text()
             if "# START AIS INTEGRATION" in content:
                 return True  # 已配置
-    
+
     return False  # 未配置
 
 
@@ -266,9 +266,12 @@ def main(ctx):
       ais history --help-detail 查看历史命令帮助
     """
     # 只在执行具体命令时进行检查（不是--help时）
-    if ctx.invoked_subcommand and ctx.invoked_subcommand not in ["help", "setup"]:
+    if ctx.invoked_subcommand and ctx.invoked_subcommand not in [
+        "help",
+        "setup",
+    ]:
         _auto_setup_shell_integration()
-        
+
         # 策略3: 首次运行自动提示
         if not _check_shell_integration():
             _show_setup_reminder()
@@ -1135,16 +1138,22 @@ fi
                 f"\n[green]✅ 集成配置已自动添加到: {config_file}[/green]"
             )
             console.print()
-            
+
             # 策略1: 最简洁直接的配置提示
-            console.print("[bold green]⚡ 最后一步：让配置立即生效[/bold green]")
+            console.print(
+                "[bold green]⚡ 最后一步：让配置立即生效[/bold green]"
+            )
             console.print()
             console.print("请执行以下命令：")
             console.print(f"[bold cyan]source {config_file}[/bold cyan]")
             console.print()
-            console.print("[green]✨ 执行后，命令失败时将自动显示AI错误分析！[/green]")
+            console.print(
+                "[green]✨ 执行后，命令失败时将自动显示AI错误分析！[/green]"
+            )
             console.print()
-            console.print("[dim]💡 提示：也可以重新打开终端让配置自动生效[/dim]")
+            console.print(
+                "[dim]💡 提示：也可以重新打开终端让配置自动生效[/dim]"
+            )
         else:
             console.print(
                 f"\n[yellow]ℹ️ 集成配置已存在于: {config_file}[/yellow]"
