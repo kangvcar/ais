@@ -7,6 +7,12 @@
 
 ## [Unreleased]
 
+### Fixed
+- 🔧 **修复CentOS 7安装脚本重复执行问题**：解决一键安装脚本中compile_python310分支的代码重复导致的错误
+  - 删除782-919行的重复Python编译逻辑，避免变量冲突和文件名错误
+  - 修复`tar: Python-3.6.tar.xz: Cannot open: No such file or directory`错误
+  - 确保CentOS 7系统第一次运行安装脚本即可成功，无需使用--debug参数重复运行
+
 ## [1.2.0] - 2025-07-18
 
 ### Added
