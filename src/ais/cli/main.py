@@ -1093,40 +1093,81 @@ fi
                 f"\n[green]✅ 集成配置已自动添加到: {config_file}[/green]"
             )
             console.print()
-            
+
             # 方案3: 改进提示信息 - 显示清晰的配置生效方式选择
-            console.print("[bold yellow]🤔 配置已添加，请选择以下方式之一：[/bold yellow]")
-            console.print("  [green]1.[/green] 当前终端立即生效: [bold]source ~/.bashrc[/bold]")
-            console.print("  [green]2.[/green] 新终端自动生效: [bold]重新打开终端[/bold]") 
-            console.print("  [green]3.[/green] 临时测试: [bold]source " + script_path + "[/bold]")
+            console.print(
+                "[bold yellow]🤔 配置已添加，请选择以下方式之一：[/bold yellow]"
+            )
+            console.print(
+                "  [green]1.[/green] 当前终端立即生效: [bold]source ~/.bashrc[/bold]"
+            )
+            console.print(
+                "  [green]2.[/green] 新终端自动生效: [bold]重新打开终端[/bold]"
+            )
+            console.print(
+                "  [green]3.[/green] 临时测试: [bold]source "
+                + script_path
+                + "[/bold]"
+            )
             console.print()
-            
+
             # 方案4: 智能检测并询问用户
             try:
                 import sys
+
                 if sys.stdin.isatty():  # 只在交互式终端中询问
-                    choice = input("💡 是否立即在当前终端生效配置？[Y/n]: ").strip()
-                    if choice.lower() in ['', 'y', 'yes']:
-                        console.print("[green]✨ 正在尝试自动加载配置...[/green]")
+                    choice = input(
+                        "💡 是否立即在当前终端生效配置？[Y/n]: "
+                    ).strip()
+                    if choice.lower() in ["", "y", "yes"]:
+                        console.print(
+                            "[green]✨ 正在尝试自动加载配置...[/green]"
+                        )
                         import subprocess
+
                         try:
-                            subprocess.run([shell, "-c", f"source {config_file}"], check=False)
-                            console.print("[green]✅ 已尝试自动加载配置！[/green]")
-                            console.print("[yellow]💡 如果自动分析未生效，请重新打开终端[/yellow]")
+                            subprocess.run(
+                                [shell, "-c", f"source {config_file}"],
+                                check=False,
+                            )
+                            console.print(
+                                "[green]✅ 已尝试自动加载配置！[/green]"
+                            )
+                            console.print(
+                                "[yellow]💡 如果自动分析未生效，请重新打开终端[/yellow]"
+                            )
                         except Exception as e:
-                            console.print(f"[yellow]⚠️ 自动加载失败: {e}[/yellow]")
-                            console.print(f"[blue]请手动运行: [bold]source {config_file}[/bold][/blue]")
+                            console.print(
+                                f"[yellow]⚠️ 自动加载失败: {e}[/yellow]"
+                            )
+                            console.print(
+                                f"[blue]请手动运行: [bold]source {config_file}"
+                                f"[/bold][/blue]"
+                            )
                     else:
-                        console.print("[blue]💡 请记得重新打开终端或手动执行 source 命令[/blue]")
-                        console.print("[blue]   手动命令: [bold]source ~/.bashrc[/bold][/blue]")
+                        console.print(
+                            "[blue]💡 请记得重新打开终端或手动执行 source 命令[/blue]"
+                        )
+                        console.print(
+                            "[blue]   手动命令: [bold]source ~/.bashrc"
+                            "[/bold][/blue]"
+                        )
                 else:
                     # 非交互式环境的降级处理
-                    console.print("[blue]💡 请重新打开终端或手动执行以下命令：[/blue]")
-                    console.print(f"[blue]   [bold]source {config_file}[/bold][/blue]")
+                    console.print(
+                        "[blue]💡 请重新打开终端或手动执行以下命令：[/blue]"
+                    )
+                    console.print(
+                        f"[blue]   [bold]source {config_file}[/bold][/blue]"
+                    )
             except (EOFError, KeyboardInterrupt):
                 console.print()
-                console.print("[blue]💡 请重新打开终端或手动执行以下命令：[/blue]")
-                console.print(f"[blue]   [bold]source {config_file}[/bold][/blue]")
+                console.print(
+                    "[blue]💡 请重新打开终端或手动执行以下命令：[/blue]"
+                )
+                console.print(
+                    f"[blue]   [bold]source {config_file}[/bold][/blue]"
+                )
         else:
             console.print(
                 f"\n[yellow]ℹ️ 集成配置已存在于: {config_file}[/yellow]"
