@@ -859,6 +859,89 @@ install_ais() {
     esac
 }
 
+# 创建Shell集成脚本
+create_integration_script() {
+    local script_path="$1"
+    
+    # 创建目录
+    mkdir -p "$(dirname "$script_path")"
+    
+    # 创建集成脚本
+    cat > "$script_path" << 'EOF'
+#!/bin/bash
+# AIS Shell 集成脚本
+# 这个脚本通过 PROMPT_COMMAND 机制捕获命令执行错误
+
+# 检查 AIS 是否可用
+_ais_check_availability() {
+    command -v ais >/dev/null 2>&1
+}
+
+# 检查自动分析是否开启
+_ais_check_auto_analysis() {
+    if ! _ais_check_availability; then
+        return 1
+    fi
+
+    # 检查配置文件中的 auto_analysis 设置
+    local config_file="$HOME/.config/ais/config.toml"
+    if [ -f "$config_file" ]; then
+        grep -q "auto_analysis = true" "$config_file" 2>/dev/null
+    else
+        return 1  # 默认关闭
+    fi
+}
+
+# precmd 钩子：命令执行后调用
+_ais_precmd() {
+    local current_exit_code=$?
+
+    # 只处理非零退出码且非中断信号（Ctrl+C 是 130）
+    if [ $current_exit_code -ne 0 ] && [ $current_exit_code -ne 130 ]; then
+        # 检查功能是否开启
+        if _ais_check_auto_analysis; then
+            local last_command
+            last_command=$(history 1 | sed 's/^[ ]*[0-9]*[ ]*//' 2>/dev/null)
+
+            # 过滤内部命令和特殊情况
+            if [[ "$last_command" != *"_ais_"* ]] && \
+               [[ "$last_command" != *"ais_"* ]] && \
+               [[ "$last_command" != *"history"* ]]; then
+                # 调用 ais analyze 进行分析
+                echo  # 添加空行分隔
+                ais analyze --exit-code "$current_exit_code" \
+                    --command "$last_command"
+            fi
+        fi
+    fi
+}
+
+# 根据不同 shell 设置钩子
+if [ -n "$ZSH_VERSION" ]; then
+    # Zsh 设置
+    autoload -U add-zsh-hook 2>/dev/null || return
+    add-zsh-hook precmd _ais_precmd
+elif [ -n "$BASH_VERSION" ]; then
+    # Bash 设置
+    if [[ -z "$PROMPT_COMMAND" ]]; then
+        PROMPT_COMMAND="_ais_precmd"
+    else
+        PROMPT_COMMAND="_ais_precmd;$PROMPT_COMMAND"
+    fi
+else
+    # 对于其他 shell，提供基本的 PROMPT_COMMAND 支持
+    if [[ -z "$PROMPT_COMMAND" ]]; then
+        PROMPT_COMMAND="_ais_precmd"
+    else
+        PROMPT_COMMAND="_ais_precmd;$PROMPT_COMMAND"
+    fi
+fi
+EOF
+    
+    # 设置执行权限
+    chmod 755 "$script_path"
+}
+
 # 自动设置Shell集成（用于一键安装脚本）
 setup_shell_integration_automatically() {
     # 检测Shell类型
@@ -902,22 +985,54 @@ except:
 " 2>/dev/null)
     fi
     
-    # 如果无法获取路径，尝试查找
-    if [ -z "$script_path" ] || [ ! -f "$script_path" ]; then
-        # 查找可能的安装路径
+    # 如果无法获取路径，尝试查找可能的安装路径
+    if [ -z "$script_path" ]; then
         for path in "/usr/local/lib/python"*"/site-packages/ais/shell/integration.sh" \
                    "/usr/lib/python"*"/site-packages/ais/shell/integration.sh" \
                    "$HOME/.local/lib/python"*"/site-packages/ais/shell/integration.sh"; do
-            if [ -f "$path" ]; then
+            if [ -d "$(dirname "$path")" ]; then
                 script_path="$path"
                 break
             fi
         done
     fi
     
-    if [ -n "$script_path" ] && [ -f "$script_path" ]; then
-        # 添加AIS集成配置
-        cat >> "$config_file" << EOF
+    # 如果还是找不到路径，使用默认路径
+    if [ -z "$script_path" ]; then
+        script_path="/usr/local/lib/python3.9/site-packages/ais/shell/integration.sh"
+    fi
+    
+    # 确保集成脚本存在 - 关键修复！
+    if [ ! -f "$script_path" ]; then
+        echo -e "${BLUE}🔧 正在创建AIS集成脚本...${NC}"
+        create_integration_script "$script_path"
+        echo -e "${GREEN}✅ 集成脚本创建完成: $script_path${NC}"
+    fi
+    
+    # 确保AIS配置文件存在并启用自动分析
+    local ais_config_dir="$HOME/.config/ais"
+    local ais_config_file="$ais_config_dir/config.toml"
+    
+    if [ ! -f "$ais_config_file" ]; then
+        echo -e "${BLUE}🔧 正在创建AIS配置文件...${NC}"
+        mkdir -p "$ais_config_dir"
+        cat > "$ais_config_file" << 'EOF'
+# AIS 配置文件
+default_provider = "default_free"
+auto_analysis = true
+context_level = "detailed"
+sensitive_dirs = ["~/.ssh", "~/.config/ais", "~/.aws"]
+
+[providers.default_free]
+base_url = "https://api.deepbricks.ai/v1/chat/completions"
+model_name = "gpt-4o-mini"
+api_key = "sk-97RxyS9R2dsqFTUxcUZOpZwhnbjQCSOaFboooKDeTv5nHJgg"
+EOF
+        echo -e "${GREEN}✅ AIS配置文件创建完成: $ais_config_file${NC}"
+    fi
+    
+    # 添加AIS集成配置
+    cat >> "$config_file" << EOF
 
 # START AIS INTEGRATION
 # AIS - 上下文感知的错误分析学习助手自动集成
@@ -926,10 +1041,7 @@ if [ -f "$script_path" ]; then
 fi
 # END AIS INTEGRATION
 EOF
-        echo -e "${GREEN}✅ Shell集成配置已添加到: $config_file${NC}"
-    else
-        echo -e "${YELLOW}⚠️  无法找到AIS集成脚本，请手动运行: ais setup${NC}"
-    fi
+    echo -e "${GREEN}✅ Shell集成配置已添加到: $config_file${NC}"
 }
 
 # 设置Shell集成
