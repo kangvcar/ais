@@ -1089,18 +1089,37 @@ fi
                 f.write(integration_config)
             
             console.print(f"\n[green]✅ 集成配置已自动添加到: {config_file}[/green]")
+            console.print()
             
-            # 自动执行 source 命令让配置立即生效
-            import subprocess
+            # 智能检测并询问用户
+            console.print("[bold yellow]🤔 配置已添加，请选择以下方式之一：[/bold yellow]")
+            console.print("  [green]1.[/green] 当前终端立即生效: [bold]source ~/.bashrc[/bold]")
+            console.print("  [green]2.[/green] 新终端自动生效: [bold]重新打开终端[/bold]") 
+            console.print("  [green]3.[/green] 临时测试: [bold]source " + script_path + "[/bold]")
+            console.print()
+            
+            # 询问用户是否立即生效
             try:
-                console.print("[green]✨ 正在自动加载配置，让改动立即生效...[/green]")
-                # 使用当前shell执行source命令
-                subprocess.run([shell, "-c", f"source {config_file}"], check=False)
-                console.print("[green]✅ 配置已自动加载，AIS功能立即可用！[/green]")
-                console.print("[green]✨ 命令失败时将自动显示AI分析！[/green]")
-            except Exception as e:
-                console.print(f"[yellow]⚠️ 自动加载配置失败: {e}[/yellow]")
-                console.print(f"[dim]请手动运行: source {config_file}[/dim]")
+                import sys
+                if sys.stdin.isatty():  # 只在交互式终端中询问
+                    choice = input("💡 是否立即在当前终端生效配置？[Y/n]: ").strip()
+                    if choice.lower() in ['', 'y', 'yes']:
+                        console.print("[green]✨ 正在自动加载配置...[/green]")
+                        import subprocess
+                        try:
+                            subprocess.run([shell, "-c", f"source {config_file}"], check=False)
+                            console.print("[green]✅ 配置已在当前终端生效！[/green]")
+                            console.print("[green]✨ 命令失败时将自动显示AI分析！[/green]")
+                        except Exception as e:
+                            console.print(f"[yellow]⚠️ 自动加载失败: {e}[/yellow]")
+                            console.print(f"[dim]请手动运行: source {config_file}[/dim]")
+                    else:
+                        console.print("[blue]💡 请记得重新打开终端或手动执行 source 命令[/blue]")
+                else:
+                    console.print("[blue]💡 请重新打开终端或手动执行: source " + config_file + "[/blue]")
+            except (EOFError, KeyboardInterrupt):
+                console.print()
+                console.print("[blue]💡 请重新打开终端或手动执行: source " + config_file + "[/blue]")
         else:
             console.print(f"\n[yellow]ℹ️ 集成配置已存在于: {config_file}[/yellow]")
             console.print("[green]✨ AIS功能已可用，命令失败时将自动显示AI分析！[/green]")
