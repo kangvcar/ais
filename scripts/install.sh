@@ -438,9 +438,14 @@ detect_install_strategy() {
     system_info=$(get_system_info)
     IFS='|' read -r os_name os_version python_version <<< "$system_info"
     
-    # 优先检查CentOS 7系统
+    # 优先检查特殊系统配置
     if [ "$os_name" = "centos" ] && ([[ "$os_version" =~ ^7\. ]] || [ "$os_version" = "7" ]); then
         echo "compile_python310"  # CentOS 7需要编译Python 3.10.9
+        return
+    fi
+    
+    if [ "$os_name" = "kylin" ]; then
+        echo "compile_python310"  # Kylin Linux需要编译Python 3.10.9
         return
     fi
     
@@ -675,7 +680,7 @@ setup_python_environment() {
             if [ -x "$python_prefix/bin/python3" ]; then
                 print_info "Python 3.9.23已经安装"
                 export PYTHON_CMD="$python_prefix/bin/python3"
-                export PIP_CMD="$python_prefix/bin/pip3"
+                export PIP_CMD="$python_prefix/bin/python3 -m pip"
                 return 0
             fi
             

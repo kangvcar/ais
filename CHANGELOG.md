@@ -44,6 +44,8 @@
   - 更新PIP_CMD使用`python3.10 -m pip`替代直接调用pip3.10二进制文件
   - 参考test.md中成功的手动安装步骤，简化安装路径配置
   - 移除复杂的软链接创建逻辑，使用标准的altinstall路径
+  - 修复策略检测逻辑：Kylin系统优先使用compile_python310而不是基于Python版本的compile_python39
+  - 同时修复compile_python39分支的PIP_CMD设置，使用`python3 -m pip`避免类似问题
 
 ## [1.2.0] - 2025-07-18
 
