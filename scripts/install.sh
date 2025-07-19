@@ -1216,12 +1216,13 @@ main() {
         setup_shell_integration_automatically
         
         echo
-        echo -e "${GREEN}⚡ 最后一步：让配置立即生效${NC}"
+        echo -e "${GREEN}⚡ 完成安装：启用自动错误分析功能${NC}"
         echo
-        echo -e "请执行以下命令："
-        echo -e "${CYAN}source ~/.bashrc${NC}"
+        echo -e "请按顺序执行以下${YELLOW}两个${NC}命令："
+        echo -e "${YELLOW}1.${NC} ${CYAN}ais setup${NC}      ${BLUE}# 配置Shell集成${NC}"
+        echo -e "${YELLOW}2.${NC} ${CYAN}source ~/.bashrc${NC} ${BLUE}# 让配置生效${NC}"
         echo
-        echo -e "${GREEN}✨ 执行后，命令失败时将自动显示AI错误分析！${NC}"
+        echo -e "${GREEN}✨ 完成后，命令失败时将自动显示AI错误分析！${NC}"
         echo -e "${BLUE}💡 提示：也可以重新打开终端让配置自动生效${NC}"
         echo
         echo -e "${GREEN}🚀 快速测试：${NC}ais ask '你好'"
