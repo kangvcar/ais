@@ -1056,31 +1056,56 @@ def _setup_unix_shell_integration():
 
     target_files = config_files.get(shell_name, ["~/.bashrc"])
 
-    console.print(
-        "\n[bold yellow]📝 请手动添加以下内容到您的 shell 配置文件中:[/bold yellow]"
-    )
-
-    for config_file in target_files:
-        expanded_path = os.path.expanduser(config_file)
+    # 找到存在的配置文件或创建默认的
+    config_file = None
+    for cf in target_files:
+        expanded_path = os.path.expanduser(cf)
         if os.path.exists(expanded_path):
-            console.print(f"\n编辑文件: [bold]{config_file}[/bold]")
+            config_file = expanded_path
             break
-    else:
-        console.print(f"\n编辑文件: [bold]{target_files[0]}[/bold]")
 
-    console.print(
-        f"""
-[dim]# START AIS INTEGRATION[/dim]
-[green]if [ -f "{script_path}" ]; then
+    if not config_file:
+        config_file = os.path.expanduser(target_files[0])
+        # 创建文件
+        open(config_file, 'a').close()
+
+    # 检查是否已经添加了集成配置
+    if os.path.exists(config_file):
+        with open(config_file, 'r') as f:
+            content = f.read()
+        
+        if "# START AIS INTEGRATION" not in content:
+            # 自动添加集成配置
+            integration_config = f"""
+
+# START AIS INTEGRATION
+# AIS - 上下文感知的错误分析学习助手自动集成
+if [ -f "{script_path}" ]; then
     source "{script_path}"
-fi[/green]
-[dim]# END AIS INTEGRATION[/dim]
-
-然后运行: [bold]source ~/.bashrc[/bold] 或重启终端
-
-💡 或者临时测试: [bold]source {script_path}[/bold]
+fi
+# END AIS INTEGRATION
 """
-    )
+            with open(config_file, "a") as f:
+                f.write(integration_config)
+            
+            console.print(f"\n[green]✅ 集成配置已自动添加到: {config_file}[/green]")
+            
+            # 自动执行 source 命令让配置立即生效
+            import subprocess
+            try:
+                console.print("[green]✨ 正在自动加载配置，让改动立即生效...[/green]")
+                # 使用当前shell执行source命令
+                subprocess.run([shell, "-c", f"source {config_file}"], check=False)
+                console.print("[green]✅ 配置已自动加载，AIS功能立即可用！[/green]")
+                console.print("[green]✨ 命令失败时将自动显示AI分析！[/green]")
+            except Exception as e:
+                console.print(f"[yellow]⚠️ 自动加载配置失败: {e}[/yellow]")
+                console.print(f"[dim]请手动运行: source {config_file}[/dim]")
+        else:
+            console.print(f"\n[yellow]ℹ️ 集成配置已存在于: {config_file}[/yellow]")
+            console.print("[green]✨ AIS功能已可用，命令失败时将自动显示AI分析！[/green]")
+    else:
+        console.print("[red]❌ 无法创建配置文件[/red]")
 
 
 @main.command("test-integration")
