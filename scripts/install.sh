@@ -441,7 +441,13 @@ detect_install_strategy() {
     system_info=$(get_system_info)
     IFS='|' read -r os_name os_version python_version <<< "$system_info"
     
-    # 首先检查Python版本，如果小于3.9则需要编译安装
+    # 优先检查CentOS 7系统
+    if [ "$os_name" = "centos" ] && ([[ "$os_version" =~ ^7\. ]] || [ "$os_version" = "7" ]); then
+        echo "compile_python310"  # CentOS 7需要编译Python 3.10.9
+        return
+    fi
+    
+    # 然后检查Python版本，如果小于3.9则需要编译安装
     if [ -n "$python_version" ] && ! compare_python_version "$python_version" "3.9"; then
         echo "compile_python39"  # 需要编译安装Python 3.9.23
         return
