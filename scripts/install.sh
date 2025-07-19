@@ -859,6 +859,79 @@ install_ais() {
     esac
 }
 
+# 自动设置Shell集成（用于一键安装脚本）
+setup_shell_integration_automatically() {
+    # 检测Shell类型
+    local shell=$(basename "${SHELL:-/bin/bash}")
+    local config_file=""
+    
+    case "$shell" in
+        "bash")
+            config_file="$HOME/.bashrc"
+            ;;
+        "zsh")
+            config_file="$HOME/.zshrc"
+            ;;
+        *)
+            config_file="$HOME/.bashrc"
+            ;;
+    esac
+    
+    # 创建配置文件（如果不存在）
+    [ ! -f "$config_file" ] && touch "$config_file"
+    
+    # 检查是否已经添加了AIS集成
+    if grep -q "# START AIS INTEGRATION" "$config_file" 2>/dev/null; then
+        echo -e "${YELLOW}ℹ️  Shell集成配置已存在${NC}"
+        return 0
+    fi
+    
+    # 获取AIS集成脚本路径
+    local script_path=""
+    if command -v python3 >/dev/null 2>&1; then
+        script_path=$(python3 -c "
+import sys
+try:
+    import ais
+    import os
+    package_path = os.path.dirname(ais.__file__)
+    script_path = os.path.join(package_path, 'shell', 'integration.sh')
+    print(script_path)
+except:
+    pass
+" 2>/dev/null)
+    fi
+    
+    # 如果无法获取路径，尝试查找
+    if [ -z "$script_path" ] || [ ! -f "$script_path" ]; then
+        # 查找可能的安装路径
+        for path in "/usr/local/lib/python"*"/site-packages/ais/shell/integration.sh" \
+                   "/usr/lib/python"*"/site-packages/ais/shell/integration.sh" \
+                   "$HOME/.local/lib/python"*"/site-packages/ais/shell/integration.sh"; do
+            if [ -f "$path" ]; then
+                script_path="$path"
+                break
+            fi
+        done
+    fi
+    
+    if [ -n "$script_path" ] && [ -f "$script_path" ]; then
+        # 添加AIS集成配置
+        cat >> "$config_file" << EOF
+
+# START AIS INTEGRATION
+# AIS - 上下文感知的错误分析学习助手自动集成
+if [ -f "$script_path" ]; then
+    source "$script_path"
+fi
+# END AIS INTEGRATION
+EOF
+        echo -e "${GREEN}✅ Shell集成配置已添加到: $config_file${NC}"
+    else
+        echo -e "${YELLOW}⚠️  无法找到AIS集成脚本，请手动运行: ais setup${NC}"
+    fi
+}
+
 # 设置Shell集成
 setup_shell_integration() {
     # 更新进度条并显示步骤
@@ -1024,13 +1097,20 @@ main() {
         version=$(ais --version 2>/dev/null | head -n1)
         echo -e "${CYAN}📦 版本信息:${NC} $version"
         echo
-        echo -e "${YELLOW}⚠️  接下来请完成以下配置步骤：${NC}"
+        # 策略2: 一键安装脚本自动配置
+        echo -e "${BLUE}🔧 正在自动配置Shell集成...${NC}"
+        
+        # 自动执行shell集成配置
+        setup_shell_integration_automatically
+        
         echo
-        echo -e "  ${BLUE}1.${NC} 运行自动配置：${GREEN}ais setup${NC}"
-        echo -e "  ${BLUE}2.${NC} 重新加载配置：${GREEN}source ~/.bashrc${NC}"
-        echo -e "  ${BLUE}3.${NC} 或者直接重新打开终端"
+        echo -e "${GREEN}⚡ 最后一步：让配置立即生效${NC}"
         echo
-        echo -e "${CYAN}✨ 配置完成后，命令失败时将自动显示AI错误分析！${NC}"
+        echo -e "请执行以下命令："
+        echo -e "${CYAN}source ~/.bashrc${NC}"
+        echo
+        echo -e "${GREEN}✨ 执行后，命令失败时将自动显示AI错误分析！${NC}"
+        echo -e "${BLUE}💡 提示：也可以重新打开终端让配置自动生效${NC}"
         echo
         echo -e "${GREEN}🚀 快速测试：${NC}ais ask '你好'"
         echo -e "${GREEN}📖 查看帮助：${NC}ais config --help"

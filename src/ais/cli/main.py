@@ -212,6 +212,44 @@ fi
         console.print(f"[dim]请手动运行: source {config_file}[/dim]")
 
 
+def _check_shell_integration():
+    """策略3: 检查shell集成是否已配置"""
+    import os
+    from pathlib import Path
+    
+    # 检测shell配置文件
+    shell = os.environ.get("SHELL", "/bin/bash")
+    shell_name = os.path.basename(shell)
+    
+    config_files = {
+        "bash": [Path.home() / ".bashrc", Path.home() / ".bash_profile"],
+        "zsh": [Path.home() / ".zshrc"],
+    }
+    
+    target_files = config_files.get(shell_name, [Path.home() / ".bashrc"])
+    
+    # 检查是否已配置
+    for config_file in target_files:
+        if config_file.exists():
+            content = config_file.read_text()
+            if "# START AIS INTEGRATION" in content:
+                return True  # 已配置
+    
+    return False  # 未配置
+
+
+def _show_setup_reminder():
+    """显示配置提醒"""
+    console.print()
+    console.print("[yellow]💡 检测到AIS尚未配置Shell集成[/yellow]")
+    console.print()
+    console.print("运行以下命令完成配置：")
+    console.print("[bold cyan]ais setup[/bold cyan]")
+    console.print()
+    console.print("[dim]配置后可启用自动错误分析功能[/dim]")
+    console.print()
+
+
 @click.group()
 @click.version_option(version=__version__, prog_name="ais")
 @click.pass_context
@@ -227,9 +265,13 @@ def main(ctx):
       ais config --help-context 查看配置帮助
       ais history --help-detail 查看历史命令帮助
     """
-    # 只在执行具体命令时进行自动设置（不是--help时）
-    if ctx.invoked_subcommand and ctx.invoked_subcommand != "help":
+    # 只在执行具体命令时进行检查（不是--help时）
+    if ctx.invoked_subcommand and ctx.invoked_subcommand not in ["help", "setup"]:
         _auto_setup_shell_integration()
+        
+        # 策略3: 首次运行自动提示
+        if not _check_shell_integration():
+            _show_setup_reminder()
 
 
 def _handle_error(error_msg: str) -> None:
@@ -1093,81 +1135,16 @@ fi
                 f"\n[green]✅ 集成配置已自动添加到: {config_file}[/green]"
             )
             console.print()
-
-            # 方案3: 改进提示信息 - 显示清晰的配置生效方式选择
-            console.print(
-                "[bold yellow]🤔 配置已添加，请选择以下方式之一：[/bold yellow]"
-            )
-            console.print(
-                "  [green]1.[/green] 当前终端立即生效: [bold]source ~/.bashrc[/bold]"
-            )
-            console.print(
-                "  [green]2.[/green] 新终端自动生效: [bold]重新打开终端[/bold]"
-            )
-            console.print(
-                "  [green]3.[/green] 临时测试: [bold]source "
-                + script_path
-                + "[/bold]"
-            )
+            
+            # 策略1: 最简洁直接的配置提示
+            console.print("[bold green]⚡ 最后一步：让配置立即生效[/bold green]")
             console.print()
-
-            # 方案4: 智能检测并询问用户
-            try:
-                import sys
-
-                if sys.stdin.isatty():  # 只在交互式终端中询问
-                    choice = input(
-                        "💡 是否立即在当前终端生效配置？[Y/n]: "
-                    ).strip()
-                    if choice.lower() in ["", "y", "yes"]:
-                        console.print(
-                            "[green]✨ 正在尝试自动加载配置...[/green]"
-                        )
-                        import subprocess
-
-                        try:
-                            subprocess.run(
-                                [shell, "-c", f"source {config_file}"],
-                                check=False,
-                            )
-                            console.print(
-                                "[green]✅ 已尝试自动加载配置！[/green]"
-                            )
-                            console.print(
-                                "[yellow]💡 如果自动分析未生效，请重新打开终端[/yellow]"
-                            )
-                        except Exception as e:
-                            console.print(
-                                f"[yellow]⚠️ 自动加载失败: {e}[/yellow]"
-                            )
-                            console.print(
-                                f"[blue]请手动运行: [bold]source {config_file}"
-                                f"[/bold][/blue]"
-                            )
-                    else:
-                        console.print(
-                            "[blue]💡 请记得重新打开终端或手动执行 source 命令[/blue]"
-                        )
-                        console.print(
-                            "[blue]   手动命令: [bold]source ~/.bashrc"
-                            "[/bold][/blue]"
-                        )
-                else:
-                    # 非交互式环境的降级处理
-                    console.print(
-                        "[blue]💡 请重新打开终端或手动执行以下命令：[/blue]"
-                    )
-                    console.print(
-                        f"[blue]   [bold]source {config_file}[/bold][/blue]"
-                    )
-            except (EOFError, KeyboardInterrupt):
-                console.print()
-                console.print(
-                    "[blue]💡 请重新打开终端或手动执行以下命令：[/blue]"
-                )
-                console.print(
-                    f"[blue]   [bold]source {config_file}[/bold][/blue]"
-                )
+            console.print("请执行以下命令：")
+            console.print(f"[bold cyan]source {config_file}[/bold cyan]")
+            console.print()
+            console.print("[green]✨ 执行后，命令失败时将自动显示AI错误分析！[/green]")
+            console.print()
+            console.print("[dim]💡 提示：也可以重新打开终端让配置自动生效[/dim]")
         else:
             console.print(
                 f"\n[yellow]ℹ️ 集成配置已存在于: {config_file}[/yellow]"
