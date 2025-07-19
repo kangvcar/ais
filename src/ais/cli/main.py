@@ -195,12 +195,20 @@ fi
 
 [green]✅ Shell集成配置已添加到:[/green] [dim]{config_file}[/dim]
 
-[yellow]💡 注意: 当前会话需要重新加载配置才能启用自动分析[/yellow]
-[dim]   运行: source {config_file}[/dim]
-[dim]   或者: 重新打开终端[/dim]
-
-[green]✨ 配置完成后，命令失败时将自动显示AI分析！[/green]"""
+[green]✨ 正在自动加载配置，让改动立即生效...[/green]"""
     panels.success(setup_message, "🎉 AIS 自动配置完成")
+    
+    # 自动执行 source 命令让配置立即生效
+    import subprocess
+    try:
+        # 使用当前shell执行source命令
+        shell = os.environ.get("SHELL", "/bin/bash")
+        subprocess.run([shell, "-c", f"source {config_file}"], check=False)
+        console.print("[green]✅ 配置已自动加载，AIS功能立即可用！[/green]")
+        console.print("[green]✨ 命令失败时将自动显示AI分析！[/green]")
+    except Exception as e:
+        console.print(f"[yellow]⚠️ 自动加载配置失败: {e}[/yellow]")
+        console.print(f"[dim]请手动运行: source {config_file}[/dim]")
 
 
 @click.group()
