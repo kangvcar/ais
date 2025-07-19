@@ -1027,24 +1027,26 @@ main() {
     # 验证安装
     if verify_installation; then
         echo
-        print_success "🎉 AIS安装成功！"
+        echo "╭─────────────────────────────────────────────────────────────╮"
+        echo -e "│  ${GREEN}🎉 恭喜！AIS 安装成功完成！${NC}                            │"
         
         # 获取版本信息
         local version
         version=$(ais --version 2>/dev/null | head -n1)
-        print_info "版本: $version"
-        
+        echo -e "│  ${CYAN}📦 版本信息: ${NC}$version                          │"
+        echo "│                                                             │"
+        echo -e "│  ${YELLOW}⚠️  接下来请完成以下配置步骤：${NC}                       │"
+        echo "│                                                             │"
+        echo -e "│  ${BLUE}1.${NC} 运行自动配置：${GREEN}ais setup${NC}                        │"
+        echo -e "│  ${BLUE}2.${NC} 重新加载配置：${GREEN}source ~/.bashrc${NC}                │"
+        echo -e "│  ${BLUE}3.${NC} 或者直接重新打开终端                               │"
+        echo "│                                                             │"
+        echo -e "│  ${CYAN}✨ 配置完成后，命令失败时将自动显示AI错误分析！${NC}      │"
+        echo "│                                                             │"
+        echo -e "│  ${GREEN}🚀 快速测试：${NC}ais ask '你好'                          │"
+        echo -e "│  ${GREEN}📖 查看帮助：${NC}ais config --help                       │"
+        echo "╰─────────────────────────────────────────────────────────────╯"
         echo
-        print_warning "🔧 重要：请按以下步骤完成配置："
-        print_info "   1. 首先运行: ais setup"
-        print_info "   2. 然后运行: source ~/.bashrc  # 或 source ~/.zshrc"
-        print_info "   3. 或者直接重新打开终端"
-        
-        echo
-        print_info "✨ 配置完成后，命令失败时将自动显示AI分析！"
-        echo
-        print_info "🚀 快速测试: ais ask '你好'"
-        print_info "📖 配置帮助: ais config --help"
     else
         print_error "安装失败，请查看错误信息"
         exit 1
