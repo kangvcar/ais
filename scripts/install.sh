@@ -1115,10 +1115,9 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# 运行主函数（只在直接执行时运行）
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    main "$@"
-elif [[ "${BASH_SOURCE[0]}" == "/dev/stdin" ]] || [[ "${BASH_SOURCE[0]}" == "-" ]]; then
-    # 从管道执行时
+# 运行主函数
+# 检测执行方式：直接执行、管道执行、或source执行
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]] || [[ -z "${BASH_SOURCE[0]}" ]] || [[ "${0}" == "bash" ]]; then
+    # 直接执行脚本文件 或 通过管道执行
     main "$@"
 fi
