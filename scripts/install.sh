@@ -553,7 +553,7 @@ detect_environment() {
 # 安装系统依赖
 install_system_dependencies() {
     local strategy=$1
-    update_progress 10 "正在安装系统依赖..."
+    echo -e "${CYAN}📦 ${NC}正在安装系统依赖..."
     
     case "$strategy" in
         "compile_python39")
@@ -659,7 +659,7 @@ install_system_dependencies() {
 # 设置Python环境
 setup_python_environment() {
     local strategy=$1
-    update_progress 15 "正在设置Python环境..."
+    echo -e "${CYAN}🐍 ${NC}正在设置Python环境..."
     
     case "$strategy" in
         "compile_python39")
@@ -688,7 +688,6 @@ setup_python_environment() {
                 return 0
             fi
             
-            update_progress 5 "正在准备编译Python 3.10.9..."
             
             # 创建临时目录
             local temp_dir="/tmp/python_build"
@@ -702,7 +701,6 @@ setup_python_environment() {
                 return 1
             fi
             
-            update_progress 5 "正在解压源码..."
             if ! run_with_spinner "正在解压Python源码..." "tar -xf Python-3.10.9.tgz" "dots" "源码解压完成"; then
                 print_error "源码解压失败"
                 return 1
@@ -710,7 +708,6 @@ setup_python_environment() {
             
             cd "Python-3.10.9"
             
-            update_progress 5 "正在配置编译选项..."
             
             # 检测是否为CentOS 7，需要特殊处理OpenSSL
             local is_centos7=0
@@ -740,14 +737,12 @@ setup_python_environment() {
                 fi
             fi
             
-            update_progress 10 "正在编译Python 3.10.9（这可能需要几分钟）..."
             local cpu_count=$(nproc 2>/dev/null || echo "2")
             if ! run_with_spinner "正在编译Python 3.10.9..." "make -j$cpu_count" "chars" "Python编译完成"; then
                 print_error "Python编译失败"
                 return 1
             fi
             
-            update_progress 5 "正在安装Python..."
             if [ "$(detect_environment)" = "user" ]; then
                 if ! run_with_spinner "正在安装Python到系统..." "sudo make altinstall" "chars" "Python安装完成"; then
                     print_error "Python安装失败"
@@ -773,7 +768,7 @@ setup_python_environment() {
             cd /
             rm -rf "$temp_dir"
             
-            print_success "Python 3.10.9编译安装完成"
+            echo -e "${GREEN}✓ ${NC}Python 3.10.9编译安装完成"
             ;;
         "python_upgrade")
             # 使用升级的Python版本
@@ -791,7 +786,7 @@ setup_python_environment() {
 # 安装AIS
 install_ais() {
     local strategy=$1
-    update_progress 20 "正在安装AIS..."
+    echo -e "${CYAN}🚀 ${NC}正在安装AIS..."
     
     case "$strategy" in
         "pipx_native")
@@ -803,7 +798,6 @@ install_ais() {
             fi
             
             if pipx list | grep -q "ais-terminal"; then
-                update_progress 5 "正在更新AIS到最新版本..."
                 run_with_spinner "正在更新AIS到最新版本..." "pipx upgrade ais-terminal" "arrows" "AIS更新完成"
             else
                 run_with_spinner "正在安装AIS..." "pipx install ais-terminal" "arrows" "AIS安装完成"
@@ -873,7 +867,7 @@ install_ais() {
 
 # 设置Shell集成
 setup_shell_integration() {
-    update_progress 15 "正在设置Shell集成..."
+    echo -e "${CYAN}⚙️  ${NC}正在设置Shell集成..."
     
     # 检测当前Shell
     local shell_name=""
@@ -939,7 +933,7 @@ EOF
 
 # 验证安装
 verify_installation() {
-    update_progress 10 "正在验证安装..."
+    echo -e "${CYAN}🔍 ${NC}正在验证安装..."
     
     # 更新PATH
     export PATH="$HOME/.local/bin:$PATH"
@@ -951,16 +945,13 @@ verify_installation() {
         return 1
     fi
     
-    update_progress 5 "正在检查版本信息..."
-    
     # 获取版本信息 - 简化版本获取逻辑
     if ! command_exists ais; then
         print_error "安装失败：ais命令不可用"
         return 1
     fi
     
-    # 确保进度条达到100%
-    update_progress 5 "安装验证完成"
+    echo -e "${GREEN}✓ ${NC}安装验证完成"
     return 0
 }
 
@@ -992,29 +983,28 @@ main() {
     system_info=$(get_system_info)
     IFS='|' read -r os_name os_version python_version <<< "$system_info"
     
-    show_progress 15 $PROGRESS_TOTAL "检测到系统: $os_name $os_version, Python: $python_version" "false"
+    show_progress 15 $PROGRESS_TOTAL "检测到系统: $os_name $os_version, Python: $python_version" "true"
     PROGRESS_CURRENT=15
     
-    # 根据策略安装
+    # 根据策略显示信息
     case "$strategy" in
         "pipx_native")
-            show_progress 20 $PROGRESS_TOTAL "使用pipx原生安装策略" "false"
+            echo -e "${BLUE}ℹ️  ${NC}使用pipx原生安装策略"
             ;;
         "pip_direct")
-            show_progress 20 $PROGRESS_TOTAL "使用pip直接安装策略" "false"
+            echo -e "${BLUE}ℹ️  ${NC}使用pip直接安装策略"
             ;;
         "python_upgrade")
-            show_progress 20 $PROGRESS_TOTAL "使用Python升级安装策略" "false"
+            echo -e "${BLUE}ℹ️  ${NC}使用Python升级安装策略"
             ;;
         "compile_python39")
-            show_progress 20 $PROGRESS_TOTAL "使用Python 3.9.23编译安装策略" "false"
+            echo -e "${BLUE}ℹ️  ${NC}使用Python 3.9.23编译安装策略"
             ;;
         "compile_python310")
-            show_progress 20 $PROGRESS_TOTAL "使用Python 3.10.9编译安装策略" "false"
+            echo -e "${BLUE}ℹ️  ${NC}使用Python 3.10.9编译安装策略"
             ;;
     esac
-    PROGRESS_CURRENT=20
-    sleep 0.5
+    echo
     
     # 执行安装步骤
     install_system_dependencies "$strategy"
@@ -1024,8 +1014,6 @@ main() {
     
     # 验证安装
     if verify_installation; then
-        # 确保进度条完成到100%
-        show_progress $PROGRESS_TOTAL $PROGRESS_TOTAL "安装完成！"
         echo
         print_success "🎉 AIS安装成功！"
         
