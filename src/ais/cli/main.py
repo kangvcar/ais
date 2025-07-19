@@ -197,9 +197,10 @@ fi
 
 [green]✨ 正在自动加载配置，让改动立即生效...[/green]"""
     panels.success(setup_message, "🎉 AIS 自动配置完成")
-    
+
     # 自动执行 source 命令让配置立即生效
     import subprocess
+
     try:
         # 使用当前shell执行source命令
         shell = os.environ.get("SHELL", "/bin/bash")
@@ -1067,13 +1068,13 @@ def _setup_unix_shell_integration():
     if not config_file:
         config_file = os.path.expanduser(target_files[0])
         # 创建文件
-        open(config_file, 'a').close()
+        open(config_file, "a").close()
 
     # 检查是否已经添加了集成配置
     if os.path.exists(config_file):
-        with open(config_file, 'r') as f:
+        with open(config_file, "r") as f:
             content = f.read()
-        
+
         if "# START AIS INTEGRATION" not in content:
             # 自动添加集成配置
             integration_config = f"""
@@ -1087,23 +1088,36 @@ fi
 """
             with open(config_file, "a") as f:
                 f.write(integration_config)
-            
-            console.print(f"\n[green]✅ 集成配置已自动添加到: {config_file}[/green]")
-            
+
+            console.print(
+                f"\n[green]✅ 集成配置已自动添加到: {config_file}[/green]"
+            )
+
             # 自动执行 source 命令让配置立即生效
             import subprocess
+
             try:
-                console.print("[green]✨ 正在自动加载配置，让改动立即生效...[/green]")
+                console.print(
+                    "[green]✨ 正在自动加载配置，让改动立即生效...[/green]"
+                )
                 # 使用当前shell执行source命令
-                subprocess.run([shell, "-c", f"source {config_file}"], check=False)
-                console.print("[green]✅ 配置已自动加载，AIS功能立即可用！[/green]")
+                subprocess.run(
+                    [shell, "-c", f"source {config_file}"], check=False
+                )
+                console.print(
+                    "[green]✅ 配置已自动加载，AIS功能立即可用！[/green]"
+                )
                 console.print("[green]✨ 命令失败时将自动显示AI分析！[/green]")
             except Exception as e:
                 console.print(f"[yellow]⚠️ 自动加载配置失败: {e}[/yellow]")
                 console.print(f"[dim]请手动运行: source {config_file}[/dim]")
         else:
-            console.print(f"\n[yellow]ℹ️ 集成配置已存在于: {config_file}[/yellow]")
-            console.print("[green]✨ AIS功能已可用，命令失败时将自动显示AI分析！[/green]")
+            console.print(
+                f"\n[yellow]ℹ️ 集成配置已存在于: {config_file}[/yellow]"
+            )
+            console.print(
+                "[green]✨ AIS功能已可用，命令失败时将自动显示AI分析！[/green]"
+            )
     else:
         console.print("[red]❌ 无法创建配置文件[/red]")
 
