@@ -989,23 +989,22 @@ main() {
     # 根据策略显示信息
     case "$strategy" in
         "pipx_native")
-            echo -e "${BLUE}ℹ️  ${NC}使用pipx原生安装策略"
+            echo -e "${GREEN}✓ ${NC}使用pipx原生安装策略"
             ;;
         "pip_direct")
-            echo -e "${BLUE}ℹ️  ${NC}使用pip直接安装策略"
+            echo -e "${GREEN}✓ ${NC}使用pip直接安装策略"
             ;;
         "python_upgrade")
-            echo -e "${BLUE}ℹ️  ${NC}使用Python升级安装策略"
+            echo -e "${GREEN}✓ ${NC}使用Python升级安装策略"
             ;;
         "compile_python39")
-            echo -e "${BLUE}ℹ️  ${NC}使用Python 3.9.23编译安装策略"
+            echo -e "${GREEN}✓ ${NC}使用Python 3.9.23编译安装策略"
             ;;
         "compile_python310")
-            echo -e "${BLUE}ℹ️  ${NC}使用Python 3.10.9编译安装策略"
+            echo -e "${GREEN}✓ ${NC}使用Python 3.10.9编译安装策略"
             echo -e "${YELLOW}⏱️  ${NC}编译过程可能需要3-5分钟，请耐心等待..."
             ;;
     esac
-    echo
     
     # 执行安装步骤
     install_system_dependencies "$strategy"
