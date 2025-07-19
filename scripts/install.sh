@@ -1028,28 +1028,28 @@ main() {
     # 验证安装
     if verify_installation; then
         echo
-        echo "╭─────────────────────────────────────────────────────────────╮"
-        echo "│                                                             │"
-        echo -e "│  ${GREEN}🎉 恭喜！AIS 安装成功完成！${NC}                            │"
-        echo "│                                                             │"
+        echo -e "${GREEN}================================================================${NC}"
+        echo -e "${GREEN}🎉 恭喜！AIS 安装成功完成！${NC}"
+        echo -e "${GREEN}================================================================${NC}"
+        echo
         
         # 获取版本信息
         local version
         version=$(ais --version 2>/dev/null | head -n1)
-        echo -e "│  ${CYAN}📦 版本:${NC} $version                                │"
-        echo "│                                                             │"
-        echo -e "│  ${YELLOW}⚠️  接下来请完成以下配置步骤：${NC}                       │"
-        echo "│                                                             │"
-        echo -e "│    ${BLUE}1.${NC} 运行自动配置：${GREEN}ais setup${NC}                      │"
-        echo -e "│    ${BLUE}2.${NC} 重新加载配置：${GREEN}source ~/.bashrc${NC}              │"
-        echo -e "│    ${BLUE}3.${NC} 或者直接重新打开终端                             │"
-        echo "│                                                             │"
-        echo -e "│  ${CYAN}✨ 配置完成后，命令失败时将自动显示AI错误分析！${NC}      │"
-        echo "│                                                             │"
-        echo -e "│  ${GREEN}🚀 快速测试：${NC}ais ask '你好'                          │"
-        echo -e "│  ${GREEN}📖 查看帮助：${NC}ais config --help                       │"
-        echo "│                                                             │"
-        echo "╰─────────────────────────────────────────────────────────────╯"
+        echo -e "${CYAN}📦 版本信息:${NC} $version"
+        echo
+        echo -e "${YELLOW}⚠️  接下来请完成以下配置步骤：${NC}"
+        echo
+        echo -e "  ${BLUE}1.${NC} 运行自动配置：${GREEN}ais setup${NC}"
+        echo -e "  ${BLUE}2.${NC} 重新加载配置：${GREEN}source ~/.bashrc${NC}"
+        echo -e "  ${BLUE}3.${NC} 或者直接重新打开终端"
+        echo
+        echo -e "${CYAN}✨ 配置完成后，命令失败时将自动显示AI错误分析！${NC}"
+        echo
+        echo -e "${GREEN}🚀 快速测试：${NC}ais ask '你好'"
+        echo -e "${GREEN}📖 查看帮助：${NC}ais config --help"
+        echo
+        echo -e "${GREEN}================================================================${NC}"
         echo
     else
         print_error "安装失败，请查看错误信息"
