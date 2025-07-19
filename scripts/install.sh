@@ -100,17 +100,12 @@ update_progress_with_spinner() {
         PROGRESS_CURRENT=$PROGRESS_TOTAL
     fi
     
-    # 显示带有动画的进度条
-    local end_time=$((SECONDS + show_duration))
-    while [ $SECONDS -lt $end_time ]; do
-        show_progress_with_spinner $PROGRESS_CURRENT $PROGRESS_TOTAL "$message" "$spinner_type"
-        sleep 0.1
-    done
+    # 简化显示逻辑，避免重复输出
+    show_progress_with_spinner $PROGRESS_CURRENT $PROGRESS_TOTAL "$message" "$spinner_type"
+    sleep 0.3  # 短暂停留，显示动画效果
     
     # 最后显示静态版本
-    if [ $PROGRESS_CURRENT -eq $PROGRESS_TOTAL ]; then
-        show_progress $PROGRESS_CURRENT $PROGRESS_TOTAL "$message"
-    fi
+    show_progress $PROGRESS_CURRENT $PROGRESS_TOTAL "$message"
 }
 
 # Spinner函数
@@ -947,7 +942,7 @@ EOF
 
 # 验证安装
 verify_installation() {
-    update_progress_with_spinner 10 "正在验证安装..." "simple" 1
+    update_progress 10 "正在验证安装..."
     
     # 更新PATH
     export PATH="$HOME/.local/bin:$PATH"
@@ -959,12 +954,11 @@ verify_installation() {
         return 1
     fi
     
-    update_progress_with_spinner 5 "正在检查版本信息..." "simple" 1
+    update_progress 5 "正在检查版本信息..."
     
-    # 获取版本信息
-    local version
-    if ! version=$(run_with_spinner "正在获取版本信息..." "ais --version 2>/dev/null | head -n1" "simple" "版本信息获取完成"); then
-        print_error "安装失败：无法获取版本信息"
+    # 获取版本信息 - 简化版本获取逻辑
+    if ! command_exists ais; then
+        print_error "安装失败：ais命令不可用"
         return 1
     fi
     
@@ -988,7 +982,7 @@ main() {
     sleep 0.5
     
     # 检测系统环境
-    update_progress_with_spinner 10 "正在检测系统环境..." "chars" 2
+    update_progress 10 "正在检测系统环境..."
     local env
     env=$(detect_environment)
     local strategy
@@ -998,24 +992,23 @@ main() {
     IFS='|' read -r os_name os_version python_version <<< "$system_info"
     
     update_progress 5 "检测到系统: $os_name $os_version, Python: $python_version"
-    sleep 0.5
     
     # 根据策略安装
     case "$strategy" in
         "pipx_native")
-            update_progress_with_spinner 5 "使用pipx原生安装策略" "arrows" 1
+            update_progress 5 "使用pipx原生安装策略"
             ;;
         "pip_direct")
-            update_progress_with_spinner 5 "使用pip直接安装策略" "arrows" 1
+            update_progress 5 "使用pip直接安装策略"
             ;;
         "python_upgrade")
-            update_progress_with_spinner 5 "使用Python升级安装策略" "arrows" 1
+            update_progress 5 "使用Python升级安装策略"
             ;;
         "compile_python39")
-            update_progress_with_spinner 5 "使用Python 3.9.23编译安装策略" "arrows" 1
+            update_progress 5 "使用Python 3.9.23编译安装策略"
             ;;
         "compile_python310")
-            update_progress_with_spinner 5 "使用Python 3.10.9编译安装策略" "arrows" 1
+            update_progress 5 "使用Python 3.10.9编译安装策略"
             ;;
     esac
     
