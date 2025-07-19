@@ -7,13 +7,14 @@
 
 ## [Unreleased]
 
+## [1.3.3] - 2025-07-19
+
 ### Fixed
 - 🔧 **修复一键安装脚本Shell集成问题**：解决安装完成后source失败的关键问题
   - 修复`integration.sh`文件不存在导致的`No such file or directory`错误
   - 在Strategy 2中添加`create_integration_script()`函数，确保集成脚本在配置前就存在
   - 自动创建AIS配置文件`config.toml`，确保`auto_analysis = true`设置生效
   - 智能路径检测，支持不同Python版本的安装路径
-
 ### Changed
 - 🎯 **优化一键安装用户体验**：提供更清晰的两步完成指导
   - 将安装后的指导从单步改为明确的两步操作：1) `ais setup` 2) `source ~/.bashrc`
