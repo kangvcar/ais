@@ -553,7 +553,9 @@ detect_environment() {
 # 安装系统依赖
 install_system_dependencies() {
     local strategy=$1
-    echo -e "${CYAN}📦 ${NC}正在安装系统依赖..."
+    # 更新进度条并显示步骤
+    show_progress 25 $PROGRESS_TOTAL "正在安装系统依赖..." "true"
+    PROGRESS_CURRENT=25
     
     case "$strategy" in
         "compile_python39")
@@ -659,7 +661,9 @@ install_system_dependencies() {
 # 设置Python环境
 setup_python_environment() {
     local strategy=$1
-    echo -e "${CYAN}🐍 ${NC}正在设置Python环境..."
+    # 更新进度条并显示步骤
+    show_progress 45 $PROGRESS_TOTAL "正在设置Python环境..." "true"
+    PROGRESS_CURRENT=45
     
     case "$strategy" in
         "compile_python39")
@@ -786,7 +790,9 @@ setup_python_environment() {
 # 安装AIS
 install_ais() {
     local strategy=$1
-    echo -e "${CYAN}🚀 ${NC}正在安装AIS..."
+    # 更新进度条并显示步骤
+    show_progress 75 $PROGRESS_TOTAL "正在安装AIS..." "true"
+    PROGRESS_CURRENT=75
     
     case "$strategy" in
         "pipx_native")
@@ -867,7 +873,9 @@ install_ais() {
 
 # 设置Shell集成
 setup_shell_integration() {
-    echo -e "${CYAN}⚙️  ${NC}正在设置Shell集成..."
+    # 更新进度条并显示步骤
+    show_progress 85 $PROGRESS_TOTAL "正在设置Shell集成..." "true"
+    PROGRESS_CURRENT=85
     
     # 检测当前Shell
     local shell_name=""
@@ -933,7 +941,9 @@ EOF
 
 # 验证安装
 verify_installation() {
-    echo -e "${CYAN}🔍 ${NC}正在验证安装..."
+    # 更新进度条并显示步骤
+    show_progress 95 $PROGRESS_TOTAL "正在验证安装..." "true"
+    PROGRESS_CURRENT=95
     
     # 更新PATH
     export PATH="$HOME/.local/bin:$PATH"
@@ -951,7 +961,9 @@ verify_installation() {
         return 1
     fi
     
-    echo -e "${GREEN}✓ ${NC}安装验证完成"
+    # 最终进度更新
+    show_progress 100 $PROGRESS_TOTAL "安装验证完成" "true"
+    PROGRESS_CURRENT=100
     return 0
 }
 
