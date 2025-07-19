@@ -9,6 +9,7 @@
 # GitHub: https://github.com/kangvcar/ais
 
 set -e  # 遇到错误立即退出
+set -o pipefail  # 管道中任何命令失败都会导致整个管道失败
 
 # 清理函数
 cleanup() {
@@ -1116,5 +1117,8 @@ done
 
 # 运行主函数（只在直接执行时运行）
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    main
+    main "$@"
+elif [[ "${BASH_SOURCE[0]}" == "/dev/stdin" ]] || [[ "${BASH_SOURCE[0]}" == "-" ]]; then
+    # 从管道执行时
+    main "$@"
 fi
