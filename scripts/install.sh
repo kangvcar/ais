@@ -1002,6 +1002,7 @@ main() {
             ;;
         "compile_python310")
             echo -e "${BLUE}ℹ️  ${NC}使用Python 3.10.9编译安装策略"
+            echo -e "${YELLOW}⏱️  ${NC}编译过程可能需要3-5分钟，请耐心等待..."
             ;;
     esac
     echo
