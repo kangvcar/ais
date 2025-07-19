@@ -12,7 +12,8 @@ set -e  # 遇到错误立即退出
 
 # 清理函数
 cleanup() {
-    echo  # 确保输出换行
+    stop_spinner
+    printf "\r\033[K"  # 清空当前行
 }
 
 # 注册清理函数
@@ -39,44 +40,41 @@ NC='\033[0m' # No Color
 # 进度条配置
 PROGRESS_TOTAL=100
 PROGRESS_CURRENT=0
-PROGRESS_WIDTH=25
+PROGRESS_WIDTH=20
 
-# 步骤计数器
-STEP_COUNTER=0
+# Spinner配置
+SPINNER_CHARS=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
+SPINNER_SIMPLE=("-" "\\" "|" "/")
+SPINNER_ARROWS=("←" "↖" "↑" "↗" "→" "↘" "↓" "↙")
+SPINNER_DOTS=("⣾" "⣽" "⣻" "⢿" "⡿" "⣟" "⣯" "⣷")
+SPINNER_CURRENT=0
+SPINNER_PID=""
 
-
-# 简单进度显示
+# 进度条函数
 show_progress() {
     local current=$1
     local total=$2
-    local message="$3"
+    local message=$3
     local percentage=$((current * 100 / total))
+    local filled=$((current * PROGRESS_WIDTH / total))
+    local empty=$((PROGRESS_WIDTH - filled))
     
-    # 只在重要节点显示进度
-    if [ $((percentage % 10)) -eq 0 ] || [ "$current" -eq "$total" ]; then
-        printf "\r\033[2K${CYAN}[进度] ${percentage}%% - ${message}${NC}\n"
+    # 构建进度条
+    local bar=""
+    for ((i=0; i<filled; i++)); do
+        bar+="#"
+    done
+    for ((i=0; i<empty; i++)); do
+        bar+="-"
+    done
+    
+    # 清空整行并在同一行更新显示
+    printf "\r\033[K${CYAN}[${bar}] ${percentage}%% ${NC}${message}${NC}"
+    
+    # 如果完成，换行
+    if [ "$current" -eq "$total" ]; then
+        echo
     fi
-}
-
-# 显示步骤完成
-show_step_complete() {
-    local step_name="$1"
-    STEP_COUNTER=$((STEP_COUNTER + 1))
-    printf "\n${GREEN}[步骤 $STEP_COUNTER] ✓ ${step_name}${NC}\n"
-}
-
-# 开始任务
-start_task() {
-    # 忽略大部分参数，只显示任务名
-    local task_name="$3"
-    if [ -n "$task_name" ]; then
-        printf "${BLUE}▶ ${NC}${task_name}\n"
-    fi
-}
-
-complete_task() {
-    local task_name="$1"
-    show_step_complete "$task_name"
 }
 
 # 更新进度
@@ -90,31 +88,169 @@ update_progress() {
     show_progress $PROGRESS_CURRENT $PROGRESS_TOTAL "$message"
 }
 
+# 带有Spinner的进度更新
+update_progress_with_spinner() {
+    local increment=${1:-5}
+    local message=${2:-""}
+    local spinner_type="${3:-dots}"
+    local show_duration=${4:-1}  # 显示时间（秒）
+    
+    PROGRESS_CURRENT=$((PROGRESS_CURRENT + increment))
+    if [ $PROGRESS_CURRENT -gt $PROGRESS_TOTAL ]; then
+        PROGRESS_CURRENT=$PROGRESS_TOTAL
+    fi
+    
+    # 显示带有动画的进度条
+    local end_time=$((SECONDS + show_duration))
+    while [ $SECONDS -lt $end_time ]; do
+        show_progress_with_spinner $PROGRESS_CURRENT $PROGRESS_TOTAL "$message" "$spinner_type"
+        sleep 0.1
+    done
+    
+    # 最后显示静态版本
+    if [ $PROGRESS_CURRENT -eq $PROGRESS_TOTAL ]; then
+        show_progress $PROGRESS_CURRENT $PROGRESS_TOTAL "$message"
+    fi
+}
 
+# Spinner函数
+show_spinner() {
+    local message="$1"
+    local spinner_type="${2:-dots}"  # dots, simple, arrows, chars
+    local spinner_array
+    
+    case "$spinner_type" in
+        "simple")
+            spinner_array=("${SPINNER_SIMPLE[@]}")
+            ;;
+        "arrows")
+            spinner_array=("${SPINNER_ARROWS[@]}")
+            ;;
+        "chars")
+            spinner_array=("${SPINNER_CHARS[@]}")
+            ;;
+        *)
+            spinner_array=("${SPINNER_DOTS[@]}")
+            ;;
+    esac
+    
+    local spinner_char="${spinner_array[$SPINNER_CURRENT]}"
+    printf "\r\033[K${CYAN}${spinner_char} ${NC}${message}${NC}"
+    
+    SPINNER_CURRENT=$(( (SPINNER_CURRENT + 1) % ${#spinner_array[@]} ))
+}
 
+# 启动后台Spinner
+start_spinner() {
+    local message="$1"
+    local spinner_type="${2:-dots}"
+    local interval="${3:-0.1}"
+    
+    # 停止之前的spinner
+    stop_spinner
+    
+    # 启动新的spinner
+    {
+        while true; do
+            show_spinner "$message" "$spinner_type"
+            sleep "$interval"
+        done
+    } &
+    
+    SPINNER_PID=$!
+    # 禁用作业控制消息
+    disown
+}
 
+# 停止Spinner
+stop_spinner() {
+    if [ -n "$SPINNER_PID" ]; then
+        kill "$SPINNER_PID" 2>/dev/null || true
+        wait "$SPINNER_PID" 2>/dev/null || true
+        SPINNER_PID=""
+    fi
+    # 清空Spinner行
+    printf "\r\033[K"
+}
 
+# 带有Spinner的进度条显示
+show_progress_with_spinner() {
+    local current=$1
+    local total=$2
+    local message=$3
+    local spinner_type="${4:-dots}"
+    local percentage=$((current * 100 / total))
+    local filled=$((current * PROGRESS_WIDTH / total))
+    local empty=$((PROGRESS_WIDTH - filled))
+    
+    # 构建进度条
+    local bar=""
+    for ((i=0; i<filled; i++)); do
+        bar+="#"
+    done
+    for ((i=0; i<empty; i++)); do
+        bar+="-"
+    done
+    
+    # 获取spinner字符
+    local spinner_array
+    case "$spinner_type" in
+        "simple")
+            spinner_array=("${SPINNER_SIMPLE[@]}")
+            ;;
+        "arrows")
+            spinner_array=("${SPINNER_ARROWS[@]}")
+            ;;
+        "chars")
+            spinner_array=("${SPINNER_CHARS[@]}")
+            ;;
+        *)
+            spinner_array=("${SPINNER_DOTS[@]}")
+            ;;
+    esac
+    
+    local spinner_char="${spinner_array[$SPINNER_CURRENT]}"
+    
+    # 清空整行并显示进度条和spinner
+    printf "\r\033[K${CYAN}[${bar}] ${percentage}%% ${spinner_char} ${NC}${message}${NC}"
+    
+    # 更新spinner位置
+    SPINNER_CURRENT=$(( (SPINNER_CURRENT + 1) % ${#spinner_array[@]} ))
+    
+    # 如果完成，停止spinner并换行
+    if [ "$current" -eq "$total" ]; then
+        printf "\r\033[K${CYAN}[${bar}] ${percentage}%% ✓ ${NC}${message}${NC}"
+        echo
+        SPINNER_CURRENT=0
+    fi
+}
 
-# 静默执行命令
-run_command() {
+# 执行带有Spinner的长时间操作
+run_with_spinner() {
     local message="$1"
     local command="$2"
-    local spinner_type="$3"  # 兼容旧参数，但忽略
+    local spinner_type="${3:-dots}"
     local success_message="${4:-$message}"
+    
+    # 启动spinner
+    start_spinner "$message" "$spinner_type"
     
     # 创建临时文件捕获错误输出
     local error_file="/tmp/ais_install_error_$$"
     
     # 执行命令
     if eval "$command" >/dev/null 2>"$error_file"; then
+        stop_spinner
+        printf "\r\033[K${GREEN}✓ ${NC}${success_message}${NC}\n"
         rm -f "$error_file"
         return 0
     else
         local exit_code=$?
-        printf "${RED}✗ ${NC}${message} 失败${NC}\n"
+        stop_spinner
+        printf "\r\033[K${RED}✗ ${NC}${message} 失败${NC}\n"
         
-        # 如果是调试模式，显示错误信息
-        if [ "$DEBUG_MODE" -eq 1 ] && [ -s "$error_file" ]; then
+        # 如果是调试模式或错误文件较小，显示错误信息
+        if [ "$DEBUG_MODE" -eq 1 ] || [ -s "$error_file" ]; then
             local error_size=$(wc -c < "$error_file" 2>/dev/null || echo 0)
             if [ "$error_size" -gt 0 ]; then
                 echo
@@ -129,6 +265,17 @@ run_command() {
                 echo "----------------------------------------"
                 echo
             fi
+        fi
+        
+        # 保存错误日志（如果是调试模式）
+        if [ "$DEBUG_MODE" -eq 1 ] && [ -s "$error_file" ]; then
+            local log_file="/tmp/ais_install_debug.log"
+            echo "=== $(date) ===" >> "$log_file"
+            echo "Command: $command" >> "$log_file"
+            echo "Exit code: $exit_code" >> "$log_file"
+            cat "$error_file" >> "$log_file"
+            echo "" >> "$log_file"
+            print_info "错误日志已保存到: $log_file"
         fi
         
         rm -f "$error_file"
@@ -233,17 +380,19 @@ get_system_info() {
     local os_version=""
     local python_version=""
     
-    # 检测操作系统 - CentOS优先检测
-    if [ -f /etc/redhat-release ] && grep -q "CentOS" /etc/redhat-release; then
-        os_name="centos"
-        os_version=$(grep -oP '\d+(\.\d+)?' /etc/redhat-release | head -1)
-    elif [ -f /etc/redhat-release ] && grep -q "Rocky" /etc/redhat-release; then
-        os_name="rocky"
-        os_version=$(grep -oP '\d+(\.\d+)?' /etc/redhat-release | head -1)
-    elif [ -f /etc/os-release ]; then
+    # 检测操作系统
+    if [ -f /etc/os-release ]; then
         . /etc/os-release
         os_name="$ID"
         os_version="$VERSION_ID"
+    elif [ -f /etc/redhat-release ]; then
+        if grep -q "CentOS" /etc/redhat-release; then
+            os_name="centos"
+            os_version=$(grep -oP '\d+\.\d+' /etc/redhat-release | head -1)
+        elif grep -q "Rocky" /etc/redhat-release; then
+            os_name="rocky"
+            os_version=$(grep -oP '\d+\.\d+' /etc/redhat-release | head -1)
+        fi
     fi
     
     # 检测Python版本
@@ -292,10 +441,13 @@ detect_install_strategy() {
     system_info=$(get_system_info)
     IFS='|' read -r os_name os_version python_version <<< "$system_info"
     
-    # 根据测试验证结果确定安装策略
-    # CentOS 7有特殊处理，优先检查
-    # 注意：此函数只能输出策略名称，不能有其他输出
+    # 首先检查Python版本，如果小于3.9则需要编译安装
+    if [ -n "$python_version" ] && ! compare_python_version "$python_version" "3.9"; then
+        echo "compile_python39"  # 需要编译安装Python 3.9.23
+        return
+    fi
     
+    # 根据测试验证结果确定安装策略
     case "$os_name" in
         "ubuntu")
             case "$os_version" in
@@ -342,8 +494,7 @@ detect_install_strategy() {
         "centos")
             case "$os_version" in
                 "7"|"7."*)
-                    # CentOS 7特别检查 - 基于实测验证
-                    echo "compile_python310"  # CentOS 7强制使用Python 3.10.9
+                    echo "compile_python310"  # CentOS 7需要编译Python 3.10.9
                     ;;
                 "8"|"8."*)
                     echo "python_upgrade"  # CentOS 8需要升级Python
@@ -400,16 +551,16 @@ detect_environment() {
 # 安装系统依赖
 install_system_dependencies() {
     local strategy=$1
-    # 进度将在具体步骤中更新
+    update_progress 10 "正在安装系统依赖..."
     
     case "$strategy" in
         "compile_python39")
             # 安装编译依赖
             if command_exists yum; then
                 if [ "$(detect_environment)" = "user" ]; then
-                    run_command "正在安装编译依赖包..." "sudo yum install -y gcc make patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel git wget tar" "dots" "编译依赖包安装完成"
+                    run_with_spinner "正在安装编译依赖包..." "sudo yum install -y gcc make patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel git wget tar" "dots" "编译依赖包安装完成"
                 else
-                    run_command "正在安装编译依赖包..." "yum install -y gcc make patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel git wget tar" "dots" "编译依赖包安装完成"
+                    run_with_spinner "正在安装编译依赖包..." "yum install -y gcc make patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel git wget tar" "dots" "编译依赖包安装完成"
                 fi
             fi
             ;;
@@ -427,43 +578,36 @@ install_system_dependencies() {
                 
                 if [ "$is_centos7" -eq 1 ]; then
                     # CentOS 7.x 特殊处理
-                    update_progress 3 "正在安装EPEL源..."
                     if [ "$(detect_environment)" = "user" ]; then
-                        run_command "正在安装EPEL源..." "sudo yum install -y epel-release" "dots" "EPEL源安装完成"
+                        run_with_spinner "正在安装EPEL源..." "sudo yum install -y epel-release" "dots" "EPEL源安装完成"
+                        run_with_spinner "正在安装编译依赖包..." "sudo yum install -y gcc make patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel tk-devel libffi-devel xz-devel openssl11 openssl11-devel openssl11-libs ncurses-devel gdbm-devel db4-devel libpcap-devel expat-devel" "dots" "编译依赖包安装完成"
                     else
-                        run_command "正在安装EPEL源..." "yum install -y epel-release" "dots" "EPEL源安装完成"
+                        run_with_spinner "正在安装EPEL源..." "yum install -y epel-release" "dots" "EPEL源安装完成"
+                        run_with_spinner "正在安装编译依赖包..." "yum install -y gcc make patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel tk-devel libffi-devel xz-devel openssl11 openssl11-devel openssl11-libs ncurses-devel gdbm-devel db4-devel libpcap-devel expat-devel" "dots" "编译依赖包安装完成"
                     fi
-                    
-                    update_progress 8 "正在安装编译依赖包..."
-                    if [ "$(detect_environment)" = "user" ]; then
-                        run_command "正在安装编译依赖包..." "sudo yum install -y gcc make patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel tk-devel libffi-devel xz-devel openssl11 openssl11-devel openssl11-libs ncurses-devel gdbm-devel db4-devel libpcap-devel expat-devel" "dots" "编译依赖包安装完成"
-                    else
-                        run_command "正在安装编译依赖包..." "yum install -y gcc make patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel tk-devel libffi-devel xz-devel openssl11 openssl11-devel openssl11-libs ncurses-devel gdbm-devel db4-devel libpcap-devel expat-devel" "dots" "编译依赖包安装完成"
-                    fi
-                    complete_task "系统依赖安装 (CentOS 7)"
                 else
                     # Kylin Linux 或其他系统
                     if [ "$(detect_environment)" = "user" ]; then
-                        run_command "正在安装编译依赖包..." "sudo yum install -y gcc make patch zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel libffi-devel" "dots" "编译依赖包安装完成"
+                        run_with_spinner "正在安装编译依赖包..." "sudo yum install -y gcc make patch zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel libffi-devel" "dots" "编译依赖包安装完成"
                     else
-                        run_command "正在安装编译依赖包..." "yum install -y gcc make patch zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel libffi-devel" "dots" "编译依赖包安装完成"
+                        run_with_spinner "正在安装编译依赖包..." "yum install -y gcc make patch zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel libffi-devel" "dots" "编译依赖包安装完成"
                     fi
                 fi
             elif command_exists dnf; then
                 if [ "$(detect_environment)" = "user" ]; then
-                    run_command "正在安装开发工具..." "sudo dnf groupinstall -y 'Development Tools'" "dots" "开发工具安装完成"
-                    run_command "正在安装依赖库..." "sudo dnf install -y zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel git wget tar" "dots" "依赖库安装完成"
+                    run_with_spinner "正在安装开发工具..." "sudo dnf groupinstall -y 'Development Tools'" "dots" "开发工具安装完成"
+                    run_with_spinner "正在安装依赖库..." "sudo dnf install -y zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel git wget tar" "dots" "依赖库安装完成"
                 else
-                    run_command "正在安装开发工具..." "dnf groupinstall -y 'Development Tools'" "dots" "开发工具安装完成"
-                    run_command "正在安装依赖库..." "dnf install -y zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel git wget tar" "dots" "依赖库安装完成"
+                    run_with_spinner "正在安装开发工具..." "dnf groupinstall -y 'Development Tools'" "dots" "开发工具安装完成"
+                    run_with_spinner "正在安装依赖库..." "dnf install -y zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel git wget tar" "dots" "依赖库安装完成"
                 fi
             elif command_exists apt-get; then
                 if [ "$(detect_environment)" = "user" ]; then
-                    run_command "正在更新软件包列表..." "sudo apt update" "dots" "软件包列表更新完成"
-                    run_command "正在安装编译依赖..." "sudo apt install -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev wget tar" "dots" "编译依赖安装完成"
+                    run_with_spinner "正在更新软件包列表..." "sudo apt update" "dots" "软件包列表更新完成"
+                    run_with_spinner "正在安装编译依赖..." "sudo apt install -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev wget tar" "dots" "编译依赖安装完成"
                 else
-                    run_command "正在更新软件包列表..." "apt update" "dots" "软件包列表更新完成"
-                    run_command "正在安装编译依赖..." "apt install -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev wget tar" "dots" "编译依赖安装完成"
+                    run_with_spinner "正在更新软件包列表..." "apt update" "dots" "软件包列表更新完成"
+                    run_with_spinner "正在安装编译依赖..." "apt install -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev wget tar" "dots" "编译依赖安装完成"
                 fi
             fi
             ;;
@@ -471,21 +615,21 @@ install_system_dependencies() {
             # 安装Python升级包
             if command_exists dnf; then
                 if [ "$(detect_environment)" = "user" ]; then
-                    run_command "正在安装Python 3.9..." "sudo dnf install -y python39 python39-pip" "dots" "Python 3.9安装完成"
+                    run_with_spinner "正在安装Python 3.9..." "sudo dnf install -y python39 python39-pip" "dots" "Python 3.9安装完成"
                 else
-                    run_command "正在安装Python 3.9..." "dnf install -y python39 python39-pip" "dots" "Python 3.9安装完成"
+                    run_with_spinner "正在安装Python 3.9..." "dnf install -y python39 python39-pip" "dots" "Python 3.9安装完成"
                 fi
             elif command_exists apt-get; then
                 if [ "$(detect_environment)" = "user" ]; then
-                    run_command "正在更新软件包列表..." "sudo apt update" "dots" "软件包列表更新完成"
-                    run_command "正在安装必要工具..." "sudo apt install -y software-properties-common" "dots" "必要工具安装完成"
-                    run_command "正在添加Python源..." "sudo add-apt-repository -y ppa:deadsnakes/ppa" "dots" "Python源添加完成"
-                    run_command "正在安装Python 3.9..." "sudo apt install -y python3.9 python3.9-venv python3.9-dev" "dots" "Python 3.9安装完成"
+                    run_with_spinner "正在更新软件包列表..." "sudo apt update" "dots" "软件包列表更新完成"
+                    run_with_spinner "正在安装必要工具..." "sudo apt install -y software-properties-common" "dots" "必要工具安装完成"
+                    run_with_spinner "正在添加Python源..." "sudo add-apt-repository -y ppa:deadsnakes/ppa" "dots" "Python源添加完成"
+                    run_with_spinner "正在安装Python 3.9..." "sudo apt install -y python3.9 python3.9-venv python3.9-dev" "dots" "Python 3.9安装完成"
                 else
-                    run_command "正在更新软件包列表..." "apt update" "dots" "软件包列表更新完成"
-                    run_command "正在安装必要工具..." "apt install -y software-properties-common" "dots" "必要工具安装完成"
-                    run_command "正在添加Python源..." "add-apt-repository -y ppa:deadsnakes/ppa" "dots" "Python源添加完成"
-                    run_command "正在安装Python 3.9..." "apt install -y python3.9 python3.9-venv python3.9-dev" "dots" "Python 3.9安装完成"
+                    run_with_spinner "正在更新软件包列表..." "apt update" "dots" "软件包列表更新完成"
+                    run_with_spinner "正在安装必要工具..." "apt install -y software-properties-common" "dots" "必要工具安装完成"
+                    run_with_spinner "正在添加Python源..." "add-apt-repository -y ppa:deadsnakes/ppa" "dots" "Python源添加完成"
+                    run_with_spinner "正在安装Python 3.9..." "apt install -y python3.9 python3.9-venv python3.9-dev" "dots" "Python 3.9安装完成"
                 fi
             fi
             ;;
@@ -493,17 +637,17 @@ install_system_dependencies() {
             # 安装pipx
             if command_exists apt-get; then
                 if [ "$(detect_environment)" = "user" ]; then
-                    run_command "正在更新软件包列表..." "sudo apt update" "dots" "软件包列表更新完成"
-                    run_command "正在安装pipx..." "sudo apt install -y pipx" "dots" "pipx安装完成"
+                    run_with_spinner "正在更新软件包列表..." "sudo apt update" "dots" "软件包列表更新完成"
+                    run_with_spinner "正在安装pipx..." "sudo apt install -y pipx" "dots" "pipx安装完成"
                 else
-                    run_command "正在更新软件包列表..." "apt update" "dots" "软件包列表更新完成"
-                    run_command "正在安装pipx..." "apt install -y pipx" "dots" "pipx安装完成"
+                    run_with_spinner "正在更新软件包列表..." "apt update" "dots" "软件包列表更新完成"
+                    run_with_spinner "正在安装pipx..." "apt install -y pipx" "dots" "pipx安装完成"
                 fi
             elif command_exists dnf; then
                 if [ "$(detect_environment)" = "user" ]; then
-                    run_command "正在安装pipx..." "sudo dnf install -y pipx" "dots" "pipx安装完成"
+                    run_with_spinner "正在安装pipx..." "sudo dnf install -y pipx" "dots" "pipx安装完成"
                 else
-                    run_command "正在安装pipx..." "dnf install -y pipx" "dots" "pipx安装完成"
+                    run_with_spinner "正在安装pipx..." "dnf install -y pipx" "dots" "pipx安装完成"
                 fi
             fi
             ;;
@@ -515,75 +659,34 @@ setup_python_environment() {
     local strategy=$1
     update_progress 15 "正在设置Python环境..."
     
-    if [ "$DEBUG_MODE" -eq 1 ]; then
-        print_info "调试：设置Python环境，策略=$strategy"
-    fi
-    
-    if [ -z "$strategy" ]; then
-        print_error "策略变量为空，无法设置Python环境"
-        return 1
-    fi
-    
     case "$strategy" in
         "compile_python39")
             # 直接编译安装Python 3.9.23
             local python_prefix="/usr/local/python3.9"
             
             # 检查是否已经安装
-            if [ -x "$python_prefix/bin/python3.9" ]; then
+            if [ -x "$python_prefix/bin/python3" ]; then
                 print_info "Python 3.9.23已经安装"
-                export PYTHON_CMD="$python_prefix/bin/python3.9"
-                export PIP_CMD="$python_prefix/bin/pip3.9"
+                export PYTHON_CMD="$python_prefix/bin/python3"
+                export PIP_CMD="$python_prefix/bin/pip3"
                 return 0
             fi
             
-            print_warning "Python 3.9编译安装策略未完全实现"
-            print_info "建议手动安装更新的Python版本或使用其他系统"
-            return 1
+            # Python 3.9.23 编译安装逻辑...
             ;;
         "compile_python310")
             # 编译安装Python 3.10.9 - 严格按照测试流程
             local python_prefix="/usr/local/python3.10"
             
-            if [ "$DEBUG_MODE" -eq 1 ]; then
-                print_info "调试：检查Python 3.10.9安装状态"
-                ls -la "$python_prefix/bin/" 2>/dev/null || print_info "调试：目录 $python_prefix/bin/ 不存在"
+            # 检查是否已经安装
+            if [ -x "$python_prefix/bin/python3.10" ]; then
+                print_info "Python 3.10.9已经安装"
+                export PYTHON_CMD="$python_prefix/bin/python3.10"
+                export PIP_CMD="$python_prefix/bin/pip3.10"
+                return 0
             fi
             
-            # 检查是否已经安装且功能正常
-            if [ -x "$python_prefix/bin/python3.10" ] && [ -x "$python_prefix/bin/pip3.10" ]; then
-                if [ "$DEBUG_MODE" -eq 1 ]; then
-                    print_info "调试：Python 3.10.9和pip已存在，验证功能..."
-                fi
-                
-                # 验证Python和pip功能
-                if "$python_prefix/bin/python3.10" -c "import ssl, sqlite3, zlib" 2>/dev/null && \
-                   "$python_prefix/bin/pip3.10" --version >/dev/null 2>&1; then
-                    print_info "Python 3.10.9已经安装且功能正常"
-                    export PYTHON_CMD="$python_prefix/bin/python3.10"
-                    export PIP_CMD="$python_prefix/bin/pip3.10"
-                    if [ "$DEBUG_MODE" -eq 1 ]; then
-                        print_info "调试：使用已安装的Python 3.10.9"
-                        print_info "调试：PYTHON_CMD=$PYTHON_CMD"
-                        print_info "调试：PIP_CMD=$PIP_CMD"
-                    fi
-                    return 0
-                else
-                    print_warning "Python 3.10.9存在但功能异常，将重新编译"
-                    if [ "$DEBUG_MODE" -eq 1 ]; then
-                        print_info "调试：删除损坏的Python安装"
-                        rm -rf "$python_prefix" 2>/dev/null || true
-                    fi
-                fi
-            else
-                if [ "$DEBUG_MODE" -eq 1 ]; then
-                    print_info "调试：Python 3.10.9未安装，开始编译"
-                else
-                    print_info "开始编译Python 3.10.9（预计需要5-10分钟）..."
-                fi
-            fi
-            
-            update_progress 2 "正在准备编译Python 3.10.9..."
+            update_progress 5 "正在准备编译Python 3.10.9..."
             
             # 创建临时目录
             local temp_dir="/tmp/python_build"
@@ -591,15 +694,14 @@ setup_python_environment() {
             cd "$temp_dir"
             
             # 下载Python 3.10.9源码
-            update_progress 5 "正在下载Python 3.10.9源码..."
             local python_url="https://repo.huaweicloud.com/artifactory/python-local/3.10.9/Python-3.10.9.tgz"
-            if ! run_command "正在下载Python 3.10.9源码..." "wget -q $python_url" "dots" "Python源码下载完成"; then
+            if ! run_with_spinner "正在下载Python 3.10.9源码..." "wget -q $python_url" "dots" "Python源码下载完成"; then
                 print_error "Python源码下载失败"
                 return 1
             fi
             
-            update_progress 3 "正在解压源码..."
-            if ! run_command "正在解压Python源码..." "tar -xf Python-3.10.9.tgz" "dots" "源码解压完成"; then
+            update_progress 5 "正在解压源码..."
+            if ! run_with_spinner "正在解压Python源码..." "tar -xf Python-3.10.9.tgz" "dots" "源码解压完成"; then
                 print_error "源码解压失败"
                 return 1
             fi
@@ -618,47 +720,39 @@ setup_python_environment() {
             fi
             
             if [ "$is_centos7" -eq 1 ]; then
-                # CentOS 7特殊处理 - 严格按照实测成功步骤
-                if ! run_command "正在修改configure文件支持OpenSSL 1.1..." "sed -i 's/PKG_CONFIG openssl /PKG_CONFIG openssl11 /g' configure" "dots" "configure文件修改完成"; then
+                # CentOS 7特殊处理 - 修改configure文件支持OpenSSL 1.1
+                if ! run_with_spinner "正在修改configure文件..." "sed -i 's/PKG_CONFIG openssl /PKG_CONFIG openssl11 /g' configure" "dots" "configure文件修改完成"; then
                     print_warning "configure文件修改失败，继续使用默认配置"
                 fi
                 
-                # 按照实测步骤：先单独执行configure，但需要指定prefix
-                if ! run_command "正在执行configure配置..." "./configure --prefix=$python_prefix --with-ensurepip=install" "chars" "configure执行完成"; then
-                    print_error "configure执行失败"
+                # 配置编译选项
+                if ! run_with_spinner "正在配置编译选项..." "./configure --prefix=$python_prefix --with-ensurepip=install" "chars" "编译配置完成"; then
+                    print_error "编译配置失败"
                     return 1
                 fi
             else
                 # Kylin Linux 或其他系统 - 启用优化
-                if ! run_command "正在配置编译选项..." "./configure --prefix=$python_prefix --enable-optimizations --with-ensurepip=install" "chars" "编译配置完成"; then
+                if ! run_with_spinner "正在配置编译选项..." "./configure --prefix=$python_prefix --enable-optimizations --with-ensurepip=install" "chars" "编译配置完成"; then
                     print_error "编译配置失败"
                     return 1
                 fi
             fi
             
-            update_progress 25 "正在编译Python 3.10.9（这可能需要几分钟）..."
-            # CentOS 7按照实测步骤使用单线程make，其他系统可以使用多线程
-            if [ "$is_centos7" -eq 1 ]; then
-                if ! run_command "正在编译Python 3.10.9..." "make" "chars" "Python编译完成"; then
-                    print_error "Python编译失败"
-                    return 1
-                fi
-            else
-                local cpu_count=$(nproc 2>/dev/null || echo "2")
-                if ! run_command "正在编译Python 3.10.9..." "make -j$cpu_count" "chars" "Python编译完成"; then
-                    print_error "Python编译失败"
-                    return 1
-                fi
+            update_progress 10 "正在编译Python 3.10.9（这可能需要几分钟）..."
+            local cpu_count=$(nproc 2>/dev/null || echo "2")
+            if ! run_with_spinner "正在编译Python 3.10.9..." "make -j$cpu_count" "chars" "Python编译完成"; then
+                print_error "Python编译失败"
+                return 1
             fi
             
-            update_progress 10 "正在安装Python到系统..."
+            update_progress 5 "正在安装Python..."
             if [ "$(detect_environment)" = "user" ]; then
-                if ! run_command "正在安装Python到系统..." "sudo make altinstall" "chars" "Python安装完成"; then
+                if ! run_with_spinner "正在安装Python到系统..." "sudo make altinstall" "chars" "Python安装完成"; then
                     print_error "Python安装失败"
                     return 1
                 fi
             else
-                if ! run_command "正在安装Python到系统..." "make altinstall" "chars" "Python安装完成"; then
+                if ! run_with_spinner "正在安装Python到系统..." "make altinstall" "chars" "Python安装完成"; then
                     print_error "Python安装失败"
                     return 1
                 fi
@@ -667,86 +761,166 @@ setup_python_environment() {
             # 验证Python安装
             if [ ! -x "$python_prefix/bin/python3.10" ]; then
                 print_error "Python 3.10.9安装不完整"
-                if [ "$DEBUG_MODE" -eq 1 ]; then
-                    print_info "调试：检查可能的安装位置"
-                    print_info "调试：期望位置 $python_prefix/bin/python3.10"
-                    find /usr/local -name "python3.10" -type f 2>/dev/null || print_info "调试：未找到python3.10文件"
-                    print_info "调试：检查所有Python相关文件："
-                    find /usr/local -name "python*" -type f 2>/dev/null | head -10 || print_info "调试：未找到Python文件"
-                fi
                 return 1
             fi
             
-            # 验证Python功能性
-            if ! "$python_prefix/bin/python3.10" -c "import ssl, sqlite3, zlib" 2>/dev/null; then
-                print_warning "Python安装可能缺少某些模块，但将继续安装"
-            fi
-            
-            # 验证pip是否可用
-            if [ ! -x "$python_prefix/bin/pip3.10" ]; then
-                print_warning "pip3.10不存在，尝试使用python -m pip"
-                export PYTHON_CMD="$python_prefix/bin/python3.10"
-                export PIP_CMD="$python_prefix/bin/python3.10 -m pip"
-            else
-                export PYTHON_CMD="$python_prefix/bin/python3.10"
-                export PIP_CMD="$python_prefix/bin/pip3.10"
-            fi
-            
-            # 最终验证pip命令
-            if ! $PIP_CMD --version >/dev/null 2>&1; then
-                print_error "pip命令验证失败，Python安装可能有问题"
-                if [ "$DEBUG_MODE" -eq 1 ]; then
-                    print_info "调试信息："
-                    print_info "  PYTHON_CMD: $PYTHON_CMD"
-                    print_info "  PIP_CMD: $PIP_CMD"
-                    print_info "  Python路径: $python_prefix"
-                    print_info "  Python可执行文件: $(ls -la $python_prefix/bin/python* 2>/dev/null || echo '无')"
-                    print_info "  Pip文件: $(ls -la $python_prefix/bin/pip* 2>/dev/null || echo '无')"
-                fi
-                return 1
-            fi
-            
-            if [ "$DEBUG_MODE" -eq 1 ]; then
-                print_info "Python环境验证成功："
-                print_info "  PYTHON_CMD: $PYTHON_CMD"
-                print_info "  PIP_CMD: $PIP_CMD"
-                print_info "  Pip版本: $($PIP_CMD --version)"
-            else
-                print_info "Python 3.10.9环境配置完成"
-            fi
-            
-            # 在CentOS 7上创建python3.10的软链接到更通用的路径
-            if [ "$is_centos7" -eq 1 ]; then
-                if [ "$(detect_environment)" = "user" ]; then
-                    sudo ln -sf "$python_prefix/bin/python3.10" /usr/local/bin/python3.10 2>/dev/null || true
-                    sudo ln -sf "$python_prefix/bin/pip3.10" /usr/local/bin/pip3.10 2>/dev/null || true
-                else
-                    ln -sf "$python_prefix/bin/python3.10" /usr/local/bin/python3.10 2>/dev/null || true
-                    ln -sf "$python_prefix/bin/pip3.10" /usr/local/bin/pip3.10 2>/dev/null || true
-                fi
-            fi
+            export PYTHON_CMD="$python_prefix/bin/python3.10"
+            export PIP_CMD="$python_prefix/bin/pip3.10"
             
             # 清理临时文件
             cd /
             rm -rf "$temp_dir"
             
-            complete_task "Python 3.10.9编译安装"
             print_info "Python 3.10.9编译安装完成"
+            
+            update_progress 5 "正在准备编译Python..."
+            
+            # 创建临时目录
+            local temp_dir="/tmp/python_build"
+            mkdir -p "$temp_dir"
+            cd "$temp_dir"
+            
+            # 下载Python源码
+            if ! run_with_spinner "正在下载Python $python_version源码..." "wget -q $python_url" "dots" "Python源码下载完成"; then
+                print_error "Python源码下载失败"
+                return 1
+            fi
+            
+            update_progress 5 "正在解压源码..."
+            local python_tarball="Python-${python_version}.tar.xz"
+            if ! run_with_spinner "正在解压Python源码..." "tar -xf $python_tarball" "dots" "源码解压完成"; then
+                print_error "源码解压失败"
+                return 1
+            fi
+            
+            cd "Python-${python_version}"
+            
+            update_progress 5 "正在配置编译选项..."
+            
+            # 检测编译器版本，决定Python版本和编译选项
+            local configure_opts="--prefix=$python_prefix --with-ensurepip=install"
+            local gcc_version=""
+            local enable_optimizations=1
+            local python_version="3.9.23"
+            local python_url="https://repo.huaweicloud.com:8443/artifactory/python-local/3.9.23/Python-3.9.23.tar.xz"
+            local use_old_python=0
+            
+            # 获取GCC版本
+            if command -v gcc >/dev/null 2>&1; then
+                gcc_version=$(gcc --version 2>/dev/null | head -n1 | grep -oE '[0-9]+\.[0-9]+' | head -n1)
+                if [ -n "$gcc_version" ]; then
+                    # 比较GCC版本，如果小于5.0则使用更老的Python版本
+                    if [ "$(printf '%s\n' "$gcc_version" "5.0" | sort -V | head -n1)" = "$gcc_version" ] && [ "$gcc_version" != "5.0" ]; then
+                        enable_optimizations=0
+                        use_old_python=1
+                        print_warning "检测到GCC版本 $gcc_version < 5.0，使用Python 3.9.18以确保兼容性"
+                    else
+                        print_info "检测到GCC版本 $gcc_version >= 5.0，使用Python 3.9.23"
+                    fi
+                fi
+            fi
+            
+            # 根据系统特征进一步判断
+            if [ -f "/etc/centos-release" ]; then
+                local centos_version=$(cat /etc/centos-release 2>/dev/null | grep -oE '[0-9]+' | head -n1)
+                if [ -n "$centos_version" ] && [ "$centos_version" -le 7 ]; then
+                    enable_optimizations=0
+                    use_old_python=1
+                    print_warning "检测到CentOS $centos_version，使用Python 3.9.18以确保编译兼容性"
+                fi
+            fi
+            
+            # 设置Python版本
+            if [ "$use_old_python" -eq 1 ]; then
+                python_version="3.9.18"
+                python_url="https://repo.huaweicloud.com/artifactory/python-local/3.9.18/Python-3.9.18.tar.xz"
+                python_prefix="/usr/local/python3.9"
+                configure_opts="--prefix=$python_prefix --with-ensurepip=install"
+                print_info "使用Python $python_version 以确保在旧编译器上成功编译"
+            else
+                print_info "使用Python $python_version"
+            fi
+            
+            # 添加优化选项
+            if [ "$enable_optimizations" -eq 1 ]; then
+                configure_opts="$configure_opts --enable-optimizations"
+                print_info "启用编译优化选项"
+            else
+                print_info "禁用编译优化选项，使用标准配置"
+            fi
+            
+            if ! run_with_spinner "正在配置编译选项..." "./configure $configure_opts" "chars" "编译配置完成"; then
+                print_error "编译配置失败"
+                return 1
+            fi
+            
+            update_progress 5 "正在编译Python（这可能需要几分钟）..."
+            local cpu_count=$(nproc 2>/dev/null || echo "2")
+            if ! run_with_spinner "正在编译Python $python_version..." "make -j$cpu_count" "chars" "Python编译完成"; then
+                print_error "Python编译失败"
+                
+                # 如果是调试模式，提供详细诊断
+                if [ "$DEBUG_MODE" -eq 1 ]; then
+                    diagnose_compile_environment
+                else
+                    print_warning "可能的原因："
+                    print_info "1. 系统依赖包未完全安装"
+                    print_info "2. 编译器版本过低"
+                    print_info "3. 磁盘空间不足"
+                    print_info "4. 内存不足"
+                    echo
+                    print_info "💡 要查看详细错误信息，请使用调试模式："
+                    print_info "   bash install_optimized.sh --debug"
+                fi
+                return 1
+            fi
+            
+            update_progress 5 "正在安装Python..."
+            if [ "$(detect_environment)" = "user" ]; then
+                if ! run_with_spinner "正在安装Python到系统..." "sudo make altinstall" "chars" "Python安装完成"; then
+                    print_error "Python安装失败"
+                    return 1
+                fi
+            else
+                if ! run_with_spinner "正在安装Python到系统..." "make altinstall" "chars" "Python安装完成"; then
+                    print_error "Python安装失败"
+                    return 1
+                fi
+            fi
+            
+            # 验证Python安装
+            if [ ! -x "$python_prefix/bin/python3.9" ]; then
+                print_error "Python 3.9.23安装不完整"
+                return 1
+            fi
+            
+            # 创建python3软链接
+            if [ "$(detect_environment)" = "user" ]; then
+                sudo ln -sf "$python_prefix/bin/python3.9" "$python_prefix/bin/python3"
+                sudo ln -sf "$python_prefix/bin/pip3.9" "$python_prefix/bin/pip3"
+            else
+                ln -sf "$python_prefix/bin/python3.9" "$python_prefix/bin/python3"
+                ln -sf "$python_prefix/bin/pip3.9" "$python_prefix/bin/pip3"
+            fi
+            
+            export PYTHON_CMD="$python_prefix/bin/python3"
+            export PIP_CMD="$python_prefix/bin/pip3"
+            
+            # 清理临时文件
+            cd /
+            rm -rf "$temp_dir"
+            
+            print_info "Python 3.9.23编译安装完成"
             ;;
         "python_upgrade")
             # 使用升级的Python版本
             export PYTHON_CMD="python3.9"
             export PIP_CMD="python3.9 -m pip"
             ;;
-        "")
-            # 策略为空，无法继续
-            print_error "安装策略为空，无法设置Python环境"
-            return 1
-            ;;
         *)
-            # 未知策略
-            print_error "未知的安装策略: $strategy"
-            return 1
+            # 使用系统默认Python
+            export PYTHON_CMD="python3"
+            export PIP_CMD="python3 -m pip"
             ;;
     esac
 }
@@ -754,41 +928,28 @@ setup_python_environment() {
 # 安装AIS
 install_ais() {
     local strategy=$1
-    update_progress 5 "正在安装AIS应用..."
+    update_progress 20 "正在安装AIS..."
     
     case "$strategy" in
         "pipx_native")
             # 使用pipx安装
             if ! command_exists pipx; then
-                run_command "正在安装pipx..." "$PIP_CMD install --user pipx" "dots" "pipx安装完成"
+                run_with_spinner "正在安装pipx..." "$PIP_CMD install --user pipx" "dots" "pipx安装完成"
                 pipx ensurepath >/dev/null 2>&1
                 export PATH="$HOME/.local/bin:$PATH"
             fi
             
             if pipx list | grep -q "ais-terminal"; then
                 update_progress 5 "正在更新AIS到最新版本..."
-                run_command "正在更新AIS到最新版本..." "pipx upgrade ais-terminal" "arrows" "AIS更新完成"
+                run_with_spinner "正在更新AIS到最新版本..." "pipx upgrade ais-terminal" "arrows" "AIS更新完成"
             else
-                run_command "正在安装AIS..." "pipx install ais-terminal" "arrows" "AIS安装完成"
+                run_with_spinner "正在安装AIS..." "pipx install ais-terminal" "arrows" "AIS安装完成"
             fi
             pipx ensurepath >/dev/null 2>&1
             ;;
         "compile_python39")
             # 使用编译的Python 3.9.23安装
-            # 验证PIP_CMD是否正确设置
-            if [ -z "$PIP_CMD" ] || ! command -v "$PIP_CMD" >/dev/null 2>&1; then
-                print_warning "PIP_CMD未正确设置，尝试使用备用方案"
-                if [ -x "/usr/local/python3.9/bin/pip3.9" ]; then
-                    export PIP_CMD="/usr/local/python3.9/bin/pip3.9"
-                elif [ -x "/usr/local/python3.9/bin/python3.9" ]; then
-                    export PIP_CMD="/usr/local/python3.9/bin/python3.9 -m pip"
-                else
-                    print_error "无法找到有效的pip命令"
-                    return 1
-                fi
-            fi
-            
-            run_command "正在安装AIS..." "$PIP_CMD install ais-terminal" "arrows" "AIS安装完成"
+            run_with_spinner "正在安装AIS..." "$PIP_CMD install ais-terminal" "arrows" "AIS安装完成"
             
             # 创建ais命令的软链接到/usr/local/bin/ais
             local ais_binary=""
@@ -817,20 +978,7 @@ install_ais() {
             ;;
         "compile_python310")
             # 使用编译的Python 3.10.9安装
-            # 验证PIP_CMD是否正确设置
-            if [ -z "$PIP_CMD" ] || ! command -v "$PIP_CMD" >/dev/null 2>&1; then
-                print_warning "PIP_CMD未正确设置，尝试使用备用方案"
-                if [ -x "/usr/local/python3.10/bin/pip3.10" ]; then
-                    export PIP_CMD="/usr/local/python3.10/bin/pip3.10"
-                elif [ -x "/usr/local/python3.10/bin/python3.10" ]; then
-                    export PIP_CMD="/usr/local/python3.10/bin/python3.10 -m pip"
-                else
-                    print_error "无法找到有效的pip命令"
-                    return 1
-                fi
-            fi
-            
-            run_command "正在安装AIS..." "$PIP_CMD install ais-terminal" "arrows" "AIS安装完成"
+            run_with_spinner "正在安装AIS..." "$PIP_CMD install ais-terminal" "arrows" "AIS安装完成"
             
             # 创建ais命令的软链接到/usr/local/bin/ais
             local ais_binary=""
@@ -859,15 +1007,14 @@ install_ais() {
             ;;
         *)
             # 标准pip安装
-            run_command "正在安装AIS..." "$PIP_CMD install ais-terminal" "arrows" "AIS安装完成"
+            run_with_spinner "正在安装AIS..." "$PIP_CMD install ais-terminal" "arrows" "AIS安装完成"
             ;;
     esac
-    complete_task "AIS应用安装"
 }
 
 # 设置Shell集成
 setup_shell_integration() {
-    update_progress 3 "正在设置Shell集成..."
+    update_progress 15 "正在设置Shell集成..."
     
     # 检测当前Shell
     local shell_name=""
@@ -929,36 +1076,33 @@ fi
 EOF
         fi
     fi
-    complete_task "Shell集成配置"
 }
 
 # 验证安装
 verify_installation() {
-    start_task 3 "verify" "正在验证安装..."
+    update_progress_with_spinner 10 "正在验证安装..." "simple" 1
     
     # 更新PATH
     export PATH="$HOME/.local/bin:$PATH"
     hash -r 2>/dev/null || true
     
     # 检查ais命令
-    update_progress 1 "正在检查AIS命令..."
-    if ! command_exists ais; then
+    if ! run_with_spinner "正在检查AIS命令..." "command_exists ais" "simple" "AIS命令检查完成"; then
         print_error "安装失败：ais命令不可用"
         return 1
     fi
     
-    update_progress 1 "正在验证版本信息..."
+    update_progress_with_spinner 5 "正在检查版本信息..." "simple" 1
     
     # 获取版本信息
     local version
-    if ! version=$(ais --version 2>/dev/null | head -n1); then
+    if ! version=$(run_with_spinner "正在获取版本信息..." "ais --version 2>/dev/null | head -n1" "simple" "版本信息获取完成"); then
         print_error "安装失败：无法获取版本信息"
         return 1
     fi
     
     # 确保进度条达到100%
-    update_progress 0 "安装验证完成"
-    complete_task "安装验证"
+    update_progress 5 "安装验证完成"
     return 0
 }
 
@@ -972,90 +1116,52 @@ main() {
     echo "GitHub: https://github.com/$GITHUB_REPO"
     echo
     
-    # 初始化进度系统
-    echo
-    start_task 1 "init" "正在初始化安装程序..."
+    # 初始化进度条
+    show_progress 0 $PROGRESS_TOTAL "正在初始化..."
     sleep 0.5
     
-    # 检测系统环境 (2-5%)
-    start_task 2 "detect_env" "正在检测系统环境..."
+    # 检测系统环境
+    update_progress_with_spinner 10 "正在检测系统环境..." "chars" 2
     local env
     env=$(detect_environment)
-    
-    update_progress 1 "正在分析安装策略..."
     local strategy
     strategy=$(detect_install_strategy)
-    
-    update_progress 1 "正在获取系统信息..."
     local system_info
     system_info=$(get_system_info)
     IFS='|' read -r os_name os_version python_version <<< "$system_info"
     
-    complete_task "系统检测: $os_name $os_version, Python: $python_version"
+    update_progress 5 "检测到系统: $os_name $os_version, Python: $python_version"
+    sleep 0.5
     
-    if [ "$DEBUG_MODE" -eq 1 ]; then
-        print_info "调试：环境类型=$env"
-        print_info "调试：安装策略=$strategy"
-        print_info "调试：系统信息=$system_info"
-        print_info "调试：策略检测 - os_name='$os_name', os_version='$os_version', python_version='$python_version'"
-        if [ "$strategy" = "compile_python310" ]; then
-            print_info "调试：匹配到CentOS 7分支，使用Python 3.10.9编译策略"
-        fi
-    fi
-    
-    # 显示安装策略 (6%)
-    start_task 1 "strategy" "正在准备安装策略..."
+    # 根据策略安装
     case "$strategy" in
         "pipx_native")
-            update_progress 0 "策略: pipx原生安装"
+            update_progress_with_spinner 5 "使用pipx原生安装策略" "arrows" 1
             ;;
         "pip_direct")
-            update_progress 0 "策略: pip直接安装"
+            update_progress_with_spinner 5 "使用pip直接安装策略" "arrows" 1
             ;;
         "python_upgrade")
-            update_progress 0 "策略: Python升级安装"
+            update_progress_with_spinner 5 "使用Python升级安装策略" "arrows" 1
             ;;
         "compile_python39")
-            update_progress 0 "策略: Python 3.9.23编译安装"
+            update_progress_with_spinner 5 "使用Python 3.9.23编译安装策略" "arrows" 1
             ;;
         "compile_python310")
-            update_progress 0 "策略: Python 3.10.9编译安装"
-            if [ "$DEBUG_MODE" -eq 1 ]; then
-                print_info "检测到CentOS 7系统（Python $python_version），基于实测验证："
-                print_info "  • 使用华为云镜像源加速下载"
-                print_info "  • 专门配置OpenSSL 1.1支持"
-                print_info "  • 完整的依赖包安装"
-                print_info "  • 严格按照实测成功的编译步骤执行"
-            else
-                print_info "CentOS 7系统检测完成，将编译安装Python 3.10.9"
-            fi
+            update_progress_with_spinner 5 "使用Python 3.10.9编译安装策略" "arrows" 1
             ;;
     esac
-    complete_task "安装策略: $strategy"
     
     # 执行安装步骤
-    if [ "$DEBUG_MODE" -eq 1 ]; then
-        print_info "调试：开始执行安装步骤，策略=$strategy"
-    fi
-    
-    # 安装系统依赖 (7-20%)
-    start_task 1 "dependencies" "正在安装系统依赖..."
     install_system_dependencies "$strategy"
-    
-    # 设置Python环境 (21-80%)
-    start_task 1 "python_env" "正在设置Python环境..."
     setup_python_environment "$strategy"
-    
-    # 安装AIS (81-90%)
-    start_task 1 "install_ais" "正在安装AIS应用..."
     install_ais "$strategy"
-    
-    # 设置Shell集成 (91-95%)
-    start_task 1 "shell_integration" "正在配置Shell集成..."
     setup_shell_integration
     
     # 验证安装
     if verify_installation; then
+        # 确保进度条完成到100%
+        show_progress $PROGRESS_TOTAL $PROGRESS_TOTAL "安装完成！"
         echo
         print_success "🎉 AIS安装成功！"
         
@@ -1066,27 +1172,9 @@ main() {
         
         echo
         print_warning "🔧 重要：请按以下步骤完成配置："
-        
-        # 根据安装策略提供不同的后续步骤
-        case "$strategy" in
-            "compile_python310")
-                print_info "   1. 运行: ais setup"
-                print_info "   2. 重新加载环境: source ~/.bashrc"
-                print_info "   💡 Python 3.10.9已安装到: /usr/local/python3.10/"
-                print_info "   💡 按照您的实测步骤，AIS应该已经正确安装"
-                ;;
-            "compile_python39")
-                print_info "   1. 首先运行: python3.9 -m pip install ais-terminal" 
-                print_info "   2. 然后运行: ais setup"
-                print_info "   3. 重新加载环境: source ~/.bashrc"
-                print_info "   💡 Python 3.9已安装到: /usr/local/python3.9/"
-                ;;
-            *)
-                print_info "   1. 首先运行: ais setup"
-                print_info "   2. 然后运行: source ~/.bashrc  # 或 source ~/.zshrc"
-                print_info "   3. 或者直接重新打开终端"
-                ;;
-        esac
+        print_info "   1. 首先运行: ais setup"
+        print_info "   2. 然后运行: source ~/.bashrc  # 或 source ~/.zshrc"
+        print_info "   3. 或者直接重新打开终端"
         
         echo
         print_info "✨ 配置完成后，命令失败时将自动显示AI分析！"
