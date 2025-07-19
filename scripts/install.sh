@@ -682,14 +682,14 @@ setup_python_environment() {
             # Python 3.9.23 编译安装逻辑...
             ;;
         "compile_python310")
-            # 编译安装Python 3.10.9 - 严格按照测试流程
-            local python_prefix="/usr/local/python3.10"
+            # 编译安装Python 3.10.9 - 按照成功的手动测试流程
+            local python_prefix="/usr/local"
             
             # 检查是否已经安装
             if [ -x "$python_prefix/bin/python3.10" ]; then
                 print_info "Python 3.10.9已经安装"
                 export PYTHON_CMD="$python_prefix/bin/python3.10"
-                export PIP_CMD="$python_prefix/bin/pip3.10"
+                export PIP_CMD="$python_prefix/bin/python3.10 -m pip"
                 return 0
             fi
             
@@ -767,7 +767,7 @@ setup_python_environment() {
             fi
             
             export PYTHON_CMD="$python_prefix/bin/python3.10"
-            export PIP_CMD="$python_prefix/bin/pip3.10"
+            export PIP_CMD="$python_prefix/bin/python3.10 -m pip"
             
             # 清理临时文件
             cd /
@@ -842,27 +842,9 @@ install_ais() {
             # 使用编译的Python 3.10.9安装
             run_with_spinner "正在安装AIS..." "$PIP_CMD install ais-terminal" "arrows" "AIS安装完成"
             
-            # 创建ais命令的软链接到/usr/local/bin/ais
-            local ais_binary=""
-            if [ -x "/usr/local/python3.10/bin/ais" ]; then
-                ais_binary="/usr/local/python3.10/bin/ais"
-            else
-                # 查找ais命令位置
-                ais_binary=$($PYTHON_CMD -c "import ais, os; print(os.path.dirname(ais.__file__))" 2>/dev/null)/../../../bin/ais
-                if [ ! -x "$ais_binary" ]; then
-                    ais_binary="/usr/local/python3.10/bin/ais"
-                fi
-            fi
-            
-            if [ "$(detect_environment)" = "user" ]; then
-                sudo ln -sf "$ais_binary" /usr/local/bin/ais 2>/dev/null || true
-            else
-                ln -sf "$ais_binary" /usr/local/bin/ais 2>/dev/null || true
-            fi
-            
-            # 验证ais命令可用
+            # 验证ais命令可用性
             if [ ! -x "/usr/local/bin/ais" ]; then
-                print_warning "软链接创建失败，请手动添加Python路径到PATH"
+                print_warning "AIS命令未安装到/usr/local/bin，请手动添加Python路径到PATH"
             fi
             ;;
         *)

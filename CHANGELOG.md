@@ -39,6 +39,11 @@
   - 解决不同终端环境下的对齐兼容性问题
   - 优化分割线样式：使用更美观的短横线替代等号
   - 简化标题显示：移除成功标题上方的分割线，保持简洁
+- 🔧 **修复Kylin V10安装脚本错误**：解决"install: missing destination file operand"错误
+  - 修改Python 3.10.9编译安装路径从`/usr/local/python3.10`改为`/usr/local`
+  - 更新PIP_CMD使用`python3.10 -m pip`替代直接调用pip3.10二进制文件
+  - 参考test.md中成功的手动安装步骤，简化安装路径配置
+  - 移除复杂的软链接创建逻辑，使用标准的altinstall路径
 
 ## [1.2.0] - 2025-07-18
 
