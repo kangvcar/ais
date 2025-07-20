@@ -451,7 +451,7 @@ detect_install_strategy() {
     
     # 然后检查Python版本，如果小于3.9则需要编译安装
     if [ -n "$python_version" ] && ! compare_python_version "$python_version" "3.9"; then
-        echo "compile_python39"  # 需要编译安装Python 3.9.23
+        echo "compile_python310"  # 需要编译安装Python 3.10.9
         return
     fi
     
@@ -537,7 +537,7 @@ detect_install_strategy() {
             elif [[ "$python_version" == "3.9"* ]] || [[ "$python_version" == "3.8"* ]]; then
                 echo "pip_direct"
             else
-                echo "compile_python39"
+                echo "compile_python310"
             fi
             ;;
     esac
@@ -564,16 +564,6 @@ install_system_dependencies() {
     PROGRESS_CURRENT=25
     
     case "$strategy" in
-        "compile_python39")
-            # 安装编译依赖
-            if command_exists yum; then
-                if [ "$(detect_environment)" = "user" ]; then
-                    run_with_spinner "正在安装编译依赖包..." "sudo yum install -y gcc make patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel git wget tar" "dots" "编译依赖包安装完成"
-                else
-                    run_with_spinner "正在安装编译依赖包..." "yum install -y gcc make patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel git wget tar" "dots" "编译依赖包安装完成"
-                fi
-            fi
-            ;;
         "compile_python310")
             # CentOS 7.x 和 Kylin Linux 编译Python 3.10.9 - 严格按照测试流程
             if command_exists yum; then
@@ -672,20 +662,6 @@ setup_python_environment() {
     PROGRESS_CURRENT=45
     
     case "$strategy" in
-        "compile_python39")
-            # 直接编译安装Python 3.9.23
-            local python_prefix="/usr/local/python3.9"
-            
-            # 检查是否已经安装
-            if [ -x "$python_prefix/bin/python3" ]; then
-                print_info "Python 3.9.23已经安装"
-                export PYTHON_CMD="$python_prefix/bin/python3"
-                export PIP_CMD="$python_prefix/bin/python3 -m pip"
-                return 0
-            fi
-            
-            # Python 3.9.23 编译安装逻辑...
-            ;;
         "compile_python310")
             # 编译安装Python 3.10.9 - 按照成功的手动测试流程
             local python_prefix="/usr/local"
@@ -815,33 +791,6 @@ install_ais() {
                 run_with_spinner "正在安装AIS..." "pipx install ais-terminal" "arrows" "AIS安装完成"
             fi
             pipx ensurepath >/dev/null 2>&1
-            ;;
-        "compile_python39")
-            # 使用编译的Python 3.9.23安装
-            run_with_spinner "正在安装AIS..." "$PIP_CMD install ais-terminal" "arrows" "AIS安装完成"
-            
-            # 创建ais命令的软链接到/usr/local/bin/ais
-            local ais_binary=""
-            if [ -x "/usr/local/python3.9/bin/ais" ]; then
-                ais_binary="/usr/local/python3.9/bin/ais"
-            else
-                # 查找ais命令位置
-                ais_binary=$($PYTHON_CMD -c "import ais, os; print(os.path.dirname(ais.__file__))" 2>/dev/null)/../../../bin/ais
-                if [ ! -x "$ais_binary" ]; then
-                    ais_binary="/usr/local/python3.9/bin/ais"
-                fi
-            fi
-            
-            if [ "$(detect_environment)" = "user" ]; then
-                sudo ln -sf "$ais_binary" /usr/local/bin/ais 2>/dev/null || true
-            else
-                ln -sf "$ais_binary" /usr/local/bin/ais 2>/dev/null || true
-            fi
-            
-            # 验证ais命令可用
-            if [ ! -x "/usr/local/bin/ais" ]; then
-                print_warning "软链接创建失败，请手动添加Python路径到PATH"
-            fi
             ;;
         "compile_python310")
             # 使用编译的Python 3.10.9安装
@@ -1182,8 +1131,6 @@ main() {
         "python_upgrade")
             echo -e "${GREEN}✓ ${NC}使用Python升级安装策略"
             ;;
-        "compile_python39")
-            echo -e "${GREEN}✓ ${NC}使用Python 3.9.23编译安装策略"
             ;;
         "compile_python310")
             echo -e "${GREEN}✓ ${NC}使用Python 3.10.9编译安装策略"
