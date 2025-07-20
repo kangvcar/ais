@@ -622,6 +622,7 @@ install_system_dependencies() {
 # Python 3.10.9编译安装函数
 compile_python310() {
     local python_prefix="/usr/local"
+    local original_dir="$(pwd)"  # 保存原始工作目录
     
     # 检查是否已经安装
     if [ -x "$python_prefix/bin/python3.10" ]; then
@@ -633,7 +634,11 @@ compile_python310() {
     
     # 创建临时目录并下载源码
     local temp_dir="/tmp/python_build"
-    mkdir -p "$temp_dir" && cd "$temp_dir"
+    mkdir -p "$temp_dir"
+    cd "$temp_dir" || {
+        print_error "无法进入临时目录: $temp_dir"
+        return 1
+    }
     
     # 下载Python源码 - 优先使用国内镜像源
     local python_file="Python-3.10.9.tgz"
@@ -680,8 +685,15 @@ compile_python310() {
     fi
     
     # 解压并编译
-    run_with_spinner "正在解压Python源码..." "tar -xf '$python_file'" "dots" "源码解压完成" || return 1
-    cd "Python-3.10.9"
+    run_with_spinner "正在解压Python源码..." "tar -xf '$python_file'" "dots" "源码解压完成" || {
+        cd "$original_dir" 2>/dev/null || true
+        return 1
+    }
+    cd "Python-3.10.9" || {
+        print_error "无法进入Python源码目录"
+        cd "$original_dir" 2>/dev/null || true
+        return 1
+    }
     
     # CentOS 7特殊处理
     local is_centos7=0
@@ -689,20 +701,38 @@ compile_python310() {
     
     if [ "$is_centos7" -eq 1 ]; then
         run_with_spinner "正在修改configure文件..." "sed -i 's/PKG_CONFIG openssl /PKG_CONFIG openssl11 /g' configure" "dots" "configure修改完成"
-        run_with_spinner "正在配置编译选项..." "./configure --prefix=$python_prefix --with-ensurepip=install" "chars" "编译配置完成" || return 1
+        run_with_spinner "正在配置编译选项..." "./configure --prefix=$python_prefix --with-ensurepip=install" "chars" "编译配置完成" || {
+            cd "$original_dir" 2>/dev/null || true
+            return 1
+        }
     else
-        run_with_spinner "正在配置编译选项..." "./configure --prefix=$python_prefix --enable-optimizations --with-ensurepip=install" "chars" "编译配置完成" || return 1
+        run_with_spinner "正在配置编译选项..." "./configure --prefix=$python_prefix --enable-optimizations --with-ensurepip=install" "chars" "编译配置完成" || {
+            cd "$original_dir" 2>/dev/null || true
+            return 1
+        }
     fi
     
     # 编译和安装
     local cpu_cores=$(nproc 2>/dev/null || echo 2)
-    run_with_spinner "正在编译Python..." "make -j$cpu_cores" "chars" "Python编译完成" || return 1
-    run_with_spinner "正在安装Python..." "make altinstall" "dots" "Python安装完成" || return 1
+    run_with_spinner "正在编译Python..." "make -j$cpu_cores" "chars" "Python编译完成" || {
+        cd "$original_dir" 2>/dev/null || true
+        return 1
+    }
+    run_with_spinner "正在安装Python..." "make altinstall" "dots" "Python安装完成" || {
+        cd "$original_dir" 2>/dev/null || true
+        return 1
+    }
+    
+    # 恢复原始工作目录
+    cd "$original_dir" || print_warning "无法恢复原始工作目录"
     
     # 设置环境变量
     export PYTHON_CMD="$python_prefix/bin/python3.10"
     export PIP_CMD="$python_prefix/bin/python3.10 -m pip"
     print_success "Python 3.10.9编译安装完成"
+    
+    # 确保返回成功
+    return 0
 }
 
 setup_python_environment() {
@@ -1081,10 +1111,34 @@ main() {
     fi
     
     # 执行安装步骤
-    install_system_dependencies "$strategy"
-    setup_python_environment "$strategy"
-    install_ais "$strategy"
-    setup_shell_integration
+    print_info "开始执行安装步骤..."
+    
+    # 步骤1：安装系统依赖
+    if ! install_system_dependencies "$strategy"; then
+        print_error "系统依赖安装失败"
+        exit 1
+    fi
+    
+    # 步骤2：设置Python环境  
+    if ! setup_python_environment "$strategy"; then
+        print_error "Python环境设置失败"
+        exit 1
+    fi
+    print_info "Python环境设置完成，继续执行AIS安装..."
+    
+    # 步骤3：安装AIS
+    if ! install_ais "$strategy"; then
+        print_error "AIS安装失败"
+        exit 1
+    fi
+    print_info "AIS安装完成，继续执行Shell集成..."
+    
+    # 步骤4：设置Shell集成
+    if ! setup_shell_integration; then
+        print_error "Shell集成设置失败"
+        exit 1
+    fi
+    print_info "Shell集成设置完成"
     
     # 验证安装
     if verify_installation; then
