@@ -497,9 +497,36 @@ install_ais() {
             # 使用编译的Python 3.10.9安装
             run_with_spinner "正在安装AIS..." "$PIP_CMD install ais-terminal" "arrows" "AIS安装完成"
             
-            # 验证ais命令可用性
-            if [ ! -x "/usr/local/bin/ais" ]; then
-                print_warning "AIS命令未安装到/usr/local/bin，请手动添加Python路径到PATH"
+            # 查找ais安装位置并创建符号链接
+            local ais_script_path
+            ais_script_path=$(/usr/local/bin/python3.10 -c "import sys; import os; print(os.path.join(sys.prefix, 'bin', 'ais'))" 2>/dev/null || echo "")
+            
+            if [ -n "$ais_script_path" ] && [ -f "$ais_script_path" ]; then
+                # 创建符号链接到/usr/local/bin
+                if [ ! -x "/usr/local/bin/ais" ]; then
+                    run_with_spinner "正在创建AIS命令链接..." "ln -sf '$ais_script_path' /usr/local/bin/ais" "dots" "AIS命令链接创建完成"
+                fi
+            else
+                # 如果找不到，尝试直接查找可能的位置
+                local possible_paths=(
+                    "/usr/local/bin/ais"
+                    "/usr/local/lib/python3.10/site-packages/bin/ais"
+                    "/usr/local/python3.10/bin/ais"
+                )
+                
+                local found_ais=""
+                for path in "${possible_paths[@]}"; do
+                    if [ -f "$path" ]; then
+                        found_ais="$path"
+                        break
+                    fi
+                done
+                
+                if [ -n "$found_ais" ] && [ "$found_ais" != "/usr/local/bin/ais" ]; then
+                    run_with_spinner "正在创建AIS命令链接..." "ln -sf '$found_ais' /usr/local/bin/ais" "dots" "AIS命令链接创建完成"
+                else
+                    print_warning "AIS命令未找到，请手动添加 /usr/local/bin 到 PATH"
+                fi
             fi
             ;;
         *)
@@ -592,24 +619,40 @@ verify_installation() {
     # 更新进度条并显示步骤
     update_progress 95 "正在验证安装..."
     
-    # 更新PATH
-    export PATH="$HOME/.local/bin:$PATH"
+    # 更新PATH - 包括所有可能的路径
+    export PATH="/usr/local/bin:$HOME/.local/bin:$PATH"
     hash -r 2>/dev/null || true
     
-    # 检查ais命令
-    if ! run_with_spinner "正在检查AIS命令..." "command_exists ais" "simple" "AIS命令检查完成"; then
-        print_error "安装失败：ais命令不可用"
-        return 1
+    # 多重检查ais命令可用性
+    local ais_found=0
+    
+    # 方法1: 直接检查command
+    if command_exists ais; then
+        ais_found=1
+    # 方法2: 检查/usr/local/bin/ais
+    elif [ -x "/usr/local/bin/ais" ]; then
+        ais_found=1
+    # 方法3: 尝试直接调用python3.10 -m ais
+    elif /usr/local/bin/python3.10 -m ais --version >/dev/null 2>&1; then
+        ais_found=1
+        print_info "检测到AIS可通过 python3.10 -m ais 调用"
+        # 创建便捷脚本
+        cat > /usr/local/bin/ais << 'EOF'
+#!/bin/bash
+exec /usr/local/bin/python3.10 -m ais "$@"
+EOF
+        chmod +x /usr/local/bin/ais
+        print_success "已创建 AIS 便捷命令"
     fi
     
-    # 获取版本信息 - 简化版本获取逻辑
-    if ! command_exists ais; then
+    if [ $ais_found -eq 0 ]; then
         print_error "安装失败：ais命令不可用"
+        print_info "请尝试手动运行: /usr/local/bin/python3.10 -m ais --version"
         return 1
     fi
     
     # 最终进度更新
-    update_progress 100 "安装验证完成"
+    show_status "安装验证完成" true
     return 0
 }
 
@@ -631,9 +674,15 @@ main() {
     
     show_status "检测到系统: $os_name $os_version, Python: $python_version" true
     
-    # 显示安装策略
+    # 显示安装策略和环境信息
     printf "${GREEN}✓${NC} 安装策略: $strategy\n"
     [ "$strategy" = "compile_python310" ] && printf "${YELLOW}⏱️  ${NC}编译过程可能需要3-5分钟，请耐心等待...\n"
+    
+    # 显示当前PATH信息（调试用）
+    if [ "$DEBUG_MODE" -eq 1 ]; then
+        print_info "当前PATH: $PATH"
+        print_info "当前用户: $(whoami), UID: $EUID"
+    fi
     echo
     
     # 执行安装步骤
@@ -647,13 +696,42 @@ main() {
         echo
         echo -e "${GREEN}✅ AIS 安装成功完成！${NC}"
         echo
-        echo -e "版本信息：$(ais --version 2>/dev/null | head -n1)"
+        
+        # 显示版本和路径信息
+        local ais_version=$(ais --version 2>/dev/null | head -n1 || echo "无法获取版本信息")
+        local ais_path=$(command -v ais 2>/dev/null || echo "ais命令路径未找到")
+        echo -e "版本信息：$ais_version"
+        echo -e "安装路径：$ais_path"
+        
+        # 为compile_python310策略提供额外信息
+        if [ "$strategy" = "compile_python310" ]; then
+            echo -e "Python路径：/usr/local/bin/python3.10"
+            echo -e "建议添加到PATH：${CYAN}export PATH=\"/usr/local/bin:\$PATH\"${NC}"
+        fi
+        
         echo
         echo -e "配置Shell集成：${CYAN}ais setup && source ~/.bashrc${NC}"
         echo -e "配置AI提供商：${CYAN}ais provider-add --help-detail${NC}"
         echo
     else
+        echo
         print_error "安装失败，请查看错误信息"
+        
+        # 提供诊断信息
+        echo
+        echo -e "${YELLOW}📋 诊断信息：${NC}"
+        echo -e "• 操作系统：$os_name $os_version"
+        echo -e "• 安装策略：$strategy" 
+        echo -e "• Python版本：$python_version"
+        
+        if [ "$strategy" = "compile_python310" ]; then
+            echo -e "• Python 3.10安装：$(/usr/local/bin/python3.10 --version 2>/dev/null || echo '未安装')"
+            echo -e "• AIS包安装：$(/usr/local/bin/python3.10 -c 'import ais; print(\"已安装\")' 2>/dev/null || echo '未安装')"
+            echo -e "• 尝试手动运行：${CYAN}/usr/local/bin/python3.10 -m ais --version${NC}"
+        fi
+        
+        echo -e "• 当前PATH：$PATH"
+        echo
         exit 1
     fi
 }
