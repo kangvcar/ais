@@ -22,6 +22,35 @@ _ais_check_auto_analysis() {
     fi
 }
 
+# 全局变量用于去重检测
+_AIS_LAST_ANALYZED_COMMAND=""
+_AIS_LAST_ANALYZED_TIME=0
+
+# 检查命令是否应该被分析（去重机制）
+_ais_should_analyze_command() {
+    local command="$1"
+    local current_time=$(date +%s)
+    
+    # 如果命令为空，跳过
+    if [ -z "$command" ]; then
+        return 1
+    fi
+    
+    # 如果与上次分析的命令相同，且时间间隔小于30秒，跳过
+    if [ "$command" = "$_AIS_LAST_ANALYZED_COMMAND" ]; then
+        local time_diff=$((current_time - _AIS_LAST_ANALYZED_TIME))
+        if [ $time_diff -lt 30 ]; then
+            return 1  # 跳过重复分析
+        fi
+    fi
+    
+    # 更新记录
+    _AIS_LAST_ANALYZED_COMMAND="$command"
+    _AIS_LAST_ANALYZED_TIME=$current_time
+    
+    return 0  # 可以分析
+}
+
 # precmd 钩子：命令执行后调用
 _ais_precmd() {
     local current_exit_code=$?
@@ -34,10 +63,17 @@ _ais_precmd() {
             last_command=$(history 1 | sed 's/^[ ]*[0-9]*[ ]*//' 2>/dev/null)
 
             # 过滤内部命令和特殊情况
-            if [[ "$last_command" != *"_ais_"* ]] &&                [[ "$last_command" != *"ais_"* ]] &&                [[ "$last_command" != *"history"* ]]; then
-                # 调用 ais analyze 进行分析
-                echo  # 添加空行分隔
-                ais analyze --exit-code "$current_exit_code"                     --command "$last_command"
+            if [[ "$last_command" != *"_ais_"* ]] && \
+               [[ "$last_command" != *"ais_"* ]] && \
+               [[ "$last_command" != *"history"* ]]; then
+                
+                # 检查是否应该分析此命令（去重机制）
+                if _ais_should_analyze_command "$last_command"; then
+                    # 调用 ais analyze 进行分析
+                    echo  # 添加空行分隔
+                    ais analyze --exit-code "$current_exit_code" \
+                        --command "$last_command"
+                fi
             fi
         fi
     fi
