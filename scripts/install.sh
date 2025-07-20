@@ -42,14 +42,16 @@ NC='\033[0m' # No Color
 SPINNER="⠋⠙⠹⠸⠼⠴⠦⠧"
 SPINNER_PID=""
 
-# 简化的状态显示函数
+# 状态显示函数 - 带改进的spinner
 show_status() {
     local message="$1"
     local success="${2:-false}"
     if [ "$success" = "true" ]; then
         printf "\r\033[K${GREEN}✓${NC} ${message}\n"
     else
-        local spinner_char="${SPINNER:$(( $(date +%s) % 8 )):1}"
+        # 使用毫秒级时间戳获得更好的动态效果
+        local spinner_index=$(( ($(date +%s%3N) / 100) % 8 ))
+        local spinner_char="${SPINNER:$spinner_index:1}"
         printf "\r\033[K${CYAN}${spinner_char}${NC} ${message}"
     fi
 }
@@ -86,19 +88,31 @@ run_with_spinner() {
     local spinner_type="${3:-dots}"  # 保持参数兼容性
     local success_message="${4:-$message}"
     
-    # 显示进行中状态
+    # 显示初始状态
     show_status "$message"
     
     # 创建临时文件捕获错误输出
     local error_file="/tmp/ais_install_error_$$"
     
-    # 执行命令
-    if eval "$command" >/dev/null 2>"$error_file"; then
+    # 在后台执行命令并显示spinner
+    eval "$command" >/dev/null 2>"$error_file" &
+    local cmd_pid=$!
+    
+    # 显示动态spinner直到命令完成
+    while kill -0 "$cmd_pid" 2>/dev/null; do
+        show_status "$message"
+        sleep 0.2
+    done
+    
+    # 等待命令完成并获取退出码
+    wait "$cmd_pid"
+    local exit_code=$?
+    
+    if [ $exit_code -eq 0 ]; then
         show_status "$success_message" true
         rm -f "$error_file"
         return 0
     else
-        local exit_code=$?
         printf "\r\033[K${RED}✗${NC} ${message} 失败\n"
         
         # 错误处理逻辑保持不变
@@ -615,11 +629,12 @@ main() {
     system_info=$(get_system_info)
     IFS='|' read -r os_name os_version python_version <<< "$system_info"
     
-    update_progress 15 "检测到系统: $os_name $os_version, Python: $python_version"
+    show_status "检测到系统: $os_name $os_version, Python: $python_version" true
     
     # 显示安装策略
-    echo -e "${GREEN}✓${NC} 安装策略: $strategy"
-    [ "$strategy" = "compile_python310" ] && echo -e "${YELLOW}⏱️  ${NC}编译过程可能需要3-5分钟，请耐心等待..."
+    printf "${GREEN}✓${NC} 安装策略: $strategy\n"
+    [ "$strategy" = "compile_python310" ] && printf "${YELLOW}⏱️  ${NC}编译过程可能需要3-5分钟，请耐心等待...\n"
+    echo
     
     # 执行安装步骤
     install_system_dependencies "$strategy"
