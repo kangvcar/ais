@@ -721,17 +721,6 @@ main() {
         echo -e "${GREEN}✅ AIS 安装成功完成！${NC}"
         echo
         
-        # 显示版本和路径信息
-        local ais_version=$(ais --version 2>/dev/null | head -n1 || echo "无法获取版本信息")
-        local ais_path=$(command -v ais 2>/dev/null || echo "ais命令路径未找到")
-        echo -e "版本信息：$ais_version"
-        echo -e "安装路径：$ais_path"
-        
-        # 为compile_python310策略提供额外信息
-        if [ "$strategy" = "compile_python310" ]; then
-            echo -e "Python路径：/usr/local/bin/python3.10"
-            echo -e "建议添加到PATH：${CYAN}export PATH=\"/usr/local/bin:\$PATH\"${NC}"
-        fi
         
         echo
         echo -e "配置Shell集成：${CYAN}ais setup && source ~/.bashrc${NC}"
