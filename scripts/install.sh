@@ -680,14 +680,57 @@ setup_python_environment() {
             mkdir -p "$temp_dir"
             cd "$temp_dir"
             
-            # 下载Python 3.10.9源码
+            # 下载Python 3.10.9源码 - 增强安全性和可靠性
             local python_url="https://repo.huaweicloud.com/artifactory/python-local/3.10.9/Python-3.10.9.tgz"
-            if ! run_with_spinner "正在下载Python 3.10.9源码..." "wget -q $python_url" "dots" "Python 3.10.9源码下载完成"; then
-                print_error "Python源码下载失败"
-                return 1
+            local python_file="Python-3.10.9.tgz"
+            local python_sha256="5ae03e0718a83b189d468bca544d2ba0c9d1e7bd73e5b1ff9b18b15ea729ee5d"
+            
+            # 检查是否已下载且校验通过
+            if [ -f "$python_file" ]; then
+                print_info "检测到已下载的Python源码，正在验证完整性..."
+                if echo "$python_sha256 $python_file" | sha256sum -c >/dev/null 2>&1; then
+                    print_success "Python源码完整性验证通过，跳过下载"
+                else
+                    print_warning "文件完整性验证失败，重新下载"
+                    rm -f "$python_file"
+                fi
             fi
             
-            if ! run_with_spinner "正在解压Python源码..." "tar -xf Python-3.10.9.tgz" "dots" "源码解压完成"; then
+            # 下载文件（如果需要）
+            if [ ! -f "$python_file" ]; then
+                # 带超时和重试的下载
+                local download_success=0
+                for attempt in 1 2 3; do
+                    print_info "第 $attempt 次尝试下载Python源码..."
+                    if run_with_spinner "正在下载Python 3.10.9源码..." "wget --timeout=30 --tries=3 --continue -O '$python_file' '$python_url'" "dots" "Python 3.10.9源码下载完成"; then
+                        # 验证下载文件的完整性
+                        if echo "$python_sha256 $python_file" | sha256sum -c >/dev/null 2>&1; then
+                            print_success "文件下载完成，完整性验证通过"
+                            download_success=1
+                            break
+                        else
+                            print_error "文件完整性验证失败，SHA256不匹配"
+                            rm -f "$python_file"
+                        fi
+                    else
+                        print_warning "第 $attempt 次下载失败"
+                    fi
+                    
+                    if [ $attempt -lt 3 ]; then
+                        print_info "等待3秒后重试..."
+                        sleep 3
+                    fi
+                done
+                
+                if [ $download_success -eq 0 ]; then
+                    print_error "Python源码下载失败，已尝试3次"
+                    print_info "您可以手动下载：$python_url"
+                    print_info "预期SHA256值：$python_sha256"
+                    return 1
+                fi
+            fi
+            
+            if ! run_with_spinner "正在解压Python源码..." "tar -xf '$python_file'" "dots" "源码解压完成"; then
                 print_error "源码解压失败"
                 return 1
             fi
@@ -975,7 +1018,16 @@ sensitive_dirs = ["~/.ssh", "~/.config/ais", "~/.aws"]
 [providers.default_free]
 base_url = "https://api.deepbricks.ai/v1/chat/completions"
 model_name = "gpt-4o-mini"
+# 默认免费API密钥 - 仅供测试使用，有使用限制
+# 建议运行 'ais config set-api-key YOUR_KEY' 设置您的专属密钥
+# 或设置环境变量: export AIS_API_KEY=your_key
 api_key = "sk-97RxyS9R2dsqFTUxcUZOpZwhnbjQCSOaFboooKDeTv5nHJgg"
+
+# 配置说明：
+# 1. 上述API密钥为免费测试密钥，有使用限制和速率限制
+# 2. 生产环境建议使用您自己的API密钥以获得更好的服务质量
+# 3. 支持多种AI提供商配置，详见: https://github.com/kangvcar/ais
+# 4. 可通过环境变量 AIS_API_KEY 覆盖此配置
 EOF
         echo -e "${GREEN}✅ AIS配置文件创建完成: $ais_config_file${NC}"
     fi
@@ -1173,7 +1225,7 @@ main() {
         echo -e "${BLUE}💡 提示：也可以重新打开终端让配置自动生效${NC}"
         echo
         echo -e "${GREEN}🚀 快速测试：${NC}ais ask '你好'"
-        echo -e "${GREEN}📖 查看帮助：${NC}ais config --help"
+        echo -e "${GREEN}📖 配置AI提供商：${NC}ais provider-add --help-detail"
         echo
         echo -e "${GREEN}------------------------------------------------------------${NC}"
         echo
