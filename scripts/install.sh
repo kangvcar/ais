@@ -154,7 +154,7 @@ print_msg() {
     local type="$1" message="$2"
     case "$type" in
         "info") echo -e "${BLUE}ℹ️  ${message}${NC}" ;;
-        "success") echo -e "${GREEN}✅ ${message}${NC}" ;;
+        "success") echo -e "${GREEN}✓${NC} ${message}" ;;
         "warning") echo -e "${YELLOW}⚠️  ${message}${NC}" ;;
         "error") echo -e "${RED}❌ ${message}${NC}" ;;
     esac
@@ -1097,7 +1097,7 @@ main() {
     
     # 执行健康检查（除非强制重新安装）
     if [ "$FORCE_REINSTALL" -eq 0 ] && perform_health_check "$strategy"; then
-        echo -e "${GREEN}✅ 系统健康检查通过！所有组件已正确安装${NC}"
+        echo -e "${GREEN}✓${NC} 系统健康检查通过！所有组件已正确安装"
         echo
         echo -e "配置Shell集成：${CYAN}ais setup && source ~/.bashrc${NC}"
         echo -e "配置AI提供商：${CYAN}ais provider-add --help-detail${NC}"
@@ -1111,8 +1111,6 @@ main() {
     fi
     
     # 执行安装步骤
-    print_info "开始执行安装步骤..."
-    
     # 步骤1：安装系统依赖
     if ! install_system_dependencies "$strategy"; then
         print_error "系统依赖安装失败"
@@ -1124,29 +1122,23 @@ main() {
         print_error "Python环境设置失败"
         exit 1
     fi
-    print_info "Python环境设置完成，继续执行AIS安装..."
     
     # 步骤3：安装AIS
     if ! install_ais "$strategy"; then
         print_error "AIS安装失败"
         exit 1
     fi
-    print_info "AIS安装完成，继续执行Shell集成..."
     
     # 步骤4：设置Shell集成
     if ! setup_shell_integration; then
         print_error "Shell集成设置失败"
         exit 1
     fi
-    print_info "Shell集成设置完成"
     
     # 验证安装
     if verify_installation; then
         echo
-        echo -e "${GREEN}✅ AIS 安装成功完成！${NC}"
-        echo
-        
-        
+        echo -e "${GREEN}✓${NC} AIS 安装成功完成！"
         echo
         echo -e "配置Shell集成：${CYAN}ais setup && source ~/.bashrc${NC}"
         echo -e "配置AI提供商：${CYAN}ais provider-add --help-detail${NC}"
