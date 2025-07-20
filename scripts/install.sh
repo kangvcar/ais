@@ -494,39 +494,59 @@ install_ais() {
             pipx ensurepath >/dev/null 2>&1
             ;;
         "compile_python310")
-            # 使用编译的Python 3.10.9安装
-            run_with_spinner "正在安装AIS..." "$PIP_CMD install ais-terminal" "arrows" "AIS安装完成"
-            
-            # 查找ais安装位置并创建符号链接
-            local ais_script_path
-            ais_script_path=$(/usr/local/bin/python3.10 -c "import sys; import os; print(os.path.join(sys.prefix, 'bin', 'ais'))" 2>/dev/null || echo "")
-            
-            if [ -n "$ais_script_path" ] && [ -f "$ais_script_path" ]; then
-                # 创建符号链接到/usr/local/bin
-                if [ ! -x "/usr/local/bin/ais" ]; then
-                    run_with_spinner "正在创建AIS命令链接..." "ln -sf '$ais_script_path' /usr/local/bin/ais" "dots" "AIS命令链接创建完成"
+            # 使用编译的Python 3.10.9安装，增加详细的错误检查
+            if run_with_spinner "正在安装AIS..." "$PIP_CMD install ais-terminal" "arrows" "AIS安装完成"; then
+                # 验证安装是否成功
+                if ! $PIP_CMD show ais-terminal >/dev/null 2>&1; then
+                    print_error "AIS包安装验证失败"
+                    return 1
+                fi
+                
+                # 查找ais命令的实际位置
+                local ais_executable=""
+                # 方法1: 查找pip安装的scripts目录
+                local python_scripts_dir=$($PYTHON_CMD -c "import sysconfig; print(sysconfig.get_path('scripts'))" 2>/dev/null)
+                if [ -n "$python_scripts_dir" ] && [ -f "$python_scripts_dir/ais" ]; then
+                    ais_executable="$python_scripts_dir/ais"
+                # 方法2: 查找常见位置
+                elif [ -f "/usr/local/bin/ais" ]; then
+                    ais_executable="/usr/local/bin/ais"
+                # 方法3: 使用which命令
+                elif command -v ais >/dev/null 2>&1; then
+                    ais_executable=$(command -v ais)
+                fi
+                
+                # 创建或验证ais命令
+                if [ -n "$ais_executable" ] && [ -f "$ais_executable" ]; then
+                    if [ "$ais_executable" != "/usr/local/bin/ais" ]; then
+                        run_with_spinner "正在创建AIS命令链接..." "ln -sf '$ais_executable' /usr/local/bin/ais" "dots" "AIS命令链接创建完成"
+                    fi
+                    print_success "找到AIS命令: $ais_executable"
+                else
+                    # 作为最后手段，创建包装脚本
+                    print_warning "未找到ais可执行文件，创建包装脚本"
+                    cat > /usr/local/bin/ais << EOF
+#!/bin/bash
+# AIS wrapper script for CentOS 7
+export PATH="/usr/local/bin:\$PATH"
+exec $PYTHON_CMD -c "
+import sys
+sys.path.insert(0, '$($PYTHON_CMD -c "import site; print(site.getsitepackages()[0])" 2>/dev/null)')
+try:
+    from ais.cli import main
+    main()
+except ImportError as e:
+    print(f'Error: {e}')
+    print('AIS package may not be properly installed')
+    sys.exit(1)
+" "\$@"
+EOF
+                    chmod +x /usr/local/bin/ais
+                    print_success "已创建AIS包装脚本"
                 fi
             else
-                # 如果找不到，尝试直接查找可能的位置
-                local possible_paths=(
-                    "/usr/local/bin/ais"
-                    "/usr/local/lib/python3.10/site-packages/bin/ais"
-                    "/usr/local/python3.10/bin/ais"
-                )
-                
-                local found_ais=""
-                for path in "${possible_paths[@]}"; do
-                    if [ -f "$path" ]; then
-                        found_ais="$path"
-                        break
-                    fi
-                done
-                
-                if [ -n "$found_ais" ] && [ "$found_ais" != "/usr/local/bin/ais" ]; then
-                    run_with_spinner "正在创建AIS命令链接..." "ln -sf '$found_ais' /usr/local/bin/ais" "dots" "AIS命令链接创建完成"
-                else
-                    print_warning "AIS命令未找到，请手动添加 /usr/local/bin 到 PATH"
-                fi
+                print_error "AIS安装失败"
+                return 1
             fi
             ;;
         *)
@@ -632,14 +652,18 @@ verify_installation() {
     # 方法2: 检查/usr/local/bin/ais
     elif [ -x "/usr/local/bin/ais" ]; then
         ais_found=1
-    # 方法3: 尝试直接调用python3.10 -m ais
-    elif /usr/local/bin/python3.10 -m ais --version >/dev/null 2>&1; then
+    # 方法3: 尝试通过Python CLI模块调用
+    elif $PYTHON_CMD -c 'from ais.cli import main; main()' --version >/dev/null 2>&1; then
         ais_found=1
-        print_info "检测到AIS可通过 python3.10 -m ais 调用"
+        print_info "检测到AIS可通过CLI模块调用"
         # 创建便捷脚本
-        cat > /usr/local/bin/ais << 'EOF'
+        cat > /usr/local/bin/ais << EOF
 #!/bin/bash
-exec /usr/local/bin/python3.10 -m ais "$@"
+exec $PYTHON_CMD -c "
+import sys
+from ais.cli import main
+sys.exit(main())
+" "\$@"
 EOF
         chmod +x /usr/local/bin/ais
         print_success "已创建 AIS 便捷命令"
@@ -725,9 +749,16 @@ main() {
         echo -e "• Python版本：$python_version"
         
         if [ "$strategy" = "compile_python310" ]; then
-            echo -e "• Python 3.10安装：$(/usr/local/bin/python3.10 --version 2>/dev/null || echo '未安装')"
-            echo -e "• AIS包安装：$(/usr/local/bin/python3.10 -c 'import ais; print(\"已安装\")' 2>/dev/null || echo '未安装')"
-            echo -e "• 尝试手动运行：${CYAN}/usr/local/bin/python3.10 -m ais --version${NC}"
+            local python_status=$($PYTHON_CMD --version 2>/dev/null || echo '未安装')
+            local ais_package_status=$($PIP_CMD show ais-terminal >/dev/null 2>&1 && echo '已安装' || echo '未安装')
+            local ais_import_status=$($PYTHON_CMD -c 'import ais; print("可导入")' 2>/dev/null || echo '无法导入')
+            
+            echo -e "• Python 3.10安装：$python_status"
+            echo -e "• AIS包状态：$ais_package_status"
+            echo -e "• AIS模块导入：$ais_import_status"
+            echo -e "• Python命令：$PYTHON_CMD"
+            echo -e "• Pip命令：$PIP_CMD"
+            echo -e "• 尝试手动运行：${CYAN}$PYTHON_CMD -c 'from ais.cli import main; main()' --version${NC}"
         fi
         
         echo -e "• 当前PATH：$PATH"
