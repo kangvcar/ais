@@ -29,6 +29,7 @@ NON_INTERACTIVE=0
 INSTALL_MODE="auto"  # auto, user, system, container
 SKIP_CHECKS=0
 DEBUG_MODE=0  # 调试模式，显示详细错误信息
+FORCE_REINSTALL=0  # 强制重新安装模式
 
 # 颜色定义
 RED='\033[0;31m'
@@ -169,6 +170,205 @@ print_error() { print_msg "error" "$1"; }
 # 检查命令是否存在
 command_exists() {
     command -v "$1" >/dev/null 2>&1
+}
+
+# ==================== 幂等性和状态检查函数 ====================
+
+# 检查包是否已安装
+is_package_installed() {
+    local package="$1"
+    if command_exists yum; then
+        yum list installed "$package" >/dev/null 2>&1
+    elif command_exists dnf; then
+        dnf list installed "$package" >/dev/null 2>&1
+    elif command_exists apt; then
+        dpkg -l "$package" 2>/dev/null | grep -q "^ii.*$package"
+    else
+        return 1
+    fi
+}
+
+# 批量检查包是否已安装
+check_packages_installed() {
+    local packages=("$@")
+    local missing_packages=()
+    
+    for package in "${packages[@]}"; do
+        if ! is_package_installed "$package"; then
+            missing_packages+=("$package")
+        fi
+    done
+    
+    if [ ${#missing_packages[@]} -gt 0 ]; then
+        echo "${missing_packages[@]}"
+        return 1
+    fi
+    return 0
+}
+
+# 安装包（带幂等性检查）
+install_package_if_needed() {
+    local message="$1"
+    local package_cmd="$2"
+    local success_msg="$3"
+    local packages="${4:-}"
+    
+    # 如果提供了包列表，检查是否已安装
+    if [ -n "$packages" ]; then
+        local missing_packages
+        missing_packages=$(check_packages_installed $packages 2>/dev/null || echo "$packages")
+        if [ -z "$missing_packages" ] || [ "$missing_packages" = " " ]; then
+            print_success "$success_msg (已安装)"
+            return 0
+        fi
+    fi
+    
+    # 根据环境决定是否使用sudo
+    if [ "$(detect_environment)" = "user" ]; then
+        package_cmd="sudo $package_cmd"
+    fi
+    
+    run_with_spinner "$message" "$package_cmd" "dots" "$success_msg"
+}
+
+# 检查Python环境状态
+check_python_environment() {
+    local strategy="$1"
+    
+    case "$strategy" in
+        "compile_python310")
+            # 检查Python 3.10是否已安装
+            if [ -x "/usr/local/bin/python3.10" ]; then
+                local version=$(/usr/local/bin/python3.10 --version 2>/dev/null | grep -o "3\.10\.[0-9]*")
+                if [ "$version" = "3.10.9" ]; then
+                    export PYTHON_CMD="/usr/local/bin/python3.10"
+                    export PIP_CMD="/usr/local/bin/python3.10 -m pip"
+                    print_success "Python 3.10.9已安装并可用"
+                    return 0
+                fi
+            fi
+            return 1
+            ;;
+        "python_upgrade")
+            # 检查Python 3.9是否可用
+            if command_exists python3.9 && python3.9 --version >/dev/null 2>&1; then
+                export PYTHON_CMD="python3.9"
+                export PIP_CMD="python3.9 -m pip"
+                print_success "Python 3.9已可用"
+                return 0
+            fi
+            return 1
+            ;;
+        "pipx_native")
+            # 检查pipx是否可用
+            if command_exists pipx; then
+                print_success "pipx已可用"
+                return 0
+            fi
+            return 1
+            ;;
+        *)
+            # 检查系统默认Python
+            if command_exists python3; then
+                export PYTHON_CMD="python3"
+                export PIP_CMD="python3 -m pip"
+                print_success "系统Python已可用"
+                return 0
+            fi
+            return 1
+            ;;
+    esac
+}
+
+# 检查AIS安装状态
+check_ais_installation() {
+    local strategy="$1"
+    
+    case "$strategy" in
+        "pipx_native")
+            if command_exists pipx && pipx list | grep -q "ais-terminal"; then
+                local version=$(pipx list | grep ais-terminal | grep -o "version [0-9.]*" | cut -d' ' -f2 2>/dev/null || echo "unknown")
+                print_success "AIS已通过pipx安装 (版本: $version)"
+                return 0
+            fi
+            ;;
+        *)
+            # 检查pip安装的AIS
+            if [ -n "$PIP_CMD" ] && $PIP_CMD show ais-terminal >/dev/null 2>&1; then
+                local version=$($PIP_CMD show ais-terminal | grep Version | cut -d' ' -f2 2>/dev/null || echo "unknown")
+                print_success "AIS已安装 (版本: $version)"
+                
+                # 检查命令是否可用
+                if command_exists ais; then
+                    return 0
+                else
+                    print_warning "AIS包已安装但命令不可用，需要修复"
+                    return 2  # 需要修复
+                fi
+            fi
+            ;;
+    esac
+    return 1  # 未安装
+}
+
+# 检查Shell集成状态
+check_shell_integration() {
+    local config_file="$HOME/.bashrc"
+    [ -n "$ZSH_VERSION" ] && config_file="$HOME/.zshrc"
+    
+    if [ -f "$config_file" ]; then
+        # 检查新版集成
+        if grep -q "ais shell-integration" "$config_file" 2>/dev/null; then
+            print_success "Shell集成已配置 (新版本)"
+            return 0
+        fi
+        
+        # 检查旧版集成
+        if grep -q "# AIS INTEGRATION" "$config_file" 2>/dev/null; then
+            print_warning "检测到旧版Shell集成，需要更新"
+            return 2  # 需要更新
+        fi
+    fi
+    
+    return 1  # 未配置
+}
+
+# 健康检查和自动修复
+perform_health_check() {
+    local strategy="$1"
+    
+    local issues_found=0
+    
+    # 检查Python环境
+    if ! check_python_environment "$strategy"; then
+        ((issues_found++))
+    fi
+    
+    # 检查AIS安装
+    local ais_status
+    check_ais_installation "$strategy"
+    ais_status=$?
+    if [ $ais_status -eq 1 ]; then
+        ((issues_found++))
+    elif [ $ais_status -eq 2 ]; then
+        ((issues_found++))
+    fi
+    
+    # 检查Shell集成
+    local shell_status
+    check_shell_integration
+    shell_status=$?
+    if [ $shell_status -eq 1 ]; then
+        ((issues_found++))
+    elif [ $shell_status -eq 2 ]; then
+        ((issues_found++))
+    fi
+    
+    if [ $issues_found -eq 0 ]; then
+        return 0
+    else
+        return 1
+    fi
 }
 
 # 获取系统信息
@@ -323,38 +523,96 @@ install_system_dependencies() {
                 
                 if [ "$is_centos7" -eq 1 ]; then
                     # CentOS 7.x 特殊处理
-                    run_pkg_manager "正在安装EPEL源..." "yum install -y epel-release" "EPEL源安装完成"
-                    run_pkg_manager "正在安装编译依赖包..." "yum install -y gcc make patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel tk-devel libffi-devel xz-devel openssl11 openssl11-devel openssl11-libs ncurses-devel gdbm-devel db4-devel libpcap-devel expat-devel" "编译依赖包安装完成"
+                    install_package_if_needed "正在安装EPEL源..." "yum install -y epel-release" "EPEL源安装完成" "epel-release"
+                    install_package_if_needed "正在安装编译依赖包..." "yum install -y gcc make patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel tk-devel libffi-devel xz-devel openssl11 openssl11-devel openssl11-libs ncurses-devel gdbm-devel db4-devel libpcap-devel expat-devel" "编译依赖包安装完成" "gcc make patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel tk-devel libffi-devel xz-devel openssl11 openssl11-devel openssl11-libs ncurses-devel gdbm-devel db4-devel libpcap-devel expat-devel"
                 else
                     # Kylin Linux 或其他系统
-                    run_pkg_manager "正在安装编译依赖包..." "yum install -y gcc make patch zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel libffi-devel" "编译依赖包安装完成"
+                    install_package_if_needed "正在安装编译依赖包..." "yum install -y gcc make patch zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel libffi-devel" "编译依赖包安装完成" "gcc make patch zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel libffi-devel"
                 fi
             elif command_exists dnf; then
-                run_pkg_manager "正在安装开发工具..." "dnf groupinstall -y 'Development Tools'" "开发工具安装完成"
-                run_pkg_manager "正在安装依赖库..." "dnf install -y zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel git wget tar" "依赖库安装完成"
+                # 检查Development Tools组是否已安装
+                if ! dnf group list --installed | grep -q "Development Tools"; then
+                    run_pkg_manager "正在安装开发工具..." "dnf groupinstall -y 'Development Tools'" "开发工具安装完成"
+                else
+                    print_success "开发工具安装完成 (已安装)"
+                fi
+                install_package_if_needed "正在安装依赖库..." "dnf install -y zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel git wget tar" "依赖库安装完成" "zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel git wget tar"
             elif command_exists apt-get; then
-                run_pkg_manager "正在更新软件包列表..." "apt update" "软件包列表更新完成"
-                run_pkg_manager "正在安装编译依赖..." "apt install -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev wget tar" "编译依赖安装完成"
+                # 检查是否需要更新包列表（通过检查最近更新时间）
+                local apt_update_needed=1
+                if [ -f "/var/lib/apt/lists/lock" ]; then
+                    local last_update=$(stat -c %Y /var/lib/apt/lists/* 2>/dev/null | sort -nr | head -1 2>/dev/null || echo 0)
+                    local current_time=$(date +%s)
+                    local time_diff=$((current_time - last_update))
+                    # 如果上次更新在1小时内，跳过更新
+                    if [ $time_diff -lt 3600 ]; then
+                        apt_update_needed=0
+                        print_success "软件包列表更新完成 (最近已更新)"
+                    fi
+                fi
+                
+                if [ $apt_update_needed -eq 1 ]; then
+                    run_pkg_manager "正在更新软件包列表..." "apt update" "软件包列表更新完成"
+                fi
+                
+                install_package_if_needed "正在安装编译依赖..." "apt install -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev wget tar" "编译依赖安装完成" "build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev wget tar"
             fi
             ;;
         "python_upgrade")
             # 安装Python升级包
             if command_exists dnf; then
-                run_pkg_manager "正在安装Python 3.9..." "dnf install -y python39 python39-pip" "Python 3.9安装完成"
+                install_package_if_needed "正在安装Python 3.9..." "dnf install -y python39 python39-pip" "Python 3.9安装完成" "python39 python39-pip"
             elif command_exists apt-get; then
-                run_pkg_manager "正在更新软件包列表..." "apt update" "软件包列表更新完成"
-                run_pkg_manager "正在安装必要工具..." "apt install -y software-properties-common" "必要工具安装完成"
-                run_pkg_manager "正在添加Python源..." "add-apt-repository -y ppa:deadsnakes/ppa" "Python源添加完成"
-                run_pkg_manager "正在安装Python 3.9..." "apt install -y python3.9 python3.9-venv python3.9-dev" "Python 3.9安装完成"
+                # 检查是否需要更新包列表
+                local apt_update_needed=1
+                if [ -f "/var/lib/apt/lists/lock" ]; then
+                    local last_update=$(stat -c %Y /var/lib/apt/lists/* 2>/dev/null | sort -nr | head -1 2>/dev/null || echo 0)
+                    local current_time=$(date +%s)
+                    local time_diff=$((current_time - last_update))
+                    if [ $time_diff -lt 3600 ]; then
+                        apt_update_needed=0
+                        print_success "软件包列表更新完成 (最近已更新)"
+                    fi
+                fi
+                
+                if [ $apt_update_needed -eq 1 ]; then
+                    run_pkg_manager "正在更新软件包列表..." "apt update" "软件包列表更新完成"
+                fi
+                
+                install_package_if_needed "正在安装必要工具..." "apt install -y software-properties-common" "必要工具安装完成" "software-properties-common"
+                
+                # 检查PPA是否已添加
+                if ! grep -q "deadsnakes/ppa" /etc/apt/sources.list.d/* 2>/dev/null; then
+                    run_pkg_manager "正在添加Python源..." "add-apt-repository -y ppa:deadsnakes/ppa && apt update" "Python源添加完成"
+                else
+                    print_success "Python源添加完成 (已存在)"
+                fi
+                
+                install_package_if_needed "正在安装Python 3.9..." "apt install -y python3.9 python3.9-venv python3.9-dev" "Python 3.9安装完成" "python3.9 python3.9-venv python3.9-dev"
             fi
             ;;
         "pipx_native")
             # 安装pipx
             if command_exists apt-get; then
-                run_pkg_manager "正在更新软件包列表..." "apt update" "软件包列表更新完成"
-                run_pkg_manager "正在安装pipx..." "apt install -y pipx" "pipx安装完成"
+                # 检查是否需要更新包列表
+                local apt_update_needed=1
+                if [ -f "/var/lib/apt/lists/lock" ]; then
+                    local last_update=$(stat -c %Y /var/lib/apt/lists/* 2>/dev/null | sort -nr | head -1 2>/dev/null || echo 0)
+                    local current_time=$(date +%s)
+                    local time_diff=$((current_time - last_update))
+                    if [ $time_diff -lt 3600 ]; then
+                        apt_update_needed=0
+                        print_success "软件包列表更新完成 (最近已更新)"
+                    fi
+                fi
+                
+                if [ $apt_update_needed -eq 1 ]; then
+                    run_pkg_manager "正在更新软件包列表..." "apt update" "软件包列表更新完成"
+                fi
+                
+                install_package_if_needed "正在安装pipx..." "apt install -y pipx" "pipx安装完成" "pipx"
             elif command_exists dnf; then
-                run_pkg_manager "正在安装pipx..." "dnf install -y pipx" "pipx安装完成"
+                install_package_if_needed "正在安装pipx..." "dnf install -y pipx" "pipx安装完成" "pipx"
             fi
             ;;
     esac
@@ -400,16 +658,13 @@ compile_python310() {
     if [ ! -f "$python_file" ]; then
         local download_success=0
         for url in "${python_urls[@]}"; do
-            print_info "尝试从源下载：$(echo "$url" | cut -d'/' -f3)"
             for attempt in 1 2; do
-                if run_with_spinner "正在下载Python源码(尝试$attempt)..." "wget --timeout=30 --tries=2 -O '$python_file' '$url'" "dots" "源码下载完成"; then
+                if run_with_spinner "正在下载Python源码..." "wget --timeout=30 --tries=2 -O '$python_file' '$url'" "dots" "源码下载完成"; then
                     local file_size=$(stat -c%s "$python_file" 2>/dev/null || echo 0)
                     if [ "$file_size" -gt 10485760 ]; then  # 验证文件大小而不是SHA256
-                        print_success "Python源码下载完成 ($(( file_size / 1024 / 1024 ))MB)"
                         download_success=1
                         break 2
                     else
-                        print_warning "下载文件大小异常，重试"
                         rm -f "$python_file"
                     fi
                 fi
@@ -477,6 +732,22 @@ install_ais() {
     # 更新进度条并显示步骤
     update_progress 75 "正在安装AIS..."
     
+    # 检查AIS安装状态（除非强制重新安装）
+    if [ "$FORCE_REINSTALL" -eq 0 ]; then
+        local ais_status
+        check_ais_installation "$strategy"
+        ais_status=$?
+        
+        if [ $ais_status -eq 0 ]; then
+            print_success "AIS已正确安装，跳过安装步骤"
+            return 0
+        elif [ $ais_status -eq 2 ]; then
+            print_info "检测到AIS安装需要修复，正在修复..."
+            repair_ais_installation "$strategy"
+            return $?
+        fi
+    fi
+    
     case "$strategy" in
         "pipx_native")
             # 使用pipx安装
@@ -494,40 +765,87 @@ install_ais() {
             pipx ensurepath >/dev/null 2>&1
             ;;
         "compile_python310")
+            # 检查是否已安装，决定安装还是升级
+            local install_cmd="install"
+            if $PIP_CMD show ais-terminal >/dev/null 2>&1; then
+                install_cmd="install --upgrade"
+            fi
+            
             # 使用编译的Python 3.10.9安装，增加详细的错误检查
-            if run_with_spinner "正在安装AIS..." "$PIP_CMD install ais-terminal" "arrows" "AIS安装完成"; then
+            if run_with_spinner "正在${install_cmd}AIS..." "$PIP_CMD $install_cmd ais-terminal" "arrows" "AIS${install_cmd}完成"; then
                 # 验证安装是否成功
                 if ! $PIP_CMD show ais-terminal >/dev/null 2>&1; then
                     print_error "AIS包安装验证失败"
                     return 1
                 fi
                 
-                # 查找ais命令的实际位置
-                local ais_executable=""
-                # 方法1: 查找pip安装的scripts目录
-                local python_scripts_dir=$($PYTHON_CMD -c "import sysconfig; print(sysconfig.get_path('scripts'))" 2>/dev/null)
-                if [ -n "$python_scripts_dir" ] && [ -f "$python_scripts_dir/ais" ]; then
-                    ais_executable="$python_scripts_dir/ais"
-                # 方法2: 查找常见位置
-                elif [ -f "/usr/local/bin/ais" ]; then
-                    ais_executable="/usr/local/bin/ais"
-                # 方法3: 使用which命令
-                elif command -v ais >/dev/null 2>&1; then
-                    ais_executable=$(command -v ais)
-                fi
-                
-                # 创建或验证ais命令
-                if [ -n "$ais_executable" ] && [ -f "$ais_executable" ]; then
-                    if [ "$ais_executable" != "/usr/local/bin/ais" ]; then
-                        run_with_spinner "正在创建AIS命令链接..." "ln -sf '$ais_executable' /usr/local/bin/ais" "dots" "AIS命令链接创建完成"
-                    fi
-                    print_success "找到AIS命令: $ais_executable"
-                else
-                    # 作为最后手段，创建包装脚本
-                    print_warning "未找到ais可执行文件，创建包装脚本"
-                    cat > /usr/local/bin/ais << EOF
+                # 修复AIS命令可用性
+                fix_ais_command "$strategy"
+            else
+                print_error "AIS安装失败"
+                return 1
+            fi
+            ;;
+        *)
+            # 标准pip安装 - 检查是否需要升级
+            local install_cmd="install"
+            if [ -n "$PIP_CMD" ] && $PIP_CMD show ais-terminal >/dev/null 2>&1; then
+                install_cmd="install --upgrade"
+            fi
+            
+            run_with_spinner "正在${install_cmd}AIS..." "$PIP_CMD $install_cmd ais-terminal" "arrows" "AIS${install_cmd}完成"
+            ;;
+    esac
+}
+
+# 修复AIS安装
+repair_ais_installation() {
+    local strategy="$1"
+    
+    case "$strategy" in
+        "compile_python310")
+            fix_ais_command "$strategy"
+            ;;
+        *)
+            # 重新安装
+            if [ -n "$PIP_CMD" ]; then
+                $PIP_CMD uninstall -y ais-terminal >/dev/null 2>&1 || true
+                run_with_spinner "正在重新安装AIS..." "$PIP_CMD install ais-terminal" "arrows" "AIS重新安装完成"
+            fi
+            ;;
+    esac
+}
+
+# 修复AIS命令可用性
+fix_ais_command() {
+    local strategy="$1"
+    
+    # 查找ais命令的实际位置
+    local ais_executable=""
+    # 方法1: 查找pip安装的scripts目录
+    local python_scripts_dir=$($PYTHON_CMD -c "import sysconfig; print(sysconfig.get_path('scripts'))" 2>/dev/null)
+    if [ -n "$python_scripts_dir" ] && [ -f "$python_scripts_dir/ais" ]; then
+        ais_executable="$python_scripts_dir/ais"
+    # 方法2: 查找常见位置
+    elif [ -f "/usr/local/bin/ais" ]; then
+        ais_executable="/usr/local/bin/ais"
+    # 方法3: 使用which命令
+    elif command -v ais >/dev/null 2>&1; then
+        ais_executable=$(command -v ais)
+    fi
+    
+    # 创建或验证ais命令
+    if [ -n "$ais_executable" ] && [ -f "$ais_executable" ]; then
+        if [ "$ais_executable" != "/usr/local/bin/ais" ]; then
+            run_with_spinner "正在创建AIS命令链接..." "ln -sf '$ais_executable' /usr/local/bin/ais" "dots" "AIS命令链接创建完成"
+        fi
+        print_success "AIS命令已修复: $ais_executable"
+    else
+        # 作为最后手段，创建包装脚本
+        print_warning "未找到ais可执行文件，创建包装脚本"
+        cat > /usr/local/bin/ais << EOF
 #!/bin/bash
-# AIS wrapper script for CentOS 7
+# AIS wrapper script
 export PATH="/usr/local/bin:\$PATH"
 exec $PYTHON_CMD -c "
 import sys
@@ -541,19 +859,9 @@ except ImportError as e:
     sys.exit(1)
 " "\$@"
 EOF
-                    chmod +x /usr/local/bin/ais
-                    print_success "已创建AIS包装脚本"
-                fi
-            else
-                print_error "AIS安装失败"
-                return 1
-            fi
-            ;;
-        *)
-            # 标准pip安装
-            run_with_spinner "正在安装AIS..." "$PIP_CMD install ais-terminal" "arrows" "AIS安装完成"
-            ;;
-    esac
+        chmod +x /usr/local/bin/ais
+        print_success "已创建AIS包装脚本"
+    fi
 }
 
 # 创建Shell集成脚本
@@ -601,27 +909,73 @@ EOF
 setup_shell_integration() {
     update_progress 85 "正在设置Shell集成..."
     
+    # 检查Shell集成状态
+    local shell_status
+    check_shell_integration
+    shell_status=$?
+    
+    if [ $shell_status -eq 0 ]; then
+        print_success "Shell集成配置已是最新版本"
+        return 0
+    fi
+    
     # 确定配置文件
     local config_file="$HOME/.bashrc"
     [ -n "$ZSH_VERSION" ] && config_file="$HOME/.zshrc"
     [ ! -f "$config_file" ] && touch "$config_file"
     
-    # 检查是否已添加集成
-    if grep -q "# AIS INTEGRATION" "$config_file" 2>/dev/null; then
-        print_info "Shell集成配置已存在"
-        return 0
+    # 如果是旧版集成，先清理
+    if [ $shell_status -eq 2 ]; then
+        # 移除旧的AIS集成配置块
+        sed -i '/# AIS INTEGRATION/,/^$/d' "$config_file" 2>/dev/null || true
+        # 移除可能存在的其他旧配置
+        sed -i '/command -v ais.*eval.*ais shell-integration/d' "$config_file" 2>/dev/null || true
     fi
     
-    # 添加简化的集成配置
+    # 添加新版集成配置
     cat >> "$config_file" << 'EOF'
 
 # AIS INTEGRATION
 command -v ais >/dev/null 2>&1 && eval "$(ais shell-integration 2>/dev/null || true)"
 EOF
     
-    # 创建基础配置文件
-    mkdir -p "$HOME/.config/ais"
-    [ ! -f "$HOME/.config/ais/config.toml" ] && cat > "$HOME/.config/ais/config.toml" << 'EOF'
+    print_success "Shell集成配置已更新"
+    
+    # 安全创建配置文件，保护用户现有配置
+    setup_ais_config
+}
+
+# 安全设置AIS配置文件
+setup_ais_config() {
+    local config_dir="$HOME/.config/ais"
+    local config_file="$config_dir/config.toml"
+    
+    # 创建配置目录
+    mkdir -p "$config_dir"
+    
+    # 检查配置文件是否存在
+    if [ -f "$config_file" ]; then
+        # 检查配置文件是否包含基本配置项
+        local needs_update=0
+        
+        if ! grep -q "auto_analysis" "$config_file" 2>/dev/null; then
+            needs_update=1
+        fi
+        
+        if ! grep -q "default_provider" "$config_file" 2>/dev/null; then
+            needs_update=1
+        fi
+        
+        if [ $needs_update -eq 1 ]; then
+            cp "$config_file" "$config_file.backup.$(date +%s)"
+        else
+            print_success "配置文件已存在且完整，保持现有配置"
+            return 0
+        fi
+    fi
+    
+    # 创建或更新配置文件
+    cat > "$config_file" << 'EOF'
 [general]
 auto_analysis = true
 default_provider = "default_free"
@@ -632,6 +986,8 @@ model_name = "gpt-4o-mini"
 # 默认测试密钥，建议使用 'ais provider-add --help-detail' 配置专属密钥
 api_key = "sk-97RxyS9R2dsqFTUxcUZOpZwhnbjQCSOaFboooKDeTv5nHJgg"
 EOF
+    
+    print_success "AIS配置文件已创建"
 }
 
 # 验证安装
@@ -709,6 +1065,21 @@ main() {
     fi
     echo
     
+    # 执行健康检查（除非强制重新安装）
+    if [ "$FORCE_REINSTALL" -eq 0 ] && perform_health_check "$strategy"; then
+        echo -e "${GREEN}✅ 系统健康检查通过！所有组件已正确安装${NC}"
+        echo
+        echo -e "配置Shell集成：${CYAN}ais setup && source ~/.bashrc${NC}"
+        echo -e "配置AI提供商：${CYAN}ais provider-add --help-detail${NC}"
+        echo
+        return 0
+    fi
+    
+    if [ "$FORCE_REINSTALL" -eq 1 ]; then
+        print_warning "强制重新安装模式已启用，将重新安装所有组件"
+        echo
+    fi
+    
     # 执行安装步骤
     install_system_dependencies "$strategy"
     setup_python_environment "$strategy"
@@ -783,10 +1154,22 @@ while [[ $# -gt 0 ]]; do
             DEBUG_MODE=1
             shift
             ;;
+        --force)
+            FORCE_REINSTALL=1
+            shift
+            ;;
         --help)
             echo "AIS 智能安装脚本"
-            echo "用法: $0 [--user|--system|--debug|--help]"
+            echo "用法: $0 [--user|--system|--debug|--force|--help]"
+            echo "选项:"
+            echo "  --user          用户模式安装"
+            echo "  --system        系统模式安装"
+            echo "  --debug         启用调试模式"
+            echo "  --force         强制重新安装所有组件"
+            echo "  --help          显示帮助信息"
+            echo ""
             echo "支持20+种Linux发行版，自动检测并选择最佳安装策略"
+            echo "具备完整的幂等性，支持多次安全执行"
             exit 0
             ;;
         *)
