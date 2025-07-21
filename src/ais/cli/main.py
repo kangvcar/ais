@@ -1127,10 +1127,18 @@ def learn_command(topic, help_detail):
 @main.command("setup")
 def setup_shell():
     """设置 shell 集成。"""
-    console.print("[bold blue]🔧 设置 Shell 集成[/bold blue]")
+    import platform
 
-    # Unix shell 集成
-    _setup_unix_shell_integration()
+    system_name = platform.system()
+    console.print(f"[bold blue]🔧 设置 Shell 集成[/bold blue] ([dim]{system_name}[/dim])")
+
+    if system_name == "Windows":
+        _setup_windows_shell_integration()
+    elif system_name in ["Linux", "Darwin"]:  # Darwin is macOS
+        _setup_unix_shell_integration()
+    else:
+        console.print(f"[yellow]⚠️  不支持的操作系统: {system_name}[/yellow]")
+        console.print("[dim]目前支持: Windows, Linux, macOS[/dim]")
 
 
 def _setup_unix_shell_integration():
@@ -1213,11 +1221,477 @@ fi
         console.print("[red]✗  无法创建配置文件[/red]")
 
 
+def _setup_windows_shell_integration():
+    """设置 Windows shell 集成。"""
+
+    # 检测 PowerShell 类型
+    powershell_info = _detect_windows_powershell()
+
+    if not powershell_info["available"]:
+        console.print("[yellow]⚠️  未检测到 PowerShell[/yellow]")
+        console.print("[dim]Windows 集成需要 PowerShell 5.1 或更高版本[/dim]")
+        return False
+
+    console.print(
+        f"检测到的 PowerShell: {powershell_info['version']} ({powershell_info['edition']})"
+    )
+
+    # 获取 PowerShell Profile 路径
+    profile_path = _get_powershell_profile_path(powershell_info["edition"])
+    if not profile_path:
+        console.print("[red]✗  无法确定 PowerShell Profile 路径[/red]")
+        return False
+
+    console.print(f"PowerShell Profile: {profile_path}")
+
+    # 创建集成脚本
+    success = _create_windows_integration_script(profile_path)
+
+    if success:
+        console.print()
+        console.print("[green]✓  Windows Shell 集成配置完成[/green]")
+        console.print()
+        console.print("[bold cyan]请重新启动 PowerShell 或运行以下命令:[/bold cyan]")
+        console.print(f"[dim]. {profile_path}[/dim]")
+        console.print()
+        console.print("[green]✨ 完成后，命令失败时将自动显示AI分析[/green]")
+        return True
+    else:
+        console.print("[red]✗  Windows Shell 集成配置失败[/red]")
+        return False
+
+
+def _detect_windows_powershell():
+    """检测 Windows PowerShell 环境。"""
+    import subprocess
+
+    powershell_info = {"available": False, "version": "", "edition": "Desktop", "executable": ""}
+
+    # 尝试检测 PowerShell Core (pwsh)
+    try:
+        result = subprocess.run(
+            ["pwsh", "-Command", "$PSVersionTable | ConvertTo-Json"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        if result.returncode == 0:
+            import json
+
+            version_info = json.loads(result.stdout)
+            powershell_info.update(
+                {
+                    "available": True,
+                    "version": str(version_info.get("PSVersion", "")),
+                    "edition": version_info.get("PSEdition", "Core"),
+                    "executable": "pwsh",
+                }
+            )
+            return powershell_info
+    except Exception:
+        pass
+
+    # 尝试检测 Windows PowerShell (powershell)
+    try:
+        result = subprocess.run(
+            ["powershell", "-Command", "$PSVersionTable | ConvertTo-Json"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        if result.returncode == 0:
+            import json
+
+            version_info = json.loads(result.stdout)
+            powershell_info.update(
+                {
+                    "available": True,
+                    "version": str(version_info.get("PSVersion", "")),
+                    "edition": version_info.get("PSEdition", "Desktop"),
+                    "executable": "powershell",
+                }
+            )
+            return powershell_info
+    except Exception:
+        pass
+
+    return powershell_info
+
+
+def _get_powershell_profile_path(edition="Desktop"):
+    """获取 PowerShell Profile 路径。"""
+    from pathlib import Path
+
+    documents = Path.home() / "Documents"
+
+    if edition == "Core":
+        # PowerShell Core (6.0+)
+        profile_path = documents / "PowerShell" / "Microsoft.PowerShell_profile.ps1"
+    else:
+        # Windows PowerShell (5.1)
+        profile_path = documents / "WindowsPowerShell" / "Microsoft.PowerShell_profile.ps1"
+
+    # 确保目录存在
+    profile_path.parent.mkdir(parents=True, exist_ok=True)
+
+    return profile_path
+
+
+def _create_windows_integration_script(profile_path):
+    """创建 Windows PowerShell 集成脚本。"""
+    import ais
+    from pathlib import Path
+
+    try:
+        # 获取 PowerShell 集成脚本路径
+        package_path = Path(ais.__file__).parent
+        ps_script_path = package_path / "shell" / "integration_windows.ps1"
+
+        # 如果包内脚本不存在，创建它
+        if not ps_script_path.exists():
+            ps_script_path.parent.mkdir(parents=True, exist_ok=True)
+            _create_windows_integration_script_content(ps_script_path)
+
+        # 检查 Profile 是否已经包含 AIS 集成
+        if profile_path.exists():
+            content = profile_path.read_text(encoding="utf-8", errors="ignore")
+            if "# AIS Integration" in content:
+                console.print("[yellow]ℹ️  PowerShell Profile 中已存在 AIS 集成[/yellow]")
+                return True
+
+        # 添加集成配置到 PowerShell Profile
+        integration_config = f"""
+
+# AIS Integration - Start
+# AIS - 上下文感知的错误分析学习助手自动集成
+if (Test-Path "{ps_script_path}") {{
+    try {{
+        . "{ps_script_path}"
+    }} catch {{
+        Write-Warning "AIS integration failed to load: $_"
+    }}
+}}
+# AIS Integration - End
+"""
+
+        # 写入 Profile
+        with open(profile_path, "a", encoding="utf-8") as f:
+            f.write(integration_config)
+
+        return True
+
+    except Exception as e:
+        console.print(f"[red]创建集成脚本失败: {e}[/red]")
+        return False
+
+
+def _create_windows_integration_script_content(script_path):
+    """创建 Windows PowerShell 集成脚本内容。"""
+    script_content = """# AIS Windows PowerShell Integration Script
+# 这个脚本为 Windows PowerShell 环境提供 AIS 错误捕获和分析功能
+
+# 全局变量
+$Global:AIS_STDERR_FILE = "$env:TEMP\\ais_stderr_$PID.txt"
+$Global:AIS_LAST_ANALYZED_COMMAND = ""
+$Global:AIS_LAST_ANALYZED_TIME = 0
+$Global:AIS_ORIGINAL_ERROR_COUNT = 0
+
+# 检查 AIS 是否可用
+function Test-AISAvailability {
+    try {
+        $null = Get-Command ais -ErrorAction Stop
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+# 检查自动分析是否开启
+function Test-AISAutoAnalysis {
+    if (-not (Test-AISAvailability)) {
+        return $false
+    }
+
+    $configPath = "$env:USERPROFILE\\.config\\ais\\config.toml"
+    if (Test-Path $configPath) {
+        try {
+            $content = Get-Content $configPath -Raw -ErrorAction SilentlyContinue
+            return $content -match "auto_analysis\\s*=\\s*true"
+        } catch {
+            return $false
+        }
+    }
+    return $false
+}
+
+# 初始化 stderr 捕获
+function Initialize-AISStderrCapture {
+    try {
+        # 创建临时文件
+        New-Item -Path $Global:AIS_STDERR_FILE -ItemType File -Force | Out-Null
+
+        # 记录当前错误数量作为基准
+        $Global:AIS_ORIGINAL_ERROR_COUNT = $Global:Error.Count
+
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+# 获取并清理捕获的 stderr
+function Get-AISCapturedStderr {
+    $stderrContent = ""
+
+    try {
+        # 从 PowerShell 错误流获取新的错误
+        $newErrorCount = $Global:Error.Count - $Global:AIS_ORIGINAL_ERROR_COUNT
+        if ($newErrorCount -gt 0) {
+            $recentErrors = $Global:Error | Select-Object -First $newErrorCount
+            $stderrContent = ($recentErrors | ForEach-Object { $_.ToString() }) -join "`n"
+        }
+
+        # 从文件读取（如果有重定向的内容）
+        if (Test-Path $Global:AIS_STDERR_FILE) {
+            $fileContent = Get-Content $Global:AIS_STDERR_FILE -Raw -ErrorAction SilentlyContinue
+            if ($fileContent) {
+                $stderrContent += "`n$fileContent"
+                Clear-Content $Global:AIS_STDERR_FILE -ErrorAction SilentlyContinue
+            }
+        }
+
+        # 更新错误基准
+        $Global:AIS_ORIGINAL_ERROR_COUNT = $Global:Error.Count
+
+    } catch {
+        # 静默失败，返回空字符串
+    }
+
+    return $stderrContent
+}
+
+# 清理 stderr 捕获资源
+function Remove-AISStderrCapture {
+    try {
+        if (Test-Path $Global:AIS_STDERR_FILE) {
+            Remove-Item $Global:AIS_STDERR_FILE -Force -ErrorAction SilentlyContinue
+        }
+    } catch {
+        # 静默失败
+    }
+}
+
+# 过滤和清理 stderr 内容
+function ConvertTo-AISFilteredStderr {
+    param([string]$StderrContent)
+
+    if (-not $StderrContent) {
+        return ""
+    }
+
+    try {
+        # 过滤无关内容
+        $lines = $StderrContent -split "`n" | Where-Object {
+            $_ -and
+            $_ -notmatch "^\\s*$" -and
+            $_ -notmatch "_ais_|AIS_" -and
+            $_ -notmatch "At line:|CategoryInfo|FullyQualifiedErrorId" -and
+            $_ -notmatch "^\\s*\\+\\s+CategoryInfo" -and
+            $_ -notmatch "^\\s*\\+\\s+FullyQualifiedErrorId"
+        }
+
+        # 限制行数和总长度
+        $filtered = ($lines | Select-Object -First 10) -join " "
+        if ($filtered.Length -gt 1500) {
+            $filtered = $filtered.Substring(0, 1500)
+        }
+
+        # 转义特殊字符以便安全传递
+        $filtered = $filtered -replace '"', '\\"' -replace '`', '``'
+
+        return $filtered
+    } catch {
+        return ""
+    }
+}
+
+# 检查命令是否应该被分析（去重机制）
+function Test-AISCommandShouldAnalyze {
+    param([string]$Command)
+
+    if (-not $Command) {
+        return $false
+    }
+
+    try {
+        $currentTime = [int][double]::Parse((Get-Date -UFormat %s))
+        $timeDiff = $currentTime - $Global:AIS_LAST_ANALYZED_TIME
+
+        # 如果与上次分析的命令相同，且时间间隔小于30秒，跳过
+        if ($Command -eq $Global:AIS_LAST_ANALYZED_COMMAND -and $timeDiff -lt 30) {
+            return $false  # 跳过重复分析
+        }
+
+        # 更新记录
+        $Global:AIS_LAST_ANALYZED_COMMAND = $Command
+        $Global:AIS_LAST_ANALYZED_TIME = $currentTime
+
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+# PowerShell 命令执行后钩子
+function Invoke-AISCommandAnalysis {
+    $lastExitCode = $LASTEXITCODE
+
+    # 只处理非零退出码
+    if ($lastExitCode -and $lastExitCode -ne 0) {
+        if (Test-AISAutoAnalysis) {
+            try {
+                # 获取最后执行的命令
+                $history = Get-History -Count 1 -ErrorAction SilentlyContinue
+                if (-not $history) { return }
+
+                $lastCommand = $history.CommandLine
+
+                # 过滤内部命令和特殊情况
+                if ($lastCommand -and
+                    $lastCommand -notmatch "_ais_|AIS_" -and
+                    $lastCommand -notmatch "Get-History|Invoke-AISCommandAnalysis") {
+
+                    # 检查是否应该分析此命令（去重机制）
+                    if (Test-AISCommandShouldAnalyze $lastCommand) {
+                        # 获取捕获的 stderr 内容
+                        $capturedStderr = Get-AISCapturedStderr
+                        $filteredStderr = ConvertTo-AISFilteredStderr $capturedStderr
+
+                        # 调用 ais analyze 进行分析，传递 stderr
+                        Write-Host ""  # 添加空行分隔
+
+                        try {
+                            if ($filteredStderr) {
+                                & ais analyze --exit-code $lastExitCode `
+                                    --command $lastCommand --stderr $filteredStderr
+                            } else {
+                                & ais analyze --exit-code $lastExitCode --command $lastCommand
+                            }
+                        } catch {
+                            # 静默失败，避免影响用户正常使用
+                        }
+                    }
+                }
+            } catch {
+                # 静默失败，避免影响用户正常使用
+            }
+        }
+    }
+}
+
+# 增强的提示符函数
+function global:prompt {
+    # 在每次提示符显示前执行错误分析
+    Invoke-AISCommandAnalysis
+
+    # 返回标准提示符
+    $currentPath = $executionContext.SessionState.Path.CurrentLocation
+    "PS $currentPath> "
+}
+
+# 主初始化函数
+function Initialize-AISIntegration {
+    if (-not (Test-AISAvailability)) {
+        return $false
+    }
+
+    try {
+        # 初始化 stderr 捕获
+        if (Initialize-AISStderrCapture) {
+            # 注册清理事件
+            Register-EngineEvent PowerShell.Exiting -Action {
+                Remove-AISStderrCapture
+            } -SupportEvent | Out-Null
+
+            return $true
+        }
+    } catch {
+        # 静默失败
+    }
+
+    return $false
+}
+
+# 清理函数
+function Remove-AISIntegration {
+    Remove-AISStderrCapture
+
+    # 移除事件处理器
+    try {
+        Get-EventSubscriber | Where-Object {
+            $_.Action.ToString() -match "Remove-AISStderrCapture"
+        } | Unregister-Event -ErrorAction SilentlyContinue
+    } catch {
+        # 静默失败
+    }
+}
+
+# 检测 PowerShell 版本兼容性
+function Test-AISPowerShellCompatibility {
+    try {
+        $version = $PSVersionTable.PSVersion
+        # 支持 PowerShell 5.1+ 和 PowerShell Core 6.0+
+        return ($version.Major -ge 5 -and $version.Minor -ge 1) -or ($version.Major -ge 6)
+    } catch {
+        return $false
+    }
+}
+
+# 获取 PowerShell 集成状态
+function Get-AISIntegrationStatus {
+    $status = @{
+        AISAvailable = Test-AISAvailability
+        AutoAnalysisEnabled = Test-AISAutoAnalysis
+        PowerShellCompatible = Test-AISPowerShellCompatibility
+        IntegrationActive = $false
+    }
+
+    # 检查是否已经初始化
+    if ($Global:AIS_STDERR_FILE -and (Test-Path $Global:AIS_STDERR_FILE)) {
+        $status.IntegrationActive = $true
+    }
+
+    return $status
+}
+
+# 自动初始化（如果满足条件）
+if (Test-AISPowerShellCompatibility) {
+    Initialize-AISIntegration | Out-Null
+}"""
+
+    # 写入到目标路径
+    with open(script_path, "w", encoding="utf-8") as f:
+        f.write(script_content)
+
+
 @main.command("test-integration")
 def test_integration():
     """测试 shell 集成是否工作。"""
-    console.print("[bold blue]🧪 测试 Shell 集成[/bold blue]")
+    import platform
 
+    system_name = platform.system()
+    console.print(f"[bold blue]🧪 测试 Shell 集成[/bold blue] ([dim]{system_name}[/dim])")
+
+    if system_name == "Windows":
+        _test_windows_integration()
+    elif system_name in ["Linux", "Darwin"]:
+        _test_unix_integration()
+    else:
+        console.print(f"[yellow]⚠️  不支持的操作系统: {system_name}[/yellow]")
+
+
+def _test_unix_integration():
+    """测试 Unix shell 集成。"""
     try:
         # 模拟一个错误命令的分析
         console.print("模拟命令错误: mdkirr /test")
@@ -1252,14 +1726,73 @@ def test_integration():
 
         console.print(f"✓  数据库保存: 成功 (ID: {log_id})")
 
-        console.print("\n[bold green]🎉 所有组件都工作正常！[/bold green]")
+        console.print("\n[bold green]🎉 Unix Shell 集成测试通过！[/bold green]")
         console.print("如果您遇到自动分析不工作的问题，请:")
         console.print("1. 运行 'ais setup' 设置 shell 集成")
         console.print("2. 确保您在交互式终端中")
         console.print("3. 重新加载 shell 配置")
 
     except Exception as e:
-        console.print(f"[red]✗  测试失败: {e}[/red]")
+        console.print(f"[red]✗  Unix 测试失败: {e}[/red]")
+
+
+def _test_windows_integration():
+    """测试 Windows PowerShell 集成。"""
+    try:
+        # 模拟一个错误命令的分析
+        console.print("模拟命令错误: Get-NonExistentCommand")
+
+        from ..core.context import collect_context
+        from ..core.ai import analyze_error
+        from ..core.database import save_command_log
+        import os
+
+        # 模拟 Windows 特定的错误
+        windows_stderr = ("Get-NonExistentCommand : The term 'Get-NonExistentCommand' is not "
+                          "recognized as the name of a cmdlet")
+
+        # 模拟上下文收集
+        context = collect_context("Get-NonExistentCommand", 1, windows_stderr)
+        config = get_config()
+
+        console.print("✓  上下文收集: 成功")
+
+        # 测试 AI 分析
+        analysis = analyze_error("Get-NonExistentCommand", 1, windows_stderr, context, config)
+
+        console.print("✓  AI 分析: 成功")
+
+        # 测试数据库保存
+        username = os.getenv("USERNAME", "test")  # Windows 使用 USERNAME
+        log_id = save_command_log(
+            username=username,
+            command="Get-NonExistentCommand",
+            exit_code=1,
+            stderr=windows_stderr,
+            context=context,
+            ai_explanation=analysis.get("explanation", ""),
+            ai_suggestions=analysis.get("suggestions", []),
+        )
+
+        console.print(f"✓  数据库保存: 成功 (ID: {log_id})")
+
+        # 测试 PowerShell 集成检测
+        powershell_info = _detect_windows_powershell()
+        if powershell_info["available"]:
+            console.print(
+                f"✓  PowerShell 检测: {powershell_info['version']} ({powershell_info['edition']})"
+            )
+        else:
+            console.print("[yellow]⚠️  PowerShell 检测: 未找到[/yellow]")
+
+        console.print("\n[bold green]🎉 Windows PowerShell 集成测试通过！[/bold green]")
+        console.print("如果您遇到自动分析不工作的问题，请:")
+        console.print("1. 运行 'ais setup' 设置 PowerShell 集成")
+        console.print("2. 确保您在 PowerShell 5.1+ 或 PowerShell Core 6.0+ 中")
+        console.print("3. 重新启动 PowerShell 或重新加载 Profile")
+
+    except Exception as e:
+        console.print(f"[red]✗  Windows 测试失败: {e}[/red]")
 
 
 @main.command("report")

@@ -7,6 +7,30 @@
 
 ## [Unreleased]
 
+### Added
+- 🌍 **跨平台Windows支持**：扩展AIS到Windows PowerShell环境，实现真正的跨平台兼容
+  - 新增Windows PowerShell集成脚本`integration_windows.ps1`，支持Windows CMD和PowerShell环境
+  - 智能平台检测：`ais setup`命令根据运行系统自动选择Linux/macOS或Windows集成方案
+  - Windows专用错误捕获机制：利用PowerShell错误流($Global:Error)和临时文件组合捕获stderr
+  - PowerShell Profile自动配置：支持多种PowerShell配置文件路径（用户级、全部用户、系统级）
+  - 全局提示符增强：通过`function global:prompt`实现每次命令后自动错误分析
+  - Windows兼容性验证：支持PowerShell 5.1+和PowerShell Core 6.0+版本
+  - 跨平台测试命令：`ais test-integration`支持Windows环境的集成状态检测
+### Enhanced
+- 🔧 **完善跨平台架构设计**：保持Linux/macOS现有功能完全不变，纯增量式支持Windows
+  - 重构`setup_shell()`函数，添加`platform.system()`检测逻辑分别处理不同操作系统
+  - 新增Windows专用函数：`_setup_windows_shell_integration()`, `_detect_windows_powershell()`, `_get_powershell_profile_path()`, `_create_windows_integration_script()`
+  - 优化`test_integration()`命令，添加Windows环境的PowerShell集成状态检测
+  - 确保Linux/Unix现有脚本(`integration.sh`)完全保持不变，避免影响现有用户
+### Technical Improvements
+- 📋 **Windows集成技术方案**：针对Windows环境的特殊优化实现
+  - 使用PowerShell全局变量进行状态管理：`$Global:AIS_STDERR_FILE`, `$Global:AIS_LAST_ANALYZED_COMMAND`等
+  - 实现PowerShell错误基准记录：通过`$Global:AIS_ORIGINAL_ERROR_COUNT`追踪新增错误
+  - Windows路径适配：使用`$env:TEMP`和`$env:USERPROFILE`确保路径兼容性
+  - PowerShell事件处理：注册`PowerShell.Exiting`事件自动清理临时资源
+  - 静默失败机制：所有集成函数使用try-catch确保不影响用户正常命令行使用
+  - 智能命令过滤：排除PowerShell内部命令和AIS自身命令，避免无限递归
+
 ## [2.1.0] - 2025-07-21
 
 ### Added
