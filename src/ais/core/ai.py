@@ -407,7 +407,7 @@ def _generate_contextual_system_prompt_for_ask(context: Dict[str, Any]) -> str:
         prompt_parts.append(f"- 系统负载: {context['load_average']}")
     if "internet_connectivity" in context:
         conn_status = "可连接" if context["internet_connectivity"] else "不可连接"
-        prompt_parts.append(f"- 网络状态: {conn_status} (ping 114.114.114.114)")
+        prompt_parts.append(f"- 网络状态: {conn_status} (ping 8.8.8.8)")
     if context.get("listening_ports"):
         ports = ", ".join(context["listening_ports"][:8])
         if len(context["listening_ports"]) > 8:
