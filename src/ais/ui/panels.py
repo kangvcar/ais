@@ -41,7 +41,7 @@ class AISPanels:
         )
         self.console.print(panel)
 
-    def success(self, message: str, title: str = "✅ 操作成功") -> None:
+    def success(self, message: str, title: str = "✓  操作成功") -> None:
         """显示成功消息面板。"""
         panel = Panel(
             f"[green]{message}[/green]",
@@ -65,7 +65,7 @@ class AISPanels:
         )
         self.console.print(panel)
 
-    def error(self, message: str, title: str = "❌ 错误信息") -> None:
+    def error(self, message: str, title: str = "✗  错误信息") -> None:
         """显示错误消息面板。"""
         panel = Panel(
             f"[red]{message}[/red]",
@@ -110,11 +110,11 @@ class AISPanels:
                 f"[green]🚀 命令执行成功:[/green]\n[bold]{command}[/bold]"
             )
             border_style = "green"
-            title = "✅ 命令执行成功"
+            title = "✓  命令执行成功"
         else:
-            content = f"[red]❌ 命令执行失败:[/red]\n[bold]{command}[/bold]"
+            content = f"[red]✗  命令执行失败:[/red]\n[bold]{command}[/bold]"
             border_style = "red"
-            title = "❌ 命令执行失败"
+            title = "✗  命令执行失败"
 
         panel = Panel(
             content,

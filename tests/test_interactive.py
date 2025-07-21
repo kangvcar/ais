@@ -32,7 +32,7 @@ class TestExecuteCommand:
                 success_calls = [
                     call
                     for call in mock_print.call_args_list
-                    if "✅ 命令执行成功" in str(call)
+                    if "✓  命令执行成功" in str(call)
                 ]
                 assert len(success_calls) > 0
 
@@ -51,7 +51,7 @@ class TestExecuteCommand:
                 failure_calls = [
                     call
                     for call in mock_print.call_args_list
-                    if "❌ 命令执行失败" in str(call)
+                    if "✗  命令执行失败" in str(call)
                 ]
                 assert len(failure_calls) > 0
 
@@ -66,7 +66,7 @@ class TestExecuteCommand:
                 error_calls = [
                     call
                     for call in mock_print.call_args_list
-                    if "❌ 执行命令时出错" in str(call)
+                    if "✗  执行命令时出错" in str(call)
                 ]
                 assert len(error_calls) > 0
 
@@ -272,7 +272,7 @@ class TestAskFollowUpQuestion:
                     error_calls = [
                         call
                         for call in mock_console.print.call_args_list
-                        if "❌ 处理问题时出错" in str(call)
+                        if "✗  处理问题时出错" in str(call)
                     ]
                     assert len(error_calls) > 0
 

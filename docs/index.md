@@ -96,7 +96,7 @@ pipx install ais-terminal
     <span data-ty>Using default tag: latest</span>
     <span data-ty>latest: Pulling from library/hello-world</span>
     <span data-ty>Status: Downloaded newer image for hello-world:latest</span>
-    <span data-ty>✅ 问题解决！镜像已成功下载，现在可以运行容器了。</span>
+    <span data-ty>✓ 问题解决！镜像已成功下载，现在可以运行容器了。</span>
 </div>
 
 
@@ -195,7 +195,7 @@ pipx install ais-terminal
     <span data-ty></span>
     <span data-ty="input">ais learn git</span>
     <span data-ty>🎓 正在为您生成Git学习计划...</span>
-    <span data-ty>✅ 已生成个性化Git学习路径，包含15个实战练习！</span>
+    <span data-ty>✓ 已生成个性化Git学习路径，包含15个实战练习！</span>
 </div>
 
 

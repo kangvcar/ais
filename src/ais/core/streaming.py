@@ -37,7 +37,7 @@ class StreamingDisplay:
             elif status == "完成":
                 self.console.print(f"[green]  ✓ {step_text}[/green]")
             elif status == "错误":
-                self.console.print(f"[red]  ✗ {step_text}[/red]")
+                self.console.print(f"[red]  ✗  {step_text}[/red]")
 
     def finish_analysis(self) -> None:
         """完成分析流程"""

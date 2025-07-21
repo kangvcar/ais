@@ -73,15 +73,15 @@ def _build_intelligent_context_analysis(context: Dict[str, Any]) -> str:
     }:
         network_analysis = []
         if network_context.get("internet_connectivity") is False:
-            network_analysis.append("❌ 网络连接异常")
+            network_analysis.append("✗  网络连接异常")
         elif network_context.get("dns_resolution") == "failed":
-            network_analysis.append("❌ DNS解析失败")
+            network_analysis.append("✗  DNS解析失败")
         elif network_context.get("proxy_settings"):
             network_analysis.append(
                 f"🔄 代理设置: {network_context['proxy_settings']}"
             )
         else:
-            network_analysis.append("✅ 网络连接正常")
+            network_analysis.append("✓  网络连接正常")
 
         if network_context.get("local_open_ports"):
             network_analysis.append(

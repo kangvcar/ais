@@ -226,7 +226,7 @@ fi
     # 显示一次性提示
     setup_message = f"""[green]🎉 AIS 已自动配置完成！[/green]
 
-[green]✅ Shell集成配置已添加到:[/green] [dim]{config_file}[/dim]
+[green]✓  Shell集成配置已添加到:[/green] [dim]{config_file}[/dim]
 
 [green]✨ 正在自动加载配置，让改动立即生效...[/green]"""
     panels.success(setup_message, "🎉 AIS 自动配置完成")
@@ -238,7 +238,7 @@ fi
         # 使用当前shell执行source命令
         shell = os.environ.get("SHELL", "/bin/bash")
         subprocess.run([shell, "-c", f"source {config_file}"], check=False)
-        console.print("[green]✅ 配置已自动加载，AIS功能立即可用！[/green]")
+        console.print("[green]✓  配置已自动加载，AIS功能立即可用！[/green]")
         console.print("[green]✨ 命令失败时将自动显示AI分析！[/green]")
     except Exception as e:
         console.print(f"[yellow]⚠️ 自动加载配置失败: {e}[/yellow]")
@@ -314,7 +314,7 @@ def _handle_error(error_msg: str) -> None:
     """统一的错误处理函数。"""
     error_panel = Panel(
         f"[red]{error_msg}[/red]",
-        title="[bold red]❌ 错误信息[/bold red]",
+        title="[bold red]✗  错误信息[/bold red]",
         border_style="red",
         padding=(1, 2),
         expand=False,
@@ -361,7 +361,7 @@ def ask(question, help_detail):
 
 用法: ais ask "你的问题"
 帮助: ais ask --help-detail"""
-        panels.error(error_message, "❌ 参数错误")
+        panels.error(error_message, "✗  参数错误")
         return
 
     try:
@@ -472,7 +472,7 @@ def config(set_key, get_key, list_providers, help_context):
         else:
             # 显示当前配置
             auto_analysis = config.get("auto_analysis", True)
-            auto_status = "✅ 开启" if auto_analysis else "❌ 关闭"
+            auto_status = "✓  开启" if auto_analysis else "✗  关闭"
             context_level = config.get("context_level", "detailed")
             sensitive_count = len(config.get("sensitive_dirs", []))
 
@@ -589,7 +589,7 @@ def add_provider_cmd(name, url, model, key, help_detail):
 
 用法: ais provider-add <名称> --url <地址> --model <模型>
 帮助: ais provider-add --help-detail"""
-        panels.error(error_message, "❌ 参数错误")
+        panels.error(error_message, "✗  参数错误")
         return
 
     from ..core.config import add_provider
@@ -763,7 +763,7 @@ def analyze_error(exit_code, command, stderr):
             # 使用Panel美化错误信息输出
             error_panel = Panel(
                 "[red]⚠️  AI返回了非预期格式的数据[/red]",
-                title="[bold red]❌ 数据格式错误[/bold red]",
+                title="[bold red]✗  数据格式错误[/bold red]",
                 border_style="red",
                 padding=(1, 2),
                 expand=False,
@@ -891,9 +891,9 @@ def show_history(index, limit, failed_only, command_filter, help_detail):
 
             # 状态显示
             if log.exit_code == 0:
-                status = Text("✅ 成功", style="green")
+                status = Text("✓  成功", style="green")
             else:
-                status = Text(f"❌ {log.exit_code}", style="red")
+                status = Text(f"✗  {log.exit_code}", style="red")
 
             # 命令显示（截断长命令）
             cmd_display = log.original_command
@@ -967,7 +967,9 @@ def show_history_detail_content(index):
                 console.print("\n[bold yellow]💡 AI 建议:[/bold yellow]")
                 for i, suggestion in enumerate(suggestions, 1):
                     risk_icon = (
-                        "✅" if suggestion.get("risk_level") == "safe" else "⚠️"
+                        "✓ "
+                        if suggestion.get("risk_level") == "safe"
+                        else "⚠️"
                     )
                     console.print(
                         f"{i}. {suggestion.get('command', 'N/A')} {risk_icon}"
@@ -1123,7 +1125,7 @@ def _setup_unix_shell_integration():
     console.print(f"检测到的 Shell: {shell_name}")
 
     if not os.path.exists(script_path):
-        console.print("[red]❌ 集成脚本不存在[/red]")
+        console.print("[red]✗  集成脚本不存在[/red]")
         return
 
     # 检测配置文件
@@ -1167,7 +1169,8 @@ fi
                 f.write(integration_config)
 
             console.print(
-                f"\n[green]✅ 集成配置已添加到: {os.path.basename(config_file)}[/green]"
+                f"\n[green]✓  集成配置已添加到: "
+                f"{os.path.basename(config_file)}[/green]"
             )
             console.print(
                 f"[bold cyan]source {config_file}[/bold cyan] "
@@ -1178,13 +1181,14 @@ fi
             )
         else:
             console.print(
-                f"\n[yellow]ℹ️ 集成配置已存在: {
-                    os.path.basename(config_file)}[/yellow]")
+                f"\n[yellow]i 集成配置已存在: {
+                    os.path.basename(config_file)}[/yellow]"
+            )
             console.print(
                 "[green]✨ AIS功能已可用，命令失败时将自动显示AI分析[/green]"
             )
     else:
-        console.print("[red]❌ 无法创建配置文件[/red]")
+        console.print("[red]✗  无法创建配置文件[/red]")
 
 
 @main.command("test-integration")
@@ -1207,14 +1211,14 @@ def test_integration():
         )
         config = get_config()
 
-        console.print("✅ 上下文收集: 成功")
+        console.print("✓  上下文收集: 成功")
 
         # 测试 AI 分析
         analysis = analyze_error(
             "mdkirr /test", 127, "mdkirr: command not found", context, config
         )
 
-        console.print("✅ AI 分析: 成功")
+        console.print("✓  AI 分析: 成功")
 
         # 测试数据库保存
         username = os.getenv("USER", "test")
@@ -1228,7 +1232,7 @@ def test_integration():
             ai_suggestions=analysis.get("suggestions", []),
         )
 
-        console.print(f"✅ 数据库保存: 成功 (ID: {log_id})")
+        console.print(f"✓  数据库保存: 成功 (ID: {log_id})")
 
         console.print("\n[bold green]🎉 所有组件都工作正常！[/bold green]")
         console.print("如果您遇到自动分析不工作的问题，请:")
@@ -1237,7 +1241,7 @@ def test_integration():
         console.print("3. 重新加载 shell 配置")
 
     except Exception as e:
-        console.print(f"[red]❌ 测试失败: {e}[/red]")
+        console.print(f"[red]✗  测试失败: {e}[/red]")
 
 
 @main.command("report")

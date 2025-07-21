@@ -173,7 +173,7 @@ print_msg() {
         "info") echo -e "${BLUE}ℹ️  ${message}${NC}" ;;
         "success") echo -e "${GREEN}✓${NC} ${message}" ;;
         "warning") echo -e "${YELLOW}⚠️  ${message}${NC}" ;;
-        "error") echo -e "${RED}❌ ${message}${NC}" ;;
+        "error") echo -e "${RED}✗  ${message}${NC}" ;;
     esac
 }
 

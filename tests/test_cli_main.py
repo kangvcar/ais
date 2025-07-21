@@ -209,7 +209,7 @@ class TestConfigCommand:
             assert result.exit_code == 0
             assert "当前配置" in result.output
             assert "test_provider" in result.output
-            assert "✅ 开启" in result.output
+            assert "✓  开启" in result.output
 
     def test_config_command_set_valid(self):
         """Test config command set valid value."""

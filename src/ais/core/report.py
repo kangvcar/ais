@@ -271,7 +271,7 @@ class LearningReportGenerator:
         if improvement_insights:
             lines.append("## 💡 改进洞察")
             for insight in improvement_insights:
-                severity_icon = {"高": "🔥", "中": "⚠️", "低": "✅"}.get(
+                severity_icon = {"高": "🔥", "中": "⚠️", "低": "✓ "}.get(
                     insight["severity"], "💡"
                 )
                 lines.append(f"### {severity_icon} {insight['title']}")

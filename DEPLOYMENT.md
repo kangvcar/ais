@@ -6,10 +6,10 @@
 
 | 平台 | 配置文件 | 状态 | 访问方式 |
 |------|----------|------|----------|
-| **GitHub Pages** | `.github/workflows/deploy-docs-simple.yml` | ✅ 自动部署 | 推送到 main 分支 |
-| **Vercel** | `vercel.json` | ✅ 自动部署 | 连接 GitHub 仓库 |
-| **Netlify** | `netlify.toml` | ✅ 自动部署 | 连接 GitHub 仓库 |
-| **Cloudflare Pages** | `wrangler.toml` | ✅ 自动部署 | 连接 GitHub 仓库 |
+| **GitHub Pages** | `.github/workflows/deploy-docs-simple.yml` | ✓ 自动部署 | 推送到 main 分支 |
+| **Vercel** | `vercel.json` | ✓ 自动部署 | 连接 GitHub 仓库 |
+| **Netlify** | `netlify.toml` | ✓ 自动部署 | 连接 GitHub 仓库 |
+| **Cloudflare Pages** | `wrangler.toml` | ✓ 自动部署 | 连接 GitHub 仓库 |
 
 ## 🔧 环境变量配置
 

@@ -861,7 +861,7 @@ def execute_command(command: str) -> bool:
         # 显示执行结果面板
         if result.returncode == 0:
             result_panel = Panel(
-                "[green]✅ 命令执行成功[/green]",
+                "[green]✓  命令执行成功[/green]",
                 title="[bold green]🎉 执行结果[/bold green]",
                 title_align="left",
                 border_style="green",
@@ -870,7 +870,7 @@ def execute_command(command: str) -> bool:
             )
         else:
             result_panel = Panel(
-                f"[red]❌ 命令执行失败，退出码: {result.returncode}[/red]",
+                f"[red]✗  命令执行失败，退出码: {result.returncode}[/red]",
                 title="[bold red]💥 执行失败[/bold red]",
                 title_align="left",
                 border_style="red",
@@ -883,7 +883,7 @@ def execute_command(command: str) -> bool:
 
     except Exception as e:
         error_panel = Panel(
-            f"[red]❌ 执行命令时出错: {e}[/red]",
+            f"[red]✗  执行命令时出错: {e}[/red]",
             title="[bold red]🚨 系统错误[/bold red]",
             title_align="left",
             border_style="red",
@@ -924,7 +924,7 @@ def show_command_details(
             return
 
         if not console:
-            print("❌ 控制台对象无效")
+            print("✗  控制台对象无效")
             return
 
         # 确保所有必需字段存在且有效
@@ -1351,7 +1351,7 @@ def show_interactive_menu(
 
                 if new_command != original_command:
                     console.print(
-                        f"\n✅ 命令已修改为: [bold]{new_command}[/bold]"
+                        f"\n✓  命令已修改为: [bold]{new_command}[/bold]"
                     )
 
                     if questionary.confirm("是否执行修改后的命令？").ask():
@@ -1377,7 +1377,7 @@ def show_simple_menu(
         risk_level = suggestion.get("risk_level", "safe")
 
         # 风险等级图标
-        risk_icon = "✅" if risk_level == "safe" else "⚠️"
+        risk_icon = "✓ " if risk_level == "safe" else "⚠️"
         prefix = "  ▸ " if i == 1 else "    "
 
         console.print(

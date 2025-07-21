@@ -19,7 +19,7 @@ print_info() {
 }
 
 print_success() {
-    echo -e "${GREEN}✅ $1${NC}"
+    echo -e "${GREEN}✓  $1${NC}"
 }
 
 print_warning() {
@@ -27,7 +27,7 @@ print_warning() {
 }
 
 print_error() {
-    echo -e "${RED}❌ $1${NC}"
+    echo -e "${RED}✗  $1${NC}"
 }
 
 # 检查命令是否存在
