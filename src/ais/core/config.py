@@ -35,6 +35,9 @@ def get_default_config() -> Dict[str, Any]:
             "async_analysis": True,
             "cache_analysis": True,
         },
+        "ask": {
+            "context_level": "minimal",  # minimal, standard, detailed
+        },
     }
 
 
@@ -73,7 +76,19 @@ def save_config(config: Dict[str, Any]) -> None:
 def set_config(key: str, value: Any) -> None:
     """设置配置项。"""
     config = get_config()
-    config[key] = value
+
+    # 支持嵌套键，如 "ask.context_level"
+    if "." in key:
+        keys = key.split(".")
+        current = config
+        for k in keys[:-1]:
+            if k not in current:
+                current[k] = {}
+            current = current[k]
+        current[keys[-1]] = value
+    else:
+        config[key] = value
+
     save_config(config)
 
 

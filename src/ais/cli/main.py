@@ -7,7 +7,6 @@ from rich.panel import Panel
 
 from .. import __version__
 from ..core.config import get_config, set_config
-from ..core.ai import ask_ai
 from ..ui.panels import panels
 
 console = Console()
@@ -420,30 +419,42 @@ def ask(question, help_detail):
     """Ask AI a question."""
     if help_detail:
         help_content = """[bold]功能:[/bold]
-  快速问答模式，立即获得具体问题的答案
-  适合解决当前遇到的具体问题或疑惑
+  智能问答模式，基于当前环境上下文提供精准回答
+  结合项目、Git、系统状态等信息给出针对性建议
 
 [bold]用法:[/bold]
   ais ask <问题>
+
+[bold]智能上下文感知:[/bold]
+  • 自动识别当前项目类型和技术栈
+  • 结合Git分支和状态信息
+  • 考虑当前目录和文件结构
+  • 根据用户权限和系统环境调整回答
 
 [bold]适用场景:[/bold]
   • 解释概念："什么是Docker容器？"
   • 快速答疑："Git冲突是什么意思？"
   • 概念查询："Linux权限755代表什么？"
-  • 故障诊断："为什么命令执行失败？"
+  • 项目相关："如何在当前项目中添加依赖？"
+  • 故障诊断："为什么我的构建命令失败？"
+
+[bold]上下文配置:[/bold]
+  ais config --set ask.context_level=minimal   - 仅基础信息
+  ais config --set ask.context_level=standard  - 包含项目和Git信息
+  ais config --set ask.context_level=detailed  - 完整系统和环境信息
 
 [bold]vs 其他命令:[/bold]
   • 想系统学习主题 → 使用 ais learn
 
 [bold]提示:[/bold]
   • 问题用引号包围，避免 shell 解析问题
-  • 可以问任何编程、运维、工具使用相关问题
-  • AI 会提供中文回答和实用建议
-  • 回答基于当前配置的 AI 服务提供商
+  • AI会根据你的当前环境提供更精准的建议
+  • 在项目目录下使用时效果更佳
 
 [bold]相关命令:[/bold]
-  ais config --list-providers - 查看可用的 AI 服务商
-  ais learn <主题>            - 学习特定主题知识"""
+  ais config                   - 查看当前上下文配置
+  ais config --list-providers  - 查看可用的 AI 服务商
+  ais learn <主题>             - 学习特定主题知识"""
         panels.info(help_content, "📚 ais ask 命令详细使用说明")
         return
 
@@ -463,8 +474,10 @@ def ask(question, help_detail):
         # 创建流式问答器
         streaming_asker = create_streaming_asker(console)
 
-        # 使用流式输出进行问答
-        response = streaming_asker.ask_with_streaming(ask_ai, question, config)
+        # 使用带上下文的流式输出进行问答
+        from ..core.ai import ask_ai_with_context
+
+        response = streaming_asker.ask_with_streaming(ask_ai_with_context, question, config)
 
         if response:
             panels.ai_analysis(Markdown(response), "🤖 AI 回答")
@@ -498,6 +511,13 @@ def config(set_key, get_key, list_providers, help_context):
                         "[red]错误: context_level 必须是 minimal, " "standard 或 detailed[/red]"
                     )
                     console.print("[dim]使用 'ais config --help-context' 查看详细说明[/dim]")
+                    return
+            elif key == "ask.context_level":
+                if value not in ["minimal", "standard", "detailed"]:
+                    console.print(
+                        "[red]错误: ask.context_level 必须是 minimal, " "standard 或 detailed[/red]"
+                    )
+                    console.print("[dim]这个配置项专门控制 ask 命令的上下文收集级别[/dim]")
                     return
             elif key == "auto_analysis":
                 if value.lower() in ["true", "false"]:
@@ -554,6 +574,7 @@ def config(set_key, get_key, list_providers, help_context):
             auto_analysis = config.get("auto_analysis", True)
             auto_status = "✓  开启" if auto_analysis else "✗  关闭"
             context_level = config.get("context_level", "detailed")
+            ask_context_level = config.get("ask", {}).get("context_level", "minimal")
             sensitive_count = len(config.get("sensitive_dirs", []))
 
             # UI配置 - 流式输出始终启用，progressive模式
@@ -563,13 +584,15 @@ def config(set_key, get_key, list_providers, help_context):
                     'default_provider',
                     'default_free')}
 自动分析: {auto_status}
-上下文级别: {context_level}
+错误分析上下文级别: {context_level}
+Ask命令上下文级别: {ask_context_level}
 敏感目录: {sensitive_count} 个
 
 [dim]💡 提示:[/dim]
 [dim]  ais config --help-context    - 查看上下文配置帮助[/dim]
 [dim]  ais config --list-providers  - 查看AI服务提供商[/dim]
-[dim]  ais config --set key=value   - 修改配置[/dim]"""
+[dim]  ais config --set key=value   - 修改配置[/dim]
+[dim]  ais config --set ask.context_level=standard - 设置Ask上下文级别[/dim]"""
             panels.config(config_content, "⚙️ 当前配置")
 
     except Exception as e:

@@ -481,3 +481,103 @@ def filter_sensitive_dict(data: Dict[str, Any]) -> Dict[str, Any]:
         else:
             filtered[key] = value
     return filtered
+
+
+def collect_ask_context(config: Dict[str, Any]) -> Dict[str, Any]:
+    """为ask功能收集上下文信息。"""
+    if not config:
+        from .config import get_config
+
+        config = get_config()
+
+    # 获取当前工作目录
+    cwd = str(Path.cwd())
+
+    # 检查是否在敏感目录
+    sensitive_dirs = config.get("sensitive_dirs", [])
+    if is_sensitive_path(cwd, sensitive_dirs):
+        return {
+            "error": "位于敏感目录，跳过上下文收集",
+            "cwd": cwd,
+        }
+
+    # 获取ask上下文级别配置
+    ask_config = config.get("ask", {})
+    context_level = ask_config.get("context_level", "minimal")
+
+    context = {}
+
+    if context_level == "minimal":
+        context = collect_minimal_ask_context(cwd)
+    elif context_level == "standard":
+        # 复用标准上下文收集逻辑，但不包含错误信息
+        context = collect_core_context("", 0, "", cwd)
+        context.update(collect_standard_context(config))
+        # 移除错误相关字段
+        context.pop("command", None)
+        context.pop("exit_code", None)
+        context.pop("stderr", None)
+    elif context_level == "detailed":
+        # 复用详细上下文收集逻辑，但不包含错误信息
+        context = collect_core_context("", 0, "", cwd)
+        context.update(collect_standard_context(config))
+        context.update(collect_detailed_context(config))
+        # 移除错误相关字段
+        context.pop("command", None)
+        context.pop("exit_code", None)
+        context.pop("stderr", None)
+
+        # 添加增强上下文信息
+        try:
+            context["network_context"] = collect_network_context()
+        except Exception:
+            context["network_context"] = {"error": "network context collection failed"}
+
+        try:
+            context["permission_context"] = collect_permission_context("", cwd)
+        except Exception:
+            context["permission_context"] = {"error": "permission context collection failed"}
+
+        try:
+            context["project_context"] = detect_project_type_enhanced(cwd)
+        except Exception:
+            context["project_context"] = {"error": "project context collection failed"}
+
+    # 过滤敏感数据
+    for key, value in context.items():
+        if isinstance(value, str):
+            context[key] = filter_sensitive_data(value)
+        elif isinstance(value, list):
+            context[key] = [filter_sensitive_data(str(item)) for item in value]
+        elif isinstance(value, dict):
+            context[key] = filter_sensitive_dict(value)
+
+    return context
+
+
+def collect_minimal_ask_context(cwd: str) -> Dict[str, Any]:
+    """收集ask功能的最小上下文信息。"""
+    context = {
+        "cwd": cwd,
+        "user": getpass.getuser(),
+        "timestamp": run_safe_command("date"),
+    }
+
+    # 尝试获取Git信息（如果在仓库中）
+    try:
+        git_info = _collect_git_info()
+        if git_info.get("git_branch"):
+            context.update(git_info)
+    except Exception:
+        pass
+
+    # 尝试检测项目类型
+    try:
+        project_context = detect_project_type_enhanced(cwd)
+        if project_context.get("project_type") != "unknown":
+            context["project_type"] = project_context.get("project_type")
+            context["framework"] = project_context.get("framework")
+    except Exception:
+        pass
+
+    return context

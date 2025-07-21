@@ -352,6 +352,93 @@ def ask_ai(question: str, config: Dict[str, Any]) -> Optional[str]:
     return _make_api_request(messages, config)
 
 
+def ask_ai_with_context(question: str, config: Dict[str, Any]) -> Optional[str]:
+    """带上下文感知的ask功能。"""
+    from .context import collect_ask_context
+
+    # 收集上下文信息
+    context = collect_ask_context(config)
+
+    # 如果在敏感目录，使用普通ask
+    if context.get("error"):
+        return ask_ai(question, config)
+
+    # 构建上下文感知的系统提示词
+    system_prompt = _generate_contextual_system_prompt_for_ask(context)
+
+    # 构建消息
+    messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": question}]
+
+    return _make_api_request(messages, config)
+
+
+def _generate_contextual_system_prompt_for_ask(context: Dict[str, Any]) -> str:
+    """为ask功能生成上下文感知的系统提示词。"""
+    prompt_parts = [
+        "你是AIS (AI Shell)的智能助手。",
+        "基于提供的环境上下文信息，为用户提供准确、相关的回答。",
+        "",
+        "**当前环境信息:**",
+    ]
+
+    # 基础环境信息
+    if context.get("cwd"):
+        prompt_parts.append(f"- 工作目录: {context['cwd']}")
+    if context.get("user"):
+        prompt_parts.append(f"- 用户: {context['user']}")
+
+    # Git信息
+    if context.get("git_branch"):
+        prompt_parts.append(f"- Git分支: {context['git_branch']}")
+    if context.get("git_status"):
+        git_status = context["git_status"][:200] + (
+            "..." if len(context["git_status"]) > 200 else ""
+        )
+        prompt_parts.append(f"- Git状态: {git_status}")
+
+    # 项目类型信息
+    if context.get("project_type") and context["project_type"] != "unknown":
+        prompt_parts.append(f"- 项目类型: {context['project_type']}")
+        if context.get("framework"):
+            prompt_parts.append(f"- 框架: {context['framework']}")
+
+    # 网络上下文（仅在detailed级别）
+    if context.get("network_context"):
+        net_ctx = context["network_context"]
+        if isinstance(net_ctx, dict) and not net_ctx.get("error"):
+            conn_status = "正常" if net_ctx.get("internet_connectivity") else "异常"
+            prompt_parts.append(f"- 网络连接: {conn_status}")
+
+    # 权限上下文（仅在detailed级别）
+    if context.get("permission_context"):
+        perm_ctx = context["permission_context"]
+        if isinstance(perm_ctx, dict) and not perm_ctx.get("error"):
+            if perm_ctx.get("current_user"):
+                prompt_parts.append(f"- 当前用户: {perm_ctx['current_user']}")
+
+    # 文件列表（如果是standard或detailed级别）
+    if context.get("current_files"):
+        files = context["current_files"][:10]  # 只显示前10个文件
+        if files:
+            files_str = ", ".join(files[:5]) + ("..." if len(files) > 5 else "")
+            prompt_parts.append(f"- 当前目录文件: {files_str}")
+
+    prompt_parts.extend(
+        [
+            "",
+            "**回答原则:**",
+            "1. 结合上下文环境给出针对性建议",
+            "2. 如果是Git相关问题，参考当前分支和状态",
+            "3. 如果是项目相关问题，考虑项目类型和技术栈",
+            "4. 提供具体、可操作的命令和步骤",
+            "5. 如果上下文不足，明确指出需要更多信息",
+            "",
+        ]
+    )
+
+    return "\n".join(prompt_parts)
+
+
 def analyze_error(
     command: str,
     exit_code: int,
