@@ -1748,8 +1748,10 @@ def _test_windows_integration():
         import os
 
         # 模拟 Windows 特定的错误
-        windows_stderr = ("Get-NonExistentCommand : The term 'Get-NonExistentCommand' is not "
-                          "recognized as the name of a cmdlet")
+        windows_stderr = (
+            "Get-NonExistentCommand : The term 'Get-NonExistentCommand' is not "
+            "recognized as the name of a cmdlet"
+        )
 
         # 模拟上下文收集
         context = collect_context("Get-NonExistentCommand", 1, windows_stderr)
