@@ -1121,7 +1121,6 @@ def _setup_unix_shell_integration():
         _create_integration_script(script_path)
 
     console.print(f"检测到的 Shell: {shell_name}")
-    console.print(f"集成脚本路径: {script_path}")
 
     if not os.path.exists(script_path):
         console.print("[red]❌ 集成脚本不存在[/red]")
@@ -1168,31 +1167,21 @@ fi
                 f.write(integration_config)
 
             console.print(
-                f"\n[green]✅ 集成配置已自动添加到: {config_file}[/green]"
+                f"\n[green]✅ 集成配置已添加到: {os.path.basename(config_file)}[/green]"
             )
-            console.print()
-
-            # 策略1: 最简洁直接的配置提示
             console.print(
-                "[bold green]⚡ 最后一步：让配置立即生效[/bold green]"
+                f"[bold cyan]source {config_file}[/bold cyan] "
+                f"[dim]# 让配置立即生效[/dim]"
             )
-            console.print()
-            console.print("请执行以下命令：")
-            console.print(f"[bold cyan]source {config_file}[/bold cyan]")
-            console.print()
             console.print(
-                "[green]✨ 执行后，命令失败时将自动显示AI错误分析！[/green]"
-            )
-            console.print()
-            console.print(
-                "[dim]💡 提示：也可以重新打开终端让配置自动生效[/dim]"
+                "[green]✨ 完成后，命令失败时将自动显示AI分析[/green]"
             )
         else:
             console.print(
-                f"\n[yellow]ℹ️ 集成配置已存在于: {config_file}[/yellow]"
-            )
+                f"\n[yellow]ℹ️ 集成配置已存在: {
+                    os.path.basename(config_file)}[/yellow]")
             console.print(
-                "[green]✨ AIS功能已可用，命令失败时将自动显示AI分析！[/green]"
+                "[green]✨ AIS功能已可用，命令失败时将自动显示AI分析[/green]"
             )
     else:
         console.print("[red]❌ 无法创建配置文件[/red]")
