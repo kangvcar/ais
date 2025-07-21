@@ -1,23 +1,35 @@
-# AIS - 上下文感知的错误分析学习助手 Docker镜像
-# 多阶段构建，优化镜像大小
+# AIS - 基于Ubuntu的丰富工具版本
+# 适合学习和开发场景，包含大量常用命令行工具
 
 # 构建参数
-ARG VERSION=0.1.0
+ARG VERSION=2.4.0
 ARG BUILD_DATE
 ARG VCS_REF
+ARG PYTHON_VERSION=3.11
 
-FROM python:3.11-slim as builder
+FROM ubuntu:22.04 as builder
+
+# 设置环境变量避免交互式安装
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Shanghai
 
 # 设置工作目录
 WORKDIR /build
 
-# 安装构建依赖
+# 安装Python和构建依赖
 RUN apt-get update && apt-get install -y \
+    python${PYTHON_VERSION} \
+    python${PYTHON_VERSION}-dev \
+    python${PYTHON_VERSION}-venv \
+    python3-pip \
     git \
     curl \
+    build-essential \
+    && ln -sf /usr/bin/python${PYTHON_VERSION} /usr/bin/python \
+    && ln -sf /usr/bin/python${PYTHON_VERSION} /usr/bin/python3 \
     && rm -rf /var/lib/apt/lists/*
 
-# 复制项目文件（按照构建需要的优先级复制）
+# 复制项目文件
 COPY pyproject.toml ./
 COPY src/ src/
 COPY README.md CHANGELOG.md ./
@@ -27,18 +39,82 @@ RUN pip install --no-cache-dir build && \
     python -m build
 
 # 运行时镜像
-FROM python:3.11-slim
+FROM ubuntu:22.04
 
 # 设置环境变量
-ENV PYTHONUNBUFFERED=1 \
+ENV DEBIAN_FRONTEND=noninteractive \
+    TZ=Asia/Shanghai \
+    PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     AIS_CONTAINER=1 \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
     PATH="/usr/local/bin:$PATH"
 
-# 安装运行时依赖
+# 安装Python运行环境和丰富的开发工具
 RUN apt-get update && apt-get install -y \
+    # Python环境
+    python3.11 \
+    python3.11-dev \
+    python3-pip \
+    # 基础工具
     curl \
-    bash \
+    wget \
+    git \
+    vim \
+    nano \
+    tree \
+    htop \
+    less \
+    grep \
+    sed \
+    awk \
+    # 网络工具
+    ping \
+    telnet \
+    netcat \
+    traceroute \
+    nmap \
+    # 系统工具
+    ps \
+    top \
+    lsof \
+    strace \
+    tcpdump \
+    # 文本处理
+    jq \
+    yq \
+    xmlstarlet \
+    # 压缩工具
+    zip \
+    unzip \
+    tar \
+    gzip \
+    # 开发工具
+    make \
+    gcc \
+    g++ \
+    # 版本控制
+    git \
+    # 文件工具
+    find \
+    xargs \
+    rsync \
+    # Docker工具（如果需要Docker-in-Docker）
+    # docker.io \
+    # docker-compose \
+    # Node.js生态系统（常用于前端项目）
+    nodejs \
+    npm \
+    # 数据库客户端
+    sqlite3 \
+    mysql-client \
+    postgresql-client \
+    # 云工具（可选，根据需要启用）
+    # awscli \
+    # kubectl \
+    && ln -sf /usr/bin/python3.11 /usr/bin/python \
+    && ln -sf /usr/bin/python3.11 /usr/bin/python3 \
     && rm -rf /var/lib/apt/lists/*
 
 # 从构建阶段复制构建好的包
@@ -51,7 +127,12 @@ RUN pip install --no-cache-dir /tmp/*.whl && \
 # 创建非root用户
 RUN useradd -m -s /bin/bash ais && \
     mkdir -p /home/ais/.config/ais && \
-    chown -R ais:ais /home/ais
+    # 给用户sudo权限（可选，用于某些学习场景）
+    apt-get update && apt-get install -y sudo && \
+    usermod -aG sudo ais && \
+    echo "ais ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    chown -R ais:ais /home/ais && \
+    rm -rf /var/lib/apt/lists/*
 
 # 切换到非root用户
 USER ais
@@ -60,23 +141,24 @@ WORKDIR /home/ais
 # 设置默认配置
 RUN ais config init || true
 
+# 创建工作目录
+RUN mkdir -p /home/ais/workspace
+
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD ais --version || exit 1
 
 # 默认命令
-CMD ["ais", "--help"]
+CMD ["bash"]
 
-# 标签信息（符合OCI标准）
+# 标签信息
 LABEL maintainer="AIS Team <ais@example.com>" \
-      org.opencontainers.image.title="AIS - 上下文感知的错误分析学习助手" \
-      org.opencontainers.image.description="上下文感知的错误分析学习助手，让每次报错都是成长" \
+      org.opencontainers.image.title="AIS Ubuntu - 丰富工具版" \
+      org.opencontainers.image.description="基于Ubuntu的AIS学习助手，包含丰富的开发和系统工具" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.revision="${VCS_REF}" \
       org.opencontainers.image.source="https://github.com/kangvcar/ais" \
-      org.opencontainers.image.url="https://github.com/kangvcar/ais" \
-      org.opencontainers.image.documentation="https://github.com/kangvcar/ais/blob/main/README.md" \
-      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.base.name="ubuntu:22.04" \
       org.opencontainers.image.vendor="AIS Team" \
-      org.opencontainers.image.authors="kangvcar <kangvcar@gmail.com>"
+      ais.variant="ubuntu-full"

@@ -9,8 +9,34 @@
 
 ## [2.5.0] - 2025-07-21
 
+### Added
+- 🐳 **Docker完整支持**：提供基于Ubuntu 22.04的丰富工具Docker镜像
+  - 升级Dockerfile基础镜像从python:3.11-slim到ubuntu:22.04，包含完整开发工具链
+  - 集成Python 3.11、Node.js、Git、系统监控工具、网络诊断工具等60+常用命令
+  - 支持数据库客户端（SQLite、MySQL、PostgreSQL）和文本处理工具（jq、yq、vim等）
+  - 优化容器安全性：非root用户运行、适当的权限控制
+  - 提供Docker Compose配置支持多环境部署
+- 📚 **Docker使用文档**：在文档站点添加完整的Docker使用指南
+  - 新增`/docs/getting-started/docker-usage.md`详细使用文档
+  - 涵盖构建、部署、配置管理、故障排除等完整流程
+  - 提供5个实际使用场景：Linux学习、代码分析、网络诊断、数据处理、Git实践
+  - 包含高级配置、生产环境部署和最佳实践建议
+
+### Enhanced
+- 🔧 **Dockerfile优化**：提升容器化使用体验
+  - 更新版本号从0.1.0到2.4.0与项目版本保持一致
+  - 添加时区设置（Asia/Shanghai）和中文环境支持
+  - 优化多阶段构建减少最终镜像大小
+  - 完善健康检查和容器生命周期管理
+
 ### Changed
 - 发布版本 2.5.0
+
+### Documentation
+- 📖 **文档站点更新**：优化Docker相关文档的导航和组织
+  - 在VitePress配置中添加Docker使用页面链接
+  - 将Docker使用指南整合到快速开始部分，便于用户发现和使用
+  - 提供从基础到高级的完整Docker使用路径
 
 ## [2.4.0] - 2025-07-21
 

@@ -42,6 +42,7 @@ export default defineConfig({
         items: [
           { text: '安装指南', link: '/getting-started/installation' },
           { text: '快速开始', link: '/getting-started/quick-start' },
+          { text: 'Docker 使用', link: '/getting-started/docker-usage' },
           { text: '基本使用', link: '/getting-started/basic-usage' }
         ]
       },
