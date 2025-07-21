@@ -7,6 +7,34 @@
 
 ## [Unreleased]
 
+## [1.5.0] - 2025-07-21
+
+### Added
+- 🚀 **自动错误输出捕获功能**：实现AIS程序的核心功能之一 - 自动捕获命令错误输出并发送给AI分析
+  - 使用exec重定向+临时文件方案实现stderr捕获，既保持用户可见性又实现内容捕获
+  - 添加`_ais_init_stderr_capture()`函数初始化stderr重定向机制
+  - 添加`_ais_get_captured_stderr()`函数获取和清理捕获的错误输出
+  - 添加`_ais_cleanup_stderr_capture()`函数确保资源正确清理和恢复
+  - 添加`_ais_filter_stderr()`函数过滤无关内容、限制长度并转义特殊字符
+  - 修改`_ais_precmd()`函数将捕获的stderr作为`--stderr`参数传递给`ais analyze`
+  - 支持bash和zsh环境，设置适当的trap和hook确保资源清理
+  - 实现智能内容过滤：过滤AIS内部函数输出、限制1500字符长度、安全字符转义
+  - 解决了之前只能获取命令和退出码但无法获取具体错误信息的关键问题
+
+### Enhanced  
+- 🔧 **完善Shell集成脚本生成**：同步更新CLI中的脚本生成功能
+  - 更新`_create_integration_script()`函数生成包含stderr捕获功能的集成脚本
+  - 确保通过`ais setup`命令重新安装的用户也能获得新的错误捕获功能
+  - 保持向后兼容性，新旧版本脚本都能正常工作
+
+### Technical Improvements
+- 📋 **优化错误输出处理流程**：提升错误分析的准确性和实用性
+  - 使用`exec 3>&2`保存原始stderr，`exec 2> >(tee -a "$file" >&3)`实现分流
+  - 添加0.1秒延迟确保tee完成写入，避免内容丢失
+  - 实现tail -n 100限制行数、head -c 2000限制字符数的双重保护
+  - 添加grep过滤机制移除空行、AIS内部输出和tee错误信息
+  - 使用sed和tr进行字符转义，确保参数传递安全性
+
 ## [1.4.0] - 2025-07-21
 
 ### Enhanced
