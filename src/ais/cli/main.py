@@ -1181,7 +1181,7 @@ fi
             )
         else:
             console.print(
-                f"\n[yellow]i 集成配置已存在: {
+                f"\n[yellow]ℹ️ 集成配置已存在: {
                     os.path.basename(config_file)}[/yellow]"
             )
             console.print(
