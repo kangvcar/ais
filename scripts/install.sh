@@ -1123,7 +1123,7 @@ main() {
     if [ "$FORCE_REINSTALL" -eq 0 ] && perform_health_check "$strategy"; then
         echo -e "${GREEN}✓${NC} 系统健康检查通过！所有组件已正确安装"
         echo
-        echo -e "配置Shell集成：${CYAN}ais setup && source ~/.bashrc${NC}"
+        echo -e "配置Shell集成：${CYAN}source ~/.bashrc && ais setup && source ~/.bashrc${NC}"
         echo -e "配置AI提供商：${CYAN}ais provider-add --help-detail${NC}"
         echo
         return 0
@@ -1164,7 +1164,7 @@ main() {
         echo
         echo -e "${GREEN}✓${NC} AIS 安装成功完成！"
         echo
-        echo -e "配置Shell集成：${CYAN}ais setup && source ~/.bashrc${NC}"
+        echo -e "配置Shell集成：${CYAN}source ~/.bashrc && ais setup && source ~/.bashrc${NC}"
         echo -e "配置AI提供商：${CYAN}ais provider-add --help-detail${NC}"
         echo
     else
