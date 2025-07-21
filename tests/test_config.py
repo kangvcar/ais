@@ -59,9 +59,7 @@ class TestConfigOperations:
             with patch("builtins.open", mock_open()) as mock_file:
                 save_config(test_config)
 
-                mock_file.assert_called_once_with(
-                    Path("/tmp/test_config.toml"), "w"
-                )
+                mock_file.assert_called_once_with(Path("/tmp/test_config.toml"), "w")
 
     def test_get_config_existing_file(self):
         """Test getting configuration from existing file."""
@@ -100,9 +98,7 @@ class TestConfigOperations:
             mock_path.return_value = Path("/tmp/error_config.toml")
 
             with patch("pathlib.Path.exists", return_value=True):
-                with patch(
-                    "builtins.open", side_effect=Exception("Read error")
-                ):
+                with patch("builtins.open", side_effect=Exception("Read error")):
                     with patch("ais.core.config.save_config") as mock_save:
                         config = get_config()
 
@@ -204,9 +200,7 @@ class TestProviderOperations:
         config = {"providers": {}}
 
         with patch("ais.core.config.get_config", return_value=config):
-            with pytest.raises(
-                ValueError, match="提供商 'nonexistent' 不存在"
-            ):
+            with pytest.raises(ValueError, match="提供商 'nonexistent' 不存在"):
                 remove_provider("nonexistent")
 
     def test_remove_provider_default(self):
@@ -217,9 +211,7 @@ class TestProviderOperations:
         }
 
         with patch("ais.core.config.get_config", return_value=config):
-            with pytest.raises(
-                ValueError, match="不能删除当前使用的默认提供商"
-            ):
+            with pytest.raises(ValueError, match="不能删除当前使用的默认提供商"):
                 remove_provider("default_provider")
 
     def test_use_provider_success(self):
@@ -238,7 +230,5 @@ class TestProviderOperations:
         config = {"providers": {}}
 
         with patch("ais.core.config.get_config", return_value=config):
-            with pytest.raises(
-                ValueError, match="提供商 'nonexistent' 不存在"
-            ):
+            with pytest.raises(ValueError, match="提供商 'nonexistent' 不存在"):
                 use_provider("nonexistent")

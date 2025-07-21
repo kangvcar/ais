@@ -50,7 +50,7 @@ ais --version
 pip install black flake8 autopep8 mypy
 
 # 运行代码质量检查
-source .venv/bin/activate && black src/ tests/ && autopep8 --in-place --aggressive --aggressive --max-line-length=79 src/ tests/ -r && flake8 src/ tests/ --max-line-length=79
+source .venv/bin/activate && black src/ tests/ && autopep8 --in-place --aggressive --aggressive --max-line-length=100 src/ tests/ -r && flake8 src/ tests/ --max-line-length=100
 
 # 运行测试
 python -m pytest tests/ -v
@@ -70,12 +70,12 @@ python -m pytest tests/ -v
 ### 代码格式化
 ```bash
 # 自动格式化代码（建议使用项目配置的命令）
-source .venv/bin/activate && black src/ tests/ && autopep8 --in-place --aggressive --aggressive --max-line-length=79 src/ tests/ -r && flake8 src/ tests/ --max-line-length=79
+source .venv/bin/activate && black src/ tests/ && autopep8 --in-place --aggressive --aggressive --max-line-length=100 src/ tests/ -r && flake8 src/ tests/ --max-line-length=100
 
 # 单独运行各个工具
 black src/ tests/
-autopep8 --in-place --aggressive --aggressive --max-line-length=79 src/ tests/ -r
-flake8 src/ tests/ --max-line-length=79
+autopep8 --in-place --aggressive --aggressive --max-line-length=100 src/ tests/ -r
+flake8 src/ tests/ --max-line-length=100
 ```
 
 ### 导入规范

@@ -103,9 +103,7 @@ class TestDatabaseOperations:
                     "ais.core.database.Session",
                     return_value=Session(mock_engine),
                 ):
-                    log_id = save_command_log(
-                        username="testuser", command="ls -la", exit_code=0
-                    )
+                    log_id = save_command_log(username="testuser", command="ls -la", exit_code=0)
 
                     assert isinstance(log_id, int)
 
@@ -148,9 +146,7 @@ class TestDatabaseOperations:
 
         with patch("ais.core.database.init_database"):
             with patch("ais.core.database.get_engine"):
-                with patch(
-                    "ais.core.database.Session", return_value=mock_session
-                ):
+                with patch("ais.core.database.Session", return_value=mock_session):
                     statement = Mock()
                     result = _execute_query(statement)
 
@@ -177,9 +173,7 @@ class TestDatabaseOperations:
 
         with patch("ais.core.database.init_database"):
             with patch("ais.core.database.get_engine"):
-                with patch(
-                    "ais.core.database.Session", return_value=mock_session
-                ):
+                with patch("ais.core.database.Session", return_value=mock_session):
                     result = get_log_by_id(123)
 
                     assert result == mock_log
@@ -192,9 +186,7 @@ class TestDatabaseOperations:
 
         with patch("ais.core.database.init_database"):
             with patch("ais.core.database.get_engine"):
-                with patch(
-                    "ais.core.database.Session", return_value=mock_session
-                ):
+                with patch("ais.core.database.Session", return_value=mock_session):
                     result = get_log_by_id(999)
 
                     assert result is None

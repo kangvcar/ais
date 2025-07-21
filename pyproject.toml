@@ -101,8 +101,12 @@ exclude = [
 
 
 [tool.black]
-line-length = 79
+line-length = 100
 target-version = ['py38']
+
+[tool.flake8]
+max-line-length = 100
+extend-ignore = ["E203", "W503"]
 
 [tool.mypy]
 python_version = "3.8"

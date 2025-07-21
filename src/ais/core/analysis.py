@@ -116,9 +116,7 @@ class ErrorAnalyzer:
 
         return "其他错误"
 
-    def _analyze_improvement_trend(
-        self, error_logs: List[CommandLog]
-    ) -> List[Dict[str, Any]]:
+    def _analyze_improvement_trend(self, error_logs: List[CommandLog]) -> List[Dict[str, Any]]:
         """分析改进趋势。"""
         if len(error_logs) < 7:  # 数据不足
             return []
@@ -133,11 +131,7 @@ class ErrorAnalyzer:
         trend_data = []
         for week, logs in sorted(weekly_errors.items()):
             command_types = [
-                (
-                    log.original_command.split()[0]
-                    if log.original_command.split()
-                    else ""
-                )
+                (log.original_command.split()[0] if log.original_command.split() else "")
                 for log in logs
             ]
             repeated_commands = len(command_types) - len(set(command_types))
@@ -186,9 +180,7 @@ class ErrorAnalyzer:
                 main_cmd = cmd_parts[0]
 
                 for skill_area, commands in skill_areas.items():
-                    if main_cmd in commands or any(
-                        cmd in main_cmd for cmd in commands
-                    ):
+                    if main_cmd in commands or any(cmd in main_cmd for cmd in commands):
                         skill_errors[skill_area] += 1
                         total_commands[skill_area] += 1
 
@@ -209,11 +201,7 @@ class ErrorAnalyzer:
         total_errors = len(error_logs)
         unique_commands = len(
             set(
-                (
-                    log.original_command.split()[0]
-                    if log.original_command.split()
-                    else ""
-                )
+                (log.original_command.split()[0] if log.original_command.split() else "")
                 for log in error_logs
             )
         )
@@ -266,9 +254,7 @@ class ErrorAnalyzer:
                     "title": f"减少{error_type}",
                     "description": f"你遇到了 {count} 次{error_type}，建议学习相关的预防技巧。",
                     "priority": "高" if count >= 5 else "中",
-                    "learning_path": self._get_error_prevention_tips(
-                        error_type
-                    ),
+                    "learning_path": self._get_error_prevention_tips(error_type),
                 }
             )
 
@@ -300,9 +286,7 @@ class ErrorAnalyzer:
 
         # 按优先级排序
         priority_order = {"高": 0, "中": 1, "低": 2}
-        recommendations.sort(
-            key=lambda x: priority_order.get(x["priority"], 2)
-        )
+        recommendations.sort(key=lambda x: priority_order.get(x["priority"], 2))
 
         return recommendations[:8]  # 返回最多8个建议
 

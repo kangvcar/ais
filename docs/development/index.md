@@ -65,10 +65,10 @@ ais/
 ```bash
 # 代码格式化
 black src/ tests/
-autopep8 --in-place --aggressive --aggressive --max-line-length=79 src/ tests/ -r
+autopep8 --in-place --aggressive --aggressive --max-line-length=100 src/ tests/ -r
 
 # 代码检查
-flake8 src/ tests/ --max-line-length=79
+flake8 src/ tests/ --max-line-length=100
 
 # 运行测试
 pytest tests/ -v --cov=src/ais

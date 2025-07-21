@@ -28,9 +28,7 @@ class TestErrorAnalyzer:
 
         log = Mock(spec=CommandLog)
         log.original_command = "ls /nonexistent"
-        log.stderr_output = (
-            "ls: cannot access '/nonexistent': No such file or directory"
-        )
+        log.stderr_output = "ls: cannot access '/nonexistent': No such file or directory"
 
         result = analyzer._classify_error(log)
         assert result == "文件/目录不存在"
@@ -67,9 +65,7 @@ class TestErrorAnalyzer:
             log = Mock(spec=CommandLog)
             log.original_command = "ls /nonexistent"
             log.exit_code = 2
-            log.stderr_output = (
-                "ls: cannot access '/nonexistent': No such file or directory"
-            )
+            log.stderr_output = "ls: cannot access '/nonexistent': No such file or directory"
             log.timestamp = datetime.now() - timedelta(days=i)
             mock_logs.append(log)
 
@@ -195,9 +191,7 @@ class TestLearningReportGenerator:
         assert "继续保持良好的命令行使用习惯" in next_steps
 
         # 测试有建议时的下一步
-        recommendations = [
-            {"type": "命令掌握", "title": "深入学习 ls 命令", "priority": "高"}
-        ]
+        recommendations = [{"type": "命令掌握", "title": "深入学习 ls 命令", "priority": "高"}]
 
         next_steps = generator._generate_next_steps(recommendations)
 

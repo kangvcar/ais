@@ -58,9 +58,7 @@ class TestContextSummary:
 
     def test_build_context_summary_system_status(self):
         """Test building context summary with system status."""
-        context = {
-            "system_status": {"cpu_percent": 85.5, "memory": {"percent": 67.2}}
-        }
+        context = {"system_status": {"cpu_percent": 85.5, "memory": {"percent": 67.2}}}
 
         summary = _build_context_summary(context)
 
@@ -69,9 +67,7 @@ class TestContextSummary:
 
     def test_build_context_summary_work_pattern(self):
         """Test building context summary with work pattern."""
-        context = {
-            "work_pattern": {"activities": ["git", "docker", "python", "npm"]}
-        }
+        context = {"work_pattern": {"activities": ["git", "docker", "python", "npm"]}}
 
         summary = _build_context_summary(context)
 
@@ -111,9 +107,7 @@ class TestApiRequest:
         }
 
         mock_response = Mock()
-        mock_response.json.return_value = {
-            "choices": [{"message": {"content": "Test response"}}]
-        }
+        mock_response.json.return_value = {"choices": [{"message": {"content": "Test response"}}]}
 
         with patch("httpx.Client") as mock_client:
             mock_post = mock_client.return_value.__enter__.return_value.post
@@ -137,14 +131,10 @@ class TestApiRequest:
         }
 
         mock_response = Mock()
-        mock_response.json.return_value = {
-            "choices": [{"message": {"content": "Test response"}}]
-        }
+        mock_response.json.return_value = {"choices": [{"message": {"content": "Test response"}}]}
 
         with patch("httpx.Client") as mock_client:
-            mock_client_instance = (
-                mock_client.return_value.__enter__.return_value
-            )
+            mock_client_instance = mock_client.return_value.__enter__.return_value
             mock_client_instance.post.return_value = mock_response
 
             messages = [{"role": "user", "content": "Test message"}]
@@ -162,9 +152,7 @@ class TestApiRequest:
 
         messages = [{"role": "user", "content": "Test message"}]
 
-        with pytest.raises(
-            ValueError, match="Provider 'nonexistent' not found"
-        ):
+        with pytest.raises(ValueError, match="Provider 'nonexistent' not found"):
             _make_api_request(messages, config)
 
     def test_make_api_request_incomplete_config(self):
@@ -181,9 +169,7 @@ class TestApiRequest:
 
         messages = [{"role": "user", "content": "Test message"}]
 
-        with pytest.raises(
-            ValueError, match="Incomplete provider configuration"
-        ):
+        with pytest.raises(ValueError, match="Incomplete provider configuration"):
             _make_api_request(messages, config)
 
     def test_make_api_request_connection_error(self):
@@ -204,9 +190,7 @@ class TestApiRequest:
 
             messages = [{"role": "user", "content": "Test message"}]
 
-            with pytest.raises(
-                ConnectionError, match="Failed to connect to AI service"
-            ):
+            with pytest.raises(ConnectionError, match="Failed to connect to AI service"):
                 _make_api_request(messages, config)
 
     def test_make_api_request_http_error(self):
@@ -226,18 +210,14 @@ class TestApiRequest:
         mock_response.text = "Bad Request"
 
         with patch("httpx.Client") as mock_client:
-            mock_client_instance = (
-                mock_client.return_value.__enter__.return_value
-            )
+            mock_client_instance = mock_client.return_value.__enter__.return_value
             mock_client_instance.post.side_effect = httpx.HTTPStatusError(
                 "Bad Request", request=Mock(), response=mock_response
             )
 
             messages = [{"role": "user", "content": "Test message"}]
 
-            with pytest.raises(
-                ConnectionError, match="AI service returned error 400"
-            ):
+            with pytest.raises(ConnectionError, match="AI service returned error 400"):
                 _make_api_request(messages, config)
 
     def test_make_api_request_empty_response(self):
@@ -296,9 +276,7 @@ class TestAnalyzeError:
 
         expected_response = {
             "explanation": "Test explanation",
-            "suggestions": [
-                {"command": "mkdir /nonexistent", "risk_level": "safe"}
-            ],
+            "suggestions": [{"command": "mkdir /nonexistent", "risk_level": "safe"}],
             "follow_up_questions": ["Want to learn more?"],
         }
 
@@ -405,9 +383,7 @@ Some text after"""
 
             result = analyze_error(command, exit_code, stderr, context, config)
 
-            assert (
-                "Error communicating with AI service" in result["explanation"]
-            )
+            assert "Error communicating with AI service" in result["explanation"]
             assert result["suggestions"] == []
             assert result["follow_up_questions"] == []
 

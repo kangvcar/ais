@@ -389,7 +389,7 @@ python -m pytest --cov=ais tests/
 
 # 代码质量检查
 source .venv/bin/activate && black src/ tests/
-source .venv/bin/activate && flake8 src/ tests/ --max-line-length=79
+source .venv/bin/activate && flake8 src/ tests/ --max-line-length=100
 ```
 
 ---
@@ -419,12 +419,12 @@ source .venv/bin/activate && flake8 src/ tests/ --max-line-length=79
 
 ```bash
 # 自动代码格式化
-source .venv/bin/activate && autopep8 --in-place --aggressive --aggressive --max-line-length=79 src/ tests/ -r
+source .venv/bin/activate && autopep8 --in-place --aggressive --aggressive --max-line-length=100 src/ tests/ -r
 
 # 运行所有质量检查
 python -m pytest tests/ -v
 source .venv/bin/activate && black src/ tests/
-source .venv/bin/activate && flake8 src/ tests/ --max-line-length=79
+source .venv/bin/activate && flake8 src/ tests/ --max-line-length=100
 ```
 
 ---

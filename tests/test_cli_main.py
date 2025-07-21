@@ -54,9 +54,7 @@ class TestErrorHandling:
         with patch("ais.cli.main.console") as mock_console:
             _handle_error("Test error message")
 
-            mock_console.print.assert_called_once_with(
-                "[red]错误: Test error message[/red]"
-            )
+            mock_console.print.assert_called_once_with("[red]错误: Test error message[/red]")
 
     def test_toggle_auto_analysis_on(self):
         """Test turning auto analysis on."""
@@ -80,9 +78,7 @@ class TestErrorHandling:
 
     def test_toggle_auto_analysis_error(self):
         """Test auto analysis toggle with error."""
-        with patch(
-            "ais.cli.main.set_config", side_effect=Exception("Config error")
-        ):
+        with patch("ais.cli.main.set_config", side_effect=Exception("Config error")):
             with patch("ais.cli.main._handle_error") as mock_handle:
                 _toggle_auto_analysis(True)
 
@@ -102,14 +98,9 @@ class TestErrorHandling:
                 "arg2",
             )
 
-            mock_operation.assert_called_once_with(
-                "test_provider", "arg1", "arg2"
-            )
+            mock_operation.assert_called_once_with("test_provider", "arg1", "arg2")
             mock_console.print.assert_called_once()
-            assert (
-                "Success message: test_provider"
-                in mock_console.print.call_args[0][0]
-            )
+            assert "Success message: test_provider" in mock_console.print.call_args[0][0]
 
     def test_handle_provider_operation_error(self):
         """Test provider operation with error."""
@@ -142,9 +133,7 @@ class TestAskCommand:
                 result = runner.invoke(ask, ["What is Docker?"])
 
                 assert result.exit_code == 0
-                mock_ask.assert_called_once_with(
-                    "What is Docker?", {"test": "config"}
-                )
+                mock_ask.assert_called_once_with("What is Docker?", {"test": "config"})
 
     def test_ask_command_no_question(self):
         """Test ask command without question."""
@@ -180,9 +169,7 @@ class TestAskCommand:
         """Test ask command with exception."""
         runner = CliRunner()
 
-        with patch(
-            "ais.cli.main.get_config", side_effect=Exception("Config error")
-        ):
+        with patch("ais.cli.main.get_config", side_effect=Exception("Config error")):
             result = runner.invoke(ask, ["Test question"])
 
             assert result.exit_code == 0
@@ -232,9 +219,7 @@ class TestConfigCommand:
             with patch("ais.cli.main.set_config") as mock_set:
                 mock_get.return_value = {}
 
-                result = runner.invoke(
-                    config, ["--set", "context_level=detailed"]
-                )
+                result = runner.invoke(config, ["--set", "context_level=detailed"])
 
                 assert result.exit_code == 0
                 mock_set.assert_called_once_with("context_level", "detailed")
@@ -249,10 +234,7 @@ class TestConfigCommand:
             result = runner.invoke(config, ["--set", "context_level=invalid"])
 
             assert result.exit_code == 0
-            assert (
-                "context_level 必须是 minimal, standard 或 detailed"
-                in result.output
-            )
+            assert "context_level 必须是 minimal, standard 或 detailed" in result.output
 
     def test_config_command_set_invalid_format(self):
         """Test config command set invalid format."""
@@ -454,9 +436,7 @@ class TestAnalyzeCommand:
             with patch("ais.cli.main.get_config") as mock_config:
                 with patch("ais.cli.main.analyze_error") as mock_analyze:
                     with patch("ais.cli.main.save_command_log"):
-                        with patch(
-                            "ais.cli.main.get_similar_commands"
-                        ) as mock_similar:
+                        with patch("ais.cli.main.get_similar_commands") as mock_similar:
                             mock_context.return_value = {"cwd": "/test"}
                             mock_config.return_value = {"test": "config"}
                             mock_analyze.return_value = {
@@ -616,6 +596,4 @@ class TestUtilityCommands:
         result = runner.invoke(help_all, [])
 
         assert result.exit_code == 0
-        assert (
-            "AIS - 上下文感知的错误分析学习助手 详细帮助汇总" in result.output
-        )
+        assert "AIS - 上下文感知的错误分析学习助手 详细帮助汇总" in result.output

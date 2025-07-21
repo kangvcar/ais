@@ -13,9 +13,7 @@ class AISPanels:
     def __init__(self, console: Console):
         self.console = console
 
-    def ai_analysis(
-        self, content: Union[str, Markdown], title: str = "🤖 AI 错误分析"
-    ) -> None:
+    def ai_analysis(self, content: Union[str, Markdown], title: str = "🤖 AI 错误分析") -> None:
         """显示AI分析结果面板。"""
         panel = Panel(
             content,
@@ -27,9 +25,7 @@ class AISPanels:
         )
         self.console.print(panel)
 
-    def suggestions(
-        self, table: Table, title: str = "💡 AI 建议的解决方案"
-    ) -> None:
+    def suggestions(self, table: Table, title: str = "💡 AI 建议的解决方案") -> None:
         """显示建议命令面板。"""
         panel = Panel(
             table,
@@ -89,9 +85,7 @@ class AISPanels:
         )
         self.console.print(panel)
 
-    def config(
-        self, content: Union[str, Table], title: str = "⚙️ 配置信息"
-    ) -> None:
+    def config(self, content: Union[str, Table], title: str = "⚙️ 配置信息") -> None:
         """显示配置信息面板。"""
         panel = Panel(
             content,
@@ -106,9 +100,7 @@ class AISPanels:
     def command_result(self, command: str, success: bool = True) -> None:
         """显示命令执行结果面板。"""
         if success:
-            content = (
-                f"[green]🚀 命令执行成功:[/green]\n[bold]{command}[/bold]"
-            )
+            content = f"[green]🚀 命令执行成功:[/green]\n[bold]{command}[/bold]"
             border_style = "green"
             title = "✓  命令执行成功"
         else:
@@ -126,9 +118,7 @@ class AISPanels:
         )
         self.console.print(panel)
 
-    def learning_content(
-        self, content: Union[str, Markdown], topic: str
-    ) -> None:
+    def learning_content(self, content: Union[str, Markdown], topic: str) -> None:
         """显示学习内容面板。"""
         panel = Panel(
             content,

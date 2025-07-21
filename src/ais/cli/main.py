@@ -386,9 +386,7 @@ def ask(question, help_detail):
 @main.command()
 @click.option("--set", "set_key", help="设置配置项 (key=value)")
 @click.option("--get", "get_key", help="获取配置项值")
-@click.option(
-    "--list-providers", is_flag=True, help="列出所有可用的 AI 服务商"
-)
+@click.option("--list-providers", is_flag=True, help="列出所有可用的 AI 服务商")
 @click.option("--help-context", is_flag=True, help="显示上下文级别配置帮助")
 def config(set_key, get_key, list_providers, help_context):
     """显示或修改配置。"""
@@ -406,20 +404,15 @@ def config(set_key, get_key, list_providers, help_context):
             if key == "context_level":
                 if value not in ["minimal", "standard", "detailed"]:
                     console.print(
-                        "[red]错误: context_level 必须是 minimal, "
-                        "standard 或 detailed[/red]"
+                        "[red]错误: context_level 必须是 minimal, " "standard 或 detailed[/red]"
                     )
-                    console.print(
-                        "[dim]使用 'ais config --help-context' 查看详细说明[/dim]"
-                    )
+                    console.print("[dim]使用 'ais config --help-context' 查看详细说明[/dim]")
                     return
             elif key == "auto_analysis":
                 if value.lower() in ["true", "false"]:
                     value = value.lower() == "true"
                 else:
-                    console.print(
-                        "[red]错误: auto_analysis 必须是 true 或 false[/red]"
-                    )
+                    console.print("[red]错误: auto_analysis 必须是 true 或 false[/red]")
                     return
             elif value.lower() in ["true", "false"]:
                 value = value.lower() == "true"
@@ -443,12 +436,8 @@ def config(set_key, get_key, list_providers, help_context):
             providers = config.get("providers", {})
             console.print("[green]可用的 AI 服务商:[/green]")
             for name, provider in providers.items():
-                current = (
-                    "✓" if name == config.get("default_provider") else " "
-                )
-                console.print(
-                    f"{current} {name}: {provider.get('model_name', 'N/A')}"
-                )
+                current = "✓" if name == config.get("default_provider") else " "
+                console.print(f"{current} {name}: {provider.get('model_name', 'N/A')}")
 
         elif help_context:
             # 显示上下文配置帮助
@@ -522,9 +511,7 @@ def off():
     _toggle_auto_analysis(False)
 
 
-def _handle_provider_operation(
-    operation, name, success_msg, error_prefix, *args
-):
+def _handle_provider_operation(operation, name, success_msg, error_prefix, *args):
     """处理提供商操作的通用函数。"""
     try:
         operation(name, *args)
@@ -538,9 +525,7 @@ def _handle_provider_operation(
 @click.option("--url", help="API 基础 URL")
 @click.option("--model", help="模型名称")
 @click.option("--key", help="API 密钥 (可选)")
-@click.option(
-    "--help-detail", is_flag=True, help="显示provider-add命令详细使用说明"
-)
+@click.option("--help-detail", is_flag=True, help="显示provider-add命令详细使用说明")
 def add_provider_cmd(name, url, model, key, help_detail):
     """添加新的 AI 服务商。"""
     if help_detail:
@@ -594,9 +579,7 @@ def add_provider_cmd(name, url, model, key, help_detail):
 
     from ..core.config import add_provider
 
-    _handle_provider_operation(
-        add_provider, name, "已添加提供商", "添加提供商", url, model, key
-    )
+    _handle_provider_operation(add_provider, name, "已添加提供商", "添加提供商", url, model, key)
 
 
 @main.command("provider-remove")
@@ -605,9 +588,7 @@ def remove_provider_cmd(name):
     """删除 AI 服务商。"""
     from ..core.config import remove_provider
 
-    _handle_provider_operation(
-        remove_provider, name, "已删除提供商", "删除提供商"
-    )
+    _handle_provider_operation(remove_provider, name, "已删除提供商", "删除提供商")
 
 
 @main.command("provider-use")
@@ -616,15 +597,11 @@ def use_provider_cmd(name):
     """切换默认 AI 服务商。"""
     from ..core.config import use_provider
 
-    _handle_provider_operation(
-        use_provider, name, "已切换到提供商", "切换提供商"
-    )
+    _handle_provider_operation(use_provider, name, "已切换到提供商", "切换提供商")
 
 
 @main.command("provider-list")
-@click.option(
-    "--help-detail", is_flag=True, help="显示provider-list命令详细使用说明"
-)
+@click.option("--help-detail", is_flag=True, help="显示provider-list命令详细使用说明")
 def list_provider(help_detail):
     """列出所有可用的 AI 服务商。"""
     if help_detail:
@@ -674,9 +651,7 @@ def list_provider(help_detail):
             model = provider.get("model_name", "N/A")
             url = provider.get("base_url", "N/A")
             has_key = "🔑" if provider.get("api_key") else "  "
-            provider_list.append(
-                f"{current} {name}: {model} ({url}) {has_key}"
-            )
+            provider_list.append(f"{current} {name}: {model} ({url}) {has_key}")
 
         content = "\n".join(provider_list)
         panels.config(content, "🔧 可用的 AI 服务商")
@@ -714,14 +689,9 @@ def analyze_error(exit_code, command, stderr):
             for i, log in enumerate(similar_logs, 1):
                 time_str = log.timestamp.strftime("%m-%d %H:%M")
                 status = "已解决" if log.ai_explanation else "未分析"
-                console.print(
-                    f"  {i}. {log.original_command} ({time_str}) - {status}"
-                )
+                console.print(f"  {i}. {log.original_command} ({time_str}) - {status}")
 
-            console.print(
-                "[dim]💡 你可以使用 'ais history <索引>' "
-                "查看之前的分析[/dim]"
-            )
+            console.print("[dim]💡 你可以使用 'ais history <索引>' " "查看之前的分析[/dim]")
 
         # 创建流式分析器
         streaming_analyzer = create_streaming_analyzer(console)
@@ -744,11 +714,7 @@ def analyze_error(exit_code, command, stderr):
         )
 
         # 显示分析结果
-        if (
-            analysis
-            and isinstance(analysis, dict)
-            and analysis.get("explanation")
-        ):
+        if analysis and isinstance(analysis, dict) and analysis.get("explanation"):
             # 使用Panel美化AI分析结果输出
             analysis_panel = Panel(
                 Markdown(analysis["explanation"]),
@@ -800,9 +766,7 @@ def analyze_error(exit_code, command, stderr):
 @click.option("--limit", "-n", default=10, help="显示的历史记录数量")
 @click.option("--failed-only", is_flag=True, help="只显示失败的命令")
 @click.option("--command-filter", help="按命令名称过滤")
-@click.option(
-    "--help-detail", is_flag=True, help="显示history命令详细使用说明"
-)
+@click.option("--help-detail", is_flag=True, help="显示history命令详细使用说明")
 def show_history(index, limit, failed_only, command_filter, help_detail):
     """显示命令历史记录或查看指定索引的详细信息。"""
     if help_detail:
@@ -816,27 +780,19 @@ def show_history(index, limit, failed_only, command_filter, help_detail):
         console.print("  ais history [索引] [选项]")
         console.print()
         console.print("[bold]参数:[/bold]")
-        console.print(
-            "  索引                      查看指定记录的详细信息（可选）"
-        )
+        console.print("  索引                      查看指定记录的详细信息（可选）")
         console.print()
         console.print("[bold]选项:[/bold]")
-        console.print(
-            "  -n, --limit <数量>        限制显示记录数量 (默认: 10)"
-        )
+        console.print("  -n, --limit <数量>        限制显示记录数量 (默认: 10)")
         console.print("  --failed-only            只显示失败的命令")
         console.print("  --command-filter <关键词> 按命令名称过滤")
         console.print()
         console.print("[bold]示例:[/bold]")
         console.print("  ais history                    # 显示最近10条记录")
-        console.print(
-            "  ais history 3                  # 查看第3条记录的详细信息"
-        )
+        console.print("  ais history 3                  # 查看第3条记录的详细信息")
         console.print("  ais history -n 20              # 显示最近20条记录")
         console.print("  ais history --failed-only      # 只显示失败的命令")
-        console.print(
-            "  ais history --command-filter git # 只显示包含git的命令"
-        )
+        console.print("  ais history --command-filter git # 只显示包含git的命令")
         console.print()
         console.print("[bold]历史记录内容:[/bold]")
         console.print("  • 执行时间和用户")
@@ -847,9 +803,7 @@ def show_history(index, limit, failed_only, command_filter, help_detail):
         console.print("[bold]相关命令:[/bold]")
         console.print("  ais analyze               - 手动分析上一个失败命令")
         console.print()
-        console.print(
-            "[dim]💡 提示: 历史记录存储在本地数据库中，保护你的隐私[/dim]"
-        )
+        console.print("[dim]💡 提示: 历史记录存储在本地数据库中，保护你的隐私[/dim]")
         return
 
     # 如果提供了索引，显示详细信息
@@ -903,9 +857,7 @@ def show_history(index, limit, failed_only, command_filter, help_detail):
             # 是否有 AI 分析
             has_analysis = "🤖 已分析" if log.ai_explanation else ""
 
-            table.add_row(
-                str(index), time_str, cmd_display, status, has_analysis
-            )
+            table.add_row(str(index), time_str, cmd_display, status, has_analysis)
 
         console.print(table)
 
@@ -925,9 +877,7 @@ def show_history_detail_content(index):
         logs = get_recent_logs(50)  # 获取更多记录用于索引
 
         if index < 1 or index > len(logs):
-            console.print(
-                f"[red]索引超出范围。请使用 1-{len(logs)} 之间的数字[/red]"
-            )
+            console.print(f"[red]索引超出范围。请使用 1-{len(logs)} 之间的数字[/red]")
             return
 
         log = logs[index - 1]
@@ -966,14 +916,8 @@ def show_history_detail_content(index):
                 suggestions = json.loads(log.ai_suggestions_json)
                 console.print("\n[bold yellow]💡 AI 建议:[/bold yellow]")
                 for i, suggestion in enumerate(suggestions, 1):
-                    risk_icon = (
-                        "✓ "
-                        if suggestion.get("risk_level") == "safe"
-                        else "⚠️"
-                    )
-                    console.print(
-                        f"{i}. {suggestion.get('command', 'N/A')} {risk_icon}"
-                    )
+                    risk_icon = "✓ " if suggestion.get("risk_level") == "safe" else "⚠️"
+                    console.print(f"{i}. {suggestion.get('command', 'N/A')} {risk_icon}")
                     console.print(f"   {suggestion.get('description', '')}")
             except Exception:
                 pass
@@ -1030,9 +974,7 @@ def learn_command(topic, help_detail):
         console.print("[bold]相关命令:[/bold]")
         console.print("  ais ask <问题>         - 直接提问具体问题")
         console.print()
-        console.print(
-            "[dim]💡 提示: 可以学习任何主题，即使不在内置列表中[/dim]"
-        )
+        console.print("[dim]💡 提示: 可以学习任何主题，即使不在内置列表中[/dim]")
         return
 
     try:
@@ -1057,9 +999,7 @@ def learn_command(topic, help_detail):
             for i, topic in enumerate(topics, 1):
                 console.print(f"  {i}. {topic}")
 
-            console.print(
-                "\n[dim]使用 'ais learn <主题>' 开始学习，例如: ais learn git[/dim]"
-            )
+            console.print("\n[dim]使用 'ais learn <主题>' 开始学习，例如: ais learn git[/dim]")
             return
 
         # 获取配置
@@ -1082,9 +1022,7 @@ def learn_command(topic, help_detail):
         streaming_learner = create_streaming_learner(console)
 
         # 使用流式输出进行学习内容生成
-        response = streaming_learner.learn_with_streaming(
-            generate_learning_content, topic, config
-        )
+        response = streaming_learner.learn_with_streaming(generate_learning_content, topic, config)
 
         if response:
             panels.learning_content(Markdown(response), topic.upper())
@@ -1169,24 +1107,17 @@ fi
                 f.write(integration_config)
 
             console.print(
-                f"\n[green]✓  集成配置已添加到: "
-                f"{os.path.basename(config_file)}[/green]"
+                f"\n[green]✓  集成配置已添加到: " f"{os.path.basename(config_file)}[/green]"
             )
             console.print(
-                f"[bold cyan]source {config_file}[/bold cyan] "
-                f"[dim]# 让配置立即生效[/dim]"
+                f"[bold cyan]source {config_file}[/bold cyan] " f"[dim]# 让配置立即生效[/dim]"
             )
-            console.print(
-                "[green]✨ 完成后，命令失败时将自动显示AI分析[/green]"
-            )
+            console.print("[green]✨ 完成后，命令失败时将自动显示AI分析[/green]")
         else:
             console.print(
-                f"\n[yellow]ℹ️ 集成配置已存在: "
-                f"{os.path.basename(config_file)}[/yellow]"
+                f"\n[yellow]ℹ️ 集成配置已存在: " f"{os.path.basename(config_file)}[/yellow]"
             )
-            console.print(
-                "[green]✨ AIS功能已可用，命令失败时将自动显示AI分析[/green]"
-            )
+            console.print("[green]✨ AIS功能已可用，命令失败时将自动显示AI分析[/green]")
     else:
         console.print("[red]✗  无法创建配置文件[/red]")
 
@@ -1206,17 +1137,13 @@ def test_integration():
         import os
 
         # 模拟上下文收集
-        context = collect_context(
-            "mdkirr /test", 127, "mdkirr: command not found"
-        )
+        context = collect_context("mdkirr /test", 127, "mdkirr: command not found")
         config = get_config()
 
         console.print("✓  上下文收集: 成功")
 
         # 测试 AI 分析
-        analysis = analyze_error(
-            "mdkirr /test", 127, "mdkirr: command not found", context, config
-        )
+        analysis = analyze_error("mdkirr /test", 127, "mdkirr: command not found", context, config)
 
         console.print("✓  AI 分析: 成功")
 
@@ -1282,9 +1209,7 @@ def generate_report():
 @main.command("help-all")
 def help_all():
     """显示所有命令的详细帮助汇总。"""
-    console.print(
-        "[bold green]🚀 AIS - 上下文感知的错误分析学习助手 详细帮助汇总[/bold green]"
-    )
+    console.print("[bold green]🚀 AIS - 上下文感知的错误分析学习助手 详细帮助汇总[/bold green]")
     console.print()
     console.print("[bold]核心功能命令:[/bold]")
     console.print("  ais ask --help-detail       - AI 问答功能详细说明")

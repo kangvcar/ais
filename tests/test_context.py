@@ -27,19 +27,15 @@ class TestSensitivePath:
         with patch("pathlib.Path.expanduser") as mock_expand:
             with patch("pathlib.Path.resolve") as mock_resolve:
                 # Mock path resolution
-                mock_expand.return_value.resolve.return_value = Path(
-                    "/home/user/.ssh/keys"
-                )
+                mock_expand.return_value.resolve.return_value = Path("/home/user/.ssh/keys")
                 mock_resolve.return_value = Path("/home/user/.ssh")
 
                 # Mock relative_to to succeed (path is under sensitive dir)
-                mock_expand.return_value.resolve.return_value.relative_to = (
-                    Mock(return_value=Path("keys"))
+                mock_expand.return_value.resolve.return_value.relative_to = Mock(
+                    return_value=Path("keys")
                 )
 
-                result = is_sensitive_path(
-                    "/home/user/.ssh/keys", sensitive_dirs
-                )
+                result = is_sensitive_path("/home/user/.ssh/keys", sensitive_dirs)
 
                 # Should be True since path is under .ssh
                 assert result is True
@@ -55,13 +51,9 @@ class TestSensitivePath:
                 mock_expand.return_value.resolve.return_value = test_path
 
                 # Mock relative_to to raise ValueError
-                test_path.relative_to = Mock(
-                    side_effect=ValueError("Not relative")
-                )
+                test_path.relative_to = Mock(side_effect=ValueError("Not relative"))
 
-                result = is_sensitive_path(
-                    "/home/user/project", sensitive_dirs
-                )
+                result = is_sensitive_path("/home/user/project", sensitive_dirs)
 
                 assert result is False
 
@@ -137,9 +129,7 @@ class TestRunSafeCommand:
 
     def test_run_safe_command_exception(self):
         """Test command execution with exception."""
-        with patch(
-            "subprocess.run", side_effect=subprocess.TimeoutExpired("cmd", 5)
-        ):
+        with patch("subprocess.run", side_effect=subprocess.TimeoutExpired("cmd", 5)):
             result = run_safe_command("sleep 10", timeout=1)
 
             assert result is None
@@ -211,9 +201,7 @@ class TestCollectStandardContext:
         with patch("ais.core.context.run_safe_command") as mock_run:
             with patch("pathlib.Path.cwd") as mock_cwd:
                 # Mock command history
-                mock_run.return_value = (
-                    "  100  ls\n  101  pwd\n  102  git status"
-                )
+                mock_run.return_value = "  100  ls\n  101  pwd\n  102  git status"
 
                 # Mock current directory files
                 mock_file1 = Mock()
@@ -250,9 +238,7 @@ class TestCollectStandardContext:
                 mock_run.return_value = "  100  ls"
 
                 # Mock directory listing error
-                mock_cwd.return_value.iterdir.side_effect = PermissionError(
-                    "Access denied"
-                )
+                mock_cwd.return_value.iterdir.side_effect = PermissionError("Access denied")
 
                 with patch("ais.core.context._collect_git_info") as mock_git:
                     mock_git.return_value = {}
@@ -260,9 +246,7 @@ class TestCollectStandardContext:
                     result = collect_standard_context(config)
 
                     assert "recent_history" in result
-                    assert (
-                        "current_files" not in result
-                    )  # Should be skipped due to error
+                    assert "current_files" not in result  # Should be skipped due to error
 
 
 class TestCollectDetailedContext:
@@ -278,18 +262,13 @@ class TestCollectDetailedContext:
                 "total 16\n-rw-r--r-- 1 user user 1234 Jul 11 10:30 file.txt",
             ]
 
-            with patch.dict(
-                os.environ, {"HOME": "/home/user", "PATH": "/usr/bin"}
-            ):
+            with patch.dict(os.environ, {"HOME": "/home/user", "PATH": "/usr/bin"}):
                 result = collect_detailed_context(config)
 
                 assert "system_info" in result
                 assert "environment" in result
                 assert "directory_listing" in result
-                assert (
-                    result["system_info"]
-                    == "Linux hostname 5.4.0 #1 SMP x86_64 GNU/Linux"
-                )
+                assert result["system_info"] == "Linux hostname 5.4.0 #1 SMP x86_64 GNU/Linux"
                 assert "HOME" in result["environment"]
                 assert "PATH" in result["environment"]
 
@@ -327,15 +306,9 @@ class TestCollectContext:
         """Test collecting context with minimal level."""
         config = {"context_level": "minimal", "sensitive_dirs": []}
 
-        with patch(
-            "pathlib.Path.cwd", return_value=Path("/home/user/project")
-        ):
-            with patch(
-                "ais.core.context.is_sensitive_path", return_value=False
-            ):
-                with patch(
-                    "ais.core.context.collect_core_context"
-                ) as mock_core:
+        with patch("pathlib.Path.cwd", return_value=Path("/home/user/project")):
+            with patch("ais.core.context.is_sensitive_path", return_value=False):
+                with patch("ais.core.context.collect_core_context") as mock_core:
                     mock_core.return_value = {
                         "command": "test",
                         "cwd": "/home/user/project",
@@ -350,18 +323,10 @@ class TestCollectContext:
         """Test collecting context with standard level."""
         config = {"context_level": "standard", "sensitive_dirs": []}
 
-        with patch(
-            "pathlib.Path.cwd", return_value=Path("/home/user/project")
-        ):
-            with patch(
-                "ais.core.context.is_sensitive_path", return_value=False
-            ):
-                with patch(
-                    "ais.core.context.collect_core_context"
-                ) as mock_core:
-                    with patch(
-                        "ais.core.context.collect_standard_context"
-                    ) as mock_standard:
+        with patch("pathlib.Path.cwd", return_value=Path("/home/user/project")):
+            with patch("ais.core.context.is_sensitive_path", return_value=False):
+                with patch("ais.core.context.collect_core_context") as mock_core:
+                    with patch("ais.core.context.collect_standard_context") as mock_standard:
                         mock_core.return_value = {"command": "test"}
                         mock_standard.return_value = {"git_branch": "main"}
 
@@ -374,30 +339,16 @@ class TestCollectContext:
         """Test collecting context with detailed level."""
         config = {"context_level": "detailed", "sensitive_dirs": []}
 
-        with patch(
-            "pathlib.Path.cwd", return_value=Path("/home/user/project")
-        ):
-            with patch(
-                "ais.core.context.is_sensitive_path", return_value=False
-            ):
-                with patch(
-                    "ais.core.context.collect_core_context"
-                ) as mock_core:
-                    with patch(
-                        "ais.core.context.collect_standard_context"
-                    ) as mock_standard:
-                        with patch(
-                            "ais.core.context.collect_detailed_context"
-                        ) as mock_detailed:
+        with patch("pathlib.Path.cwd", return_value=Path("/home/user/project")):
+            with patch("ais.core.context.is_sensitive_path", return_value=False):
+                with patch("ais.core.context.collect_core_context") as mock_core:
+                    with patch("ais.core.context.collect_standard_context") as mock_standard:
+                        with patch("ais.core.context.collect_detailed_context") as mock_detailed:
                             mock_core.return_value = {"command": "test"}
                             mock_standard.return_value = {"git_branch": "main"}
-                            mock_detailed.return_value = {
-                                "system_info": "Linux"
-                            }
+                            mock_detailed.return_value = {"system_info": "Linux"}
 
-                            result = collect_context(
-                                "test command", 0, "", config
-                            )
+                            result = collect_context("test command", 0, "", config)
 
                             assert result["command"] == "test"
                             assert result["git_branch"] == "main"
@@ -408,9 +359,7 @@ class TestCollectContext:
         config = {"sensitive_dirs": ["~/.ssh"]}
 
         with patch("pathlib.Path.cwd", return_value=Path("/home/user/.ssh")):
-            with patch(
-                "ais.core.context.is_sensitive_path", return_value=True
-            ):
+            with patch("ais.core.context.is_sensitive_path", return_value=True):
                 result = collect_context("test command", 0, "", config)
 
                 assert result["error"] == "位于敏感目录，跳过上下文收集"
@@ -425,15 +374,9 @@ class TestCollectContext:
                 "sensitive_dirs": [],
             }
 
-            with patch(
-                "pathlib.Path.cwd", return_value=Path("/home/user/project")
-            ):
-                with patch(
-                    "ais.core.context.is_sensitive_path", return_value=False
-                ):
-                    with patch(
-                        "ais.core.context.collect_core_context"
-                    ) as mock_core:
+            with patch("pathlib.Path.cwd", return_value=Path("/home/user/project")):
+                with patch("ais.core.context.is_sensitive_path", return_value=False):
+                    with patch("ais.core.context.collect_core_context") as mock_core:
                         mock_core.return_value = {"command": "test"}
 
                         result = collect_context("test command", 0)
@@ -445,15 +388,9 @@ class TestCollectContext:
         """Test that context collection filters sensitive data."""
         config = {"context_level": "minimal", "sensitive_dirs": []}
 
-        with patch(
-            "pathlib.Path.cwd", return_value=Path("/home/user/project")
-        ):
-            with patch(
-                "ais.core.context.is_sensitive_path", return_value=False
-            ):
-                with patch(
-                    "ais.core.context.collect_core_context"
-                ) as mock_core:
+        with patch("pathlib.Path.cwd", return_value=Path("/home/user/project")):
+            with patch("ais.core.context.is_sensitive_path", return_value=False):
+                with patch("ais.core.context.collect_core_context") as mock_core:
                     mock_core.return_value = {
                         "command": "test",
                         "output": "password=secret123",

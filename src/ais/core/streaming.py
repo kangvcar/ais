@@ -93,9 +93,7 @@ class ProgressiveAnalysis:
             # 步骤 4: 生成解决方案 (实际AI调用)
             self.display.update_step(3, "进行中")
             try:
-                result = analyze_func(
-                    command, exit_code, stderr, context, config
-                )
+                result = analyze_func(command, exit_code, stderr, context, config)
                 self.display.update_step(3, "完成")
             except Exception as e:
                 self.display.update_step(3, "错误")
@@ -148,9 +146,7 @@ class LearnAnalysis:
         self.console = console
         self.display = StreamingDisplay(console)
 
-    def learn_with_progress(
-        self, learn_func: Callable, topic: str, config: dict
-    ) -> Any:
+    def learn_with_progress(self, learn_func: Callable, topic: str, config: dict) -> Any:
         """带进度显示的学习执行"""
 
         # 定义学习步骤
@@ -212,15 +208,11 @@ class StreamingLearner:
         self.console = console
         self.learn_analysis = LearnAnalysis(console)
 
-    def learn_with_streaming(
-        self, learn_func: Callable, topic: str, config: dict
-    ) -> Any:
+    def learn_with_streaming(self, learn_func: Callable, topic: str, config: dict) -> Any:
         """执行带流式输出的学习"""
 
         # 流式输出始终启用，固定使用progressive模式
-        return self.learn_analysis.learn_with_progress(
-            learn_func, topic, config
-        )
+        return self.learn_analysis.learn_with_progress(learn_func, topic, config)
 
 
 class AskAnalysis:
@@ -230,9 +222,7 @@ class AskAnalysis:
         self.console = console
         self.display = StreamingDisplay(console)
 
-    def ask_with_progress(
-        self, ask_func: Callable, question: str, config: dict
-    ) -> Any:
+    def ask_with_progress(self, ask_func: Callable, question: str, config: dict) -> Any:
         """带进度显示的问答执行"""
 
         # 定义问答步骤
@@ -294,9 +284,7 @@ class StreamingAsker:
         self.console = console
         self.ask_analysis = AskAnalysis(console)
 
-    def ask_with_streaming(
-        self, ask_func: Callable, question: str, config: dict
-    ) -> Any:
+    def ask_with_streaming(self, ask_func: Callable, question: str, config: dict) -> Any:
         """执行带流式输出的问答"""
 
         # 流式输出始终启用，固定使用progressive模式

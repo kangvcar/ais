@@ -37,9 +37,7 @@ def filter_sensitive_data(text: str) -> str:
 
     filtered_text = text
     for pattern in patterns:
-        filtered_text = re.sub(
-            pattern, lambda m: m.group().split()[0] + " ***", filtered_text
-        )
+        filtered_text = re.sub(pattern, lambda m: m.group().split()[0] + " ***", filtered_text)
 
     return filtered_text
 
@@ -141,9 +139,7 @@ def collect_permission_context(command: str, cwd: str) -> Dict[str, Any]:
 
     # 检查sudo可用性
     try:
-        sudo_result = subprocess.run(
-            ["sudo", "-n", "true"], capture_output=True, timeout=2
-        )
+        sudo_result = subprocess.run(["sudo", "-n", "true"], capture_output=True, timeout=2)
         permission_info["sudo_available"] = sudo_result.returncode == 0
     except Exception:
         permission_info["sudo_available"] = False
@@ -155,18 +151,14 @@ def collect_permission_context(command: str, cwd: str) -> Dict[str, Any]:
         try:
             if os.path.exists(target_path):
                 stat_info = os.stat(target_path)
-                permission_info["target_permissions"] = oct(stat_info.st_mode)[
-                    -3:
-                ]
+                permission_info["target_permissions"] = oct(stat_info.st_mode)[-3:]
                 permission_info["target_owner"] = stat_info.st_uid
                 permission_info["target_group"] = stat_info.st_gid
             else:
                 # 检查父目录权限
                 parent_dir = os.path.dirname(target_path)
                 if os.path.exists(parent_dir):
-                    permission_info["parent_dir_writable"] = os.access(
-                        parent_dir, os.W_OK
-                    )
+                    permission_info["parent_dir_writable"] = os.access(parent_dir, os.W_OK)
         except Exception:
             pass
 
@@ -331,9 +323,7 @@ def detect_project_type_enhanced(cwd: str) -> Dict[str, Any]:
     return project_info
 
 
-def collect_core_context(
-    command: str, exit_code: int, stderr: str, cwd: str
-) -> Dict[str, Any]:
+def collect_core_context(command: str, exit_code: int, stderr: str, cwd: str) -> Dict[str, Any]:
     """收集核心级别的上下文信息。"""
     return {
         "command": command,
@@ -393,9 +383,7 @@ def collect_detailed_context(config: Dict[str, Any]) -> Dict[str, Any]:
         env_vars = {
             key: value[:100]
             for key, value in os.environ.items()
-            if not any(
-                sensitive in key.lower() for sensitive in sensitive_keys
-            )
+            if not any(sensitive in key.lower() for sensitive in sensitive_keys)
         }
         context["environment"] = env_vars
     except Exception:
@@ -450,27 +438,19 @@ def collect_context(
         # 网络连接诊断
         context["network_context"] = collect_network_context()
     except Exception:
-        context["network_context"] = {
-            "error": "network context collection failed"
-        }
+        context["network_context"] = {"error": "network context collection failed"}
 
     try:
         # 权限检查
-        context["permission_context"] = collect_permission_context(
-            command, cwd
-        )
+        context["permission_context"] = collect_permission_context(command, cwd)
     except Exception:
-        context["permission_context"] = {
-            "error": "permission context collection failed"
-        }
+        context["permission_context"] = {"error": "permission context collection failed"}
 
     try:
         # 增强的项目类型检测
         context["project_context"] = detect_project_type_enhanced(cwd)
     except Exception:
-        context["project_context"] = {
-            "error": "project context collection failed"
-        }
+        context["project_context"] = {"error": "project context collection failed"}
 
     # 过滤敏感数据
     for key, value in context.items():
@@ -495,11 +475,7 @@ def filter_sensitive_dict(data: Dict[str, Any]) -> Dict[str, Any]:
             filtered[key] = filter_sensitive_dict(value)
         elif isinstance(value, list):
             filtered[key] = [
-                (
-                    filter_sensitive_data(str(item))
-                    if isinstance(item, str)
-                    else item
-                )
+                (filter_sensitive_data(str(item)) if isinstance(item, str) else item)
                 for item in value
             ]
         else:

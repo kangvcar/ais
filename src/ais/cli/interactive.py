@@ -73,9 +73,7 @@ def _format_command_choice(
     # 计算可用宽度，确保数值有效
     prefix = f"{index}. "
     suffix = f" {icon} ({risk_text})"
-    available_width = max(
-        20, terminal_width - len(prefix) - len(suffix) - 10
-    )  # 确保最小宽度
+    available_width = max(20, terminal_width - len(prefix) - len(suffix) - 10)  # 确保最小宽度
 
     # 智能截断命令和描述
     if len(command) + len(description) + 3 <= available_width:  # 3 for " - "
@@ -89,11 +87,7 @@ def _format_command_choice(
         )
     else:
         cmd_width = available_width - 10  # 预留给描述的最小空间
-        middle = (
-            f"{command[:cmd_width - 3]}..."
-            if len(command) > cmd_width
-            else command
-        )
+        middle = f"{command[:cmd_width - 3]}..." if len(command) > cmd_width else command
 
     # 安全的格式化，避免substitute错误
     try:
@@ -107,9 +101,7 @@ def _format_command_choice(
         return _safe_escape_for_questionary(simple_text)
 
 
-def _calculate_suggestion_score(
-    suggestion: Dict[str, Any], user_context: Dict = None
-) -> float:
+def _calculate_suggestion_score(suggestion: Dict[str, Any], user_context: Dict = None) -> float:
     """计算建议的智能评分，用于排序和默认选择。"""
     score = 0.0
     command = suggestion.get("command", "")
@@ -146,16 +138,12 @@ def _calculate_suggestion_score(
     score += _calculate_context_relevance(suggestion, user_context or {})
 
     # 6. 智能风险调整
-    score += _calculate_intelligent_risk_adjustment(
-        suggestion, user_context or {}
-    )
+    score += _calculate_intelligent_risk_adjustment(suggestion, user_context or {})
 
     return min(score, 3.0)  # 限制最大分数
 
 
-def _should_skip_confirmation(
-    command: str, risk_level: str, user_context: Dict = None
-) -> bool:
+def _should_skip_confirmation(command: str, risk_level: str, user_context: Dict = None) -> bool:
     """智能判断是否可以跳过确认步骤。"""
     # 安全命令无需确认
     if risk_level == "safe":
@@ -211,9 +199,7 @@ def _should_skip_confirmation(
     return False
 
 
-def _calculate_personalized_score(
-    suggestion: Dict[str, Any], user_context: Dict
-) -> float:
+def _calculate_personalized_score(suggestion: Dict[str, Any], user_context: Dict) -> float:
     """基于用户历史行为计算个性化评分。"""
     score = 0.0
     command = suggestion.get("command", "")
@@ -259,9 +245,7 @@ def _calculate_personalized_score(
     return score
 
 
-def _calculate_context_relevance(
-    suggestion: Dict[str, Any], user_context: Dict
-) -> float:
+def _calculate_context_relevance(suggestion: Dict[str, Any], user_context: Dict) -> float:
     """计算建议与当前上下文的相关性。"""
     score = 0.0
     command = suggestion.get("command", "")
@@ -270,9 +254,7 @@ def _calculate_context_relevance(
     cwd = user_context.get("cwd", "")
     if cwd:
         # 如果在特定目录，某些命令更相关
-        if "/home" in cwd and any(
-            cmd in command for cmd in ["ls", "cd", "mkdir"]
-        ):
+        if "/home" in cwd and any(cmd in command for cmd in ["ls", "cd", "mkdir"]):
             score += 0.2
         elif "/.git" in cwd or "/git" in cwd.lower():
             if "git" in command.lower():
@@ -306,10 +288,7 @@ def _calculate_context_relevance(
     current_hour = datetime.now().hour
     if 9 <= current_hour <= 18:  # 工作时间
         # 工作时间更偏向开发相关命令
-        if any(
-            keyword in command
-            for keyword in ["git", "build", "test", "deploy"]
-        ):
+        if any(keyword in command for keyword in ["git", "build", "test", "deploy"]):
             score += 0.1
 
     return score
@@ -322,21 +301,15 @@ def _collect_user_context() -> Dict[str, Any]:
     try:
         # 基本信息
         context["cwd"] = os.getcwd()
-        context["user"] = (
-            os.getenv("USER") or os.getenv("USERNAME") or "unknown"
-        )
+        context["user"] = os.getenv("USER") or os.getenv("USERNAME") or "unknown"
 
         # 检查项目类型
         cwd_path = Path(context["cwd"])
         if (cwd_path / "package.json").exists():
             context["project_type"] = "node"
-        elif (cwd_path / "requirements.txt").exists() or (
-            cwd_path / "pyproject.toml"
-        ).exists():
+        elif (cwd_path / "requirements.txt").exists() or (cwd_path / "pyproject.toml").exists():
             context["project_type"] = "python"
-        elif (cwd_path / "Dockerfile").exists() or (
-            cwd_path / "docker-compose.yml"
-        ).exists():
+        elif (cwd_path / "Dockerfile").exists() or (cwd_path / "docker-compose.yml").exists():
             context["project_type"] = "docker"
         elif (cwd_path / ".git").exists():
             context["project_type"] = "git"
@@ -379,10 +352,7 @@ def _collect_user_context() -> Dict[str, Any]:
         is_production = any(os.getenv(var) for var in prod_indicators)
         if is_production:
             context["environment"] = "production"
-        elif (
-            "test" in context["cwd"].lower()
-            or "staging" in context["cwd"].lower()
-        ):
+        elif "test" in context["cwd"].lower() or "staging" in context["cwd"].lower():
             context["environment"] = "staging"
         else:
             context["environment"] = "development"
@@ -392,9 +362,7 @@ def _collect_user_context() -> Dict[str, Any]:
             from ..core.database import get_recent_logs
 
             recent_logs = get_recent_logs(10)
-            context["recent_commands"] = [
-                log.original_command for log in recent_logs
-            ]
+            context["recent_commands"] = [log.original_command for log in recent_logs]
         except Exception:
             context["recent_commands"] = []
 
@@ -405,9 +373,7 @@ def _collect_user_context() -> Dict[str, Any]:
     return context
 
 
-def _calculate_intelligent_risk_adjustment(
-    suggestion: Dict[str, Any], user_context: Dict
-) -> float:
+def _calculate_intelligent_risk_adjustment(suggestion: Dict[str, Any], user_context: Dict) -> float:
     """智能风险评估和调整。"""
     score = 0.0
     command = suggestion.get("command", "")
@@ -473,9 +439,7 @@ def _get_enhanced_choices(
         env_boost = _calculate_environment_boost(sug, user_context or {})
 
         # 相似命令历史加权
-        history_boost = _calculate_history_similarity_boost(
-            sug, user_context or {}
-        )
+        history_boost = _calculate_history_similarity_boost(sug, user_context or {})
 
         # 综合评分
         final_score = base_score + time_boost + env_boost + history_boost
@@ -553,9 +517,7 @@ def _get_enhanced_choices(
     return choices
 
 
-def _calculate_time_based_boost(
-    suggestion: Dict[str, Any], user_context: Dict
-) -> float:
+def _calculate_time_based_boost(suggestion: Dict[str, Any], user_context: Dict) -> float:
     """基于时间的动态加权。"""
     from datetime import datetime
 
@@ -586,9 +548,7 @@ def _calculate_time_based_boost(
     return boost
 
 
-def _calculate_environment_boost(
-    suggestion: Dict[str, Any], user_context: Dict
-) -> float:
+def _calculate_environment_boost(suggestion: Dict[str, Any], user_context: Dict) -> float:
     """基于环境的动态加权。"""
     boost = 0.0
     command = suggestion.get("command", "")
@@ -598,10 +558,7 @@ def _calculate_environment_boost(
     if environment == "production":
         if suggestion.get("risk_level") == "safe":
             boost += 0.3
-        if any(
-            safe_pattern in command
-            for safe_pattern in ["--dry-run", "--check", "status"]
-        ):
+        if any(safe_pattern in command for safe_pattern in ["--dry-run", "--check", "status"]):
             boost += 0.2
 
     # 开发环境：增强开发工具命令
@@ -613,9 +570,7 @@ def _calculate_environment_boost(
     return boost
 
 
-def _calculate_history_similarity_boost(
-    suggestion: Dict[str, Any], user_context: Dict
-) -> float:
+def _calculate_history_similarity_boost(suggestion: Dict[str, Any], user_context: Dict) -> float:
     """基于历史命令相似性的加权。"""
     boost = 0.0
     command = suggestion.get("command", "")
@@ -688,9 +643,7 @@ def _enhanced_risk_assessment(
 
     # 2. 基于命令特征的智能风险调整（移除技能级别依赖）
     # 检查复杂命令模式
-    if len(command.split()) > 5 or any(
-        char in command for char in ["|", ">", ";"]
-    ):
+    if len(command.split()) > 5 or any(char in command for char in ["|", ">", ";"]):
         if original_risk == "safe":
             risk_assessment["level"] = "moderate"
             risk_assessment["factors"].append("复杂命令模式，提升风险等级")
@@ -719,9 +672,7 @@ def _enhanced_risk_assessment(
 
     if environment == "production":
         # 生产环境：提高所有风险级别
-        if original_risk == "safe" and any(
-            cmd in command for cmd in ["restart", "stop", "kill"]
-        ):
+        if original_risk == "safe" and any(cmd in command for cmd in ["restart", "stop", "kill"]):
             risk_assessment["level"] = "moderate"
             risk_assessment["factors"].append("生产环境服务操作")
         elif original_risk == "moderate":
@@ -740,9 +691,7 @@ def _enhanced_risk_assessment(
         if re.search(pattern, command):
             risk_assessment["level"] = "dangerous"
             risk_assessment["confidence"] = 0.95
-            risk_assessment["factors"].append(
-                f"检测到高风险模式: {description}"
-            )
+            risk_assessment["factors"].append(f"检测到高风险模式: {description}")
 
     # 5. 自动安全模式检测
     auto_safe_patterns = [
@@ -836,8 +785,7 @@ def execute_command(command: str) -> bool:
     try:
         # 显示命令执行面板
         exec_panel = Panel(
-            f"[bold cyan]🚀 正在执行: [/bold cyan]"
-            f"[bold white]{command}[/bold white]",
+            f"[bold cyan]🚀 正在执行: [/bold cyan]" f"[bold white]{command}[/bold white]",
             title="[bold blue]⚡ 命令执行[/bold blue]",
             title_align="left",
             border_style="blue",
@@ -942,9 +890,7 @@ def show_command_details(
 
         # 使用增强型风险评估（安全包装）
         try:
-            risk_assessment = _enhanced_risk_assessment(
-                suggestion, user_context
-            )
+            risk_assessment = _enhanced_risk_assessment(suggestion, user_context)
             risk_level = risk_assessment.get("level", "safe")
         except Exception:
             # 如果风险评估失败，使用默认值
@@ -966,10 +912,7 @@ def show_command_details(
             risk_content = f"{icon} {risk_text.upper()} 风险等级"
             # 安全转义横幅内容
             safe_risk_content = _safe_escape_for_rich(risk_content)
-            panel_content = (
-                f"[{risk_banner_style}] {safe_risk_content} "
-                f"[/{risk_banner_style}]"
-            )
+            panel_content = f"[{risk_banner_style}] {safe_risk_content} " f"[/{risk_banner_style}]"
             risk_panel = Panel(
                 panel_content,
                 box=None,
@@ -980,9 +923,7 @@ def show_command_details(
             console.print(risk_panel)
         except Exception:
             # 如果横幅显示失败，使用简单文本
-            console.print(
-                f"[{color}]{icon} {risk_text.upper()} 风险等级[/{color}]"
-            )
+            console.print(f"[{color}]{icon} {risk_text.upper()} 风险等级[/{color}]")
 
         # 命令详情表格
         details_table = Table(show_header=False, box=None, padding=(0, 1))
@@ -991,9 +932,7 @@ def show_command_details(
 
         # 添加命令行（安全转义）
         safe_command = _safe_escape_for_rich(command)
-        details_table.add_row(
-            "📋 命令", f"[bold green]{safe_command}[/bold green]"
-        )
+        details_table.add_row("📋 命令", f"[bold green]{safe_command}[/bold green]")
 
         # 添加描述（安全转义）
         if description and description != "无描述":
@@ -1004,9 +943,7 @@ def show_command_details(
         if explanation:
             # 如果解释太长，进行智能换行
             if len(explanation) > 60:
-                explanation = (
-                    explanation[:60] + "..." + "\n     " + explanation[60:]
-                )
+                explanation = explanation[:60] + "..." + "\n     " + explanation[60:]
             safe_explanation = _safe_escape_for_rich(explanation)
             details_table.add_row("🔧 原理", safe_explanation)
 
@@ -1053,18 +990,11 @@ def show_command_details(
             if warning_parts:
                 try:
                     warning_content = "\n".join(warning_parts)
-                    safe_warning_content = _safe_escape_for_rich(
-                        warning_content
-                    )
-                    safe_warning_title = _safe_escape_for_rich(
-                        "⚠️  智能安全提醒"
-                    )
+                    safe_warning_content = _safe_escape_for_rich(warning_content)
+                    safe_warning_title = _safe_escape_for_rich("⚠️  智能安全提醒")
                     warning_panel = Panel(
                         safe_warning_content,
-                        title=(
-                            f"[bold {color}]{safe_warning_title}"
-                            f"[/bold {color}]"
-                        ),
+                        title=(f"[bold {color}]{safe_warning_title}" f"[/bold {color}]"),
                         title_align="left",
                         border_style=color,
                         style=f"{color}20",
@@ -1083,9 +1013,7 @@ def show_command_details(
         # 安全地获取和显示基本信息
         try:
             command_text = (
-                suggestion.get("command", "N/A")
-                if isinstance(suggestion, dict)
-                else "N/A"
+                suggestion.get("command", "N/A") if isinstance(suggestion, dict) else "N/A"
             )
             description_text = (
                 suggestion.get("description", "无描述")
@@ -1095,22 +1023,14 @@ def show_command_details(
 
             # 安全转义后显示
             safe_command_text = _safe_escape_for_rich(str(command_text))
-            safe_description_text = _safe_escape_for_rich(
-                str(description_text)
-            )
+            safe_description_text = _safe_escape_for_rich(str(description_text))
 
-            panels.warning(
-                f"命令: {safe_command_text}\n描述: {safe_description_text}"
-            )
+            panels.warning(f"命令: {safe_command_text}\n描述: {safe_description_text}")
         except Exception as fallback_error:
-            panels.error(
-                f"严重错误，无法显示命令信息: {fallback_error}\n原始错误: {e}"
-            )
+            panels.error(f"严重错误，无法显示命令信息: {fallback_error}\n原始错误: {e}")
 
 
-def ask_follow_up_question(
-    console: Console, predefined_questions: List[str] = None
-) -> None:
+def ask_follow_up_question(console: Console, predefined_questions: List[str] = None) -> None:
     """询问后续问题，支持预设问题选择。"""
     # 如果有预设问题，先显示选项
     if predefined_questions:
@@ -1152,9 +1072,7 @@ def ask_follow_up_question(
         from ..core.config import get_config
 
         config = get_config()
-        response = ask_ai(
-            f"关于刚才的错误分析，用户有一个后续问题：{question}", config
-        )
+        response = ask_ai(f"关于刚才的错误分析，用户有一个后续问题：{question}", config)
 
         if response:
             panels.ai_analysis(Markdown(response), "🤖 AI 回答")
@@ -1215,9 +1133,7 @@ def show_interactive_menu(
         terminal_width = console.size.width if hasattr(console, "size") else 80
 
         # 使用智能排序和快捷键的选择列表（传入用户上下文）
-        choices = _get_enhanced_choices(
-            suggestions, terminal_width, user_context
-        )
+        choices = _get_enhanced_choices(suggestions, terminal_width, user_context)
 
         # 移除智能排序提示，简化界面
 
@@ -1311,9 +1227,7 @@ def show_interactive_menu(
                         panels.warning("🤔 命令执行失败，建议尝试其他方案")
 
                     # 询问是否继续（仅对非安全命令或失败情况）
-                    if not questionary.confirm(
-                        "继续查看其他建议？", default=True
-                    ).ask():
+                    if not questionary.confirm("继续查看其他建议？", default=True).ask():
                         break
 
                 else:
@@ -1323,26 +1237,16 @@ def show_interactive_menu(
                 panels.error(f"处理选择时出错: {e}")
                 continue
             except Exception as e:
-                debug_info = (
-                    f"action={action}, "
-                    f"suggestions_count={len(suggestions)}"
-                )
-                panels.error(
-                    f"执行操作时发生未知错误: {e}\n调试信息: {debug_info}"
-                )
+                debug_info = f"action={action}, " f"suggestions_count={len(suggestions)}"
+                panels.error(f"执行操作时发生未知错误: {e}\n调试信息: {debug_info}")
                 continue
 
         elif action == "edit":
             # 编辑命令
-            choices = [
-                f"{i}. {sug.get('command', 'N/A')}"
-                for i, sug in enumerate(suggestions, 1)
-            ]
+            choices = [f"{i}. {sug.get('command', 'N/A')}" for i, sug in enumerate(suggestions, 1)]
             choices.append("返回")
 
-            edit_choice = questionary.select(
-                "选择要编辑的命令:", choices=choices
-            ).ask()
+            edit_choice = questionary.select("选择要编辑的命令:", choices=choices).ask()
 
             if edit_choice and edit_choice != "返回":
                 index = int(edit_choice.split(".")[0]) - 1
@@ -1350,9 +1254,7 @@ def show_interactive_menu(
                 new_command = edit_command(original_command)
 
                 if new_command != original_command:
-                    console.print(
-                        f"\n✓  命令已修改为: [bold]{new_command}[/bold]"
-                    )
+                    console.print(f"\n✓  命令已修改为: [bold]{new_command}[/bold]")
 
                     if questionary.confirm("是否执行修改后的命令？").ask():
                         execute_command(new_command)
@@ -1380,14 +1282,10 @@ def show_simple_menu(
         risk_icon = "✓ " if risk_level == "safe" else "⚠️"
         prefix = "  ▸ " if i == 1 else "    "
 
-        console.print(
-            f"{prefix}{i}. {command:<25} {risk_icon} ({description})"
-        )
+        console.print(f"{prefix}{i}. {command:<25} {risk_icon} ({description})")
 
         if suggestion.get("explanation"):
-            console.print(
-                f"       [dim]说明: {suggestion['explanation']}[/dim]"
-            )
+            console.print(f"       [dim]说明: {suggestion['explanation']}[/dim]")
 
     # 添加固定选项
 

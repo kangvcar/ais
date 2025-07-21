@@ -30,9 +30,7 @@ class TestExecuteCommand:
                 mock_run.assert_called_once()
                 # Check that success message is printed
                 success_calls = [
-                    call
-                    for call in mock_print.call_args_list
-                    if "✓  命令执行成功" in str(call)
+                    call for call in mock_print.call_args_list if "✓  命令执行成功" in str(call)
                 ]
                 assert len(success_calls) > 0
 
@@ -49,9 +47,7 @@ class TestExecuteCommand:
                 mock_run.assert_called_once()
                 # Check that failure message is printed
                 failure_calls = [
-                    call
-                    for call in mock_print.call_args_list
-                    if "✗  命令执行失败" in str(call)
+                    call for call in mock_print.call_args_list if "✗  命令执行失败" in str(call)
                 ]
                 assert len(failure_calls) > 0
 
@@ -64,9 +60,7 @@ class TestExecuteCommand:
                 assert result is False
                 # Check that error message is printed
                 error_calls = [
-                    call
-                    for call in mock_print.call_args_list
-                    if "✗  执行命令时出错" in str(call)
+                    call for call in mock_print.call_args_list if "✗  执行命令时出错" in str(call)
                 ]
                 assert len(error_calls) > 0
 
@@ -260,9 +254,7 @@ class TestAskFollowUpQuestion:
         mock_console = Mock()
 
         with patch("builtins.input", return_value="Test question"):
-            with patch(
-                "ais.cli.interactive.ask_ai", side_effect=Exception("AI error")
-            ):
+            with patch("ais.cli.interactive.ask_ai", side_effect=Exception("AI error")):
                 with patch("ais.cli.interactive.get_config") as mock_config:
                     mock_config.return_value = {"test": "config"}
 
@@ -337,24 +329,18 @@ class TestShowInteractiveMenu:
 
     def test_show_interactive_menu_not_tty(self):
         """Test interactive menu when not in TTY."""
-        suggestions = [
-            {"command": "test", "description": "test", "risk_level": "safe"}
-        ]
+        suggestions = [{"command": "test", "description": "test", "risk_level": "safe"}]
         mock_console = Mock()
 
         with patch("sys.stdin.isatty", return_value=False):
             with patch("ais.cli.interactive.show_simple_menu") as mock_simple:
                 show_interactive_menu(suggestions, mock_console)
 
-                mock_simple.assert_called_once_with(
-                    suggestions, mock_console, None
-                )
+                mock_simple.assert_called_once_with(suggestions, mock_console, None)
 
     def test_show_interactive_menu_no_questionary(self):
         """Test interactive menu when questionary is not available."""
-        suggestions = [
-            {"command": "test", "description": "test", "risk_level": "safe"}
-        ]
+        suggestions = [{"command": "test", "description": "test", "risk_level": "safe"}]
         mock_console = Mock()
 
         with patch("sys.stdin.isatty", return_value=True):
@@ -370,9 +356,7 @@ class TestShowInteractiveMenu:
 
     def test_show_interactive_menu_exit(self):
         """Test interactive menu with exit choice."""
-        suggestions = [
-            {"command": "test", "description": "test", "risk_level": "safe"}
-        ]
+        suggestions = [{"command": "test", "description": "test", "risk_level": "safe"}]
         mock_console = Mock()
 
         with patch("sys.stdin.isatty", return_value=True):
@@ -382,9 +366,7 @@ class TestShowInteractiveMenu:
                 mock_questionary = Mock()
                 mock_questionary.select.return_value.ask.return_value = "exit"
 
-                with patch(
-                    "ais.cli.interactive.questionary", mock_questionary
-                ):
+                with patch("ais.cli.interactive.questionary", mock_questionary):
                     show_interactive_menu(suggestions, mock_console)
 
                     # Should call questionary.select
@@ -416,12 +398,8 @@ class TestShowInteractiveMenu:
                 ]
                 mock_questionary.confirm.return_value.ask.return_value = False
 
-                with patch(
-                    "ais.cli.interactive.questionary", mock_questionary
-                ):
-                    with patch(
-                        "ais.cli.interactive.execute_command"
-                    ) as mock_execute:
+                with patch("ais.cli.interactive.questionary", mock_questionary):
+                    with patch("ais.cli.interactive.execute_command") as mock_execute:
                         with patch("ais.cli.interactive.show_command_details"):
                             mock_execute.return_value = True
 
@@ -454,27 +432,18 @@ class TestShowInteractiveMenu:
                 ]
                 mock_questionary.confirm.return_value.ask.return_value = False
 
-                with patch(
-                    "ais.cli.interactive.questionary", mock_questionary
-                ):
-                    with patch(
-                        "ais.cli.interactive.execute_command"
-                    ) as mock_execute:
+                with patch("ais.cli.interactive.questionary", mock_questionary):
+                    with patch("ais.cli.interactive.execute_command") as mock_execute:
                         with patch("ais.cli.interactive.show_command_details"):
                             with patch(
-                                "ais.cli.interactive."
-                                "confirm_dangerous_command",
+                                "ais.cli.interactive." "confirm_dangerous_command",
                                 return_value=True,
                             ):
                                 mock_execute.return_value = True
 
-                                show_interactive_menu(
-                                    suggestions, mock_console
-                                )
+                                show_interactive_menu(suggestions, mock_console)
 
-                                mock_execute.assert_called_once_with(
-                                    "rm -rf /"
-                                )
+                                mock_execute.assert_called_once_with("rm -rf /")
 
             except ImportError:
                 pytest.skip("questionary not available")
@@ -500,21 +469,14 @@ class TestShowInteractiveMenu:
                     "exit",
                 ]
 
-                with patch(
-                    "ais.cli.interactive.questionary", mock_questionary
-                ):
-                    with patch(
-                        "ais.cli.interactive.execute_command"
-                    ) as mock_execute:
+                with patch("ais.cli.interactive.questionary", mock_questionary):
+                    with patch("ais.cli.interactive.execute_command") as mock_execute:
                         with patch("ais.cli.interactive.show_command_details"):
                             with patch(
-                                "ais.cli.interactive."
-                                "confirm_dangerous_command",
+                                "ais.cli.interactive." "confirm_dangerous_command",
                                 return_value=False,
                             ):
-                                show_interactive_menu(
-                                    suggestions, mock_console
-                                )
+                                show_interactive_menu(suggestions, mock_console)
 
                                 mock_execute.assert_not_called()
 

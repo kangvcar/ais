@@ -15,9 +15,7 @@ def test_version():
 
 def test_cli_version():
     """Test CLI version command."""
-    result = subprocess.run(
-        ["ais", "--version"], capture_output=True, text=True
-    )
+    result = subprocess.run(["ais", "--version"], capture_output=True, text=True)
     assert result.returncode == 0
     assert ais.__version__ in result.stdout
 

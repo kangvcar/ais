@@ -19,9 +19,7 @@ def _build_context_summary(context: Dict[str, Any]) -> str:
     # Git仓库信息
     git_info = context.get("git_info", {})
     if git_info.get("in_repo"):
-        git_status = (
-            f"🔄 Git仓库: {git_info.get('current_branch', 'unknown')}分支"
-        )
+        git_status = f"🔄 Git仓库: {git_info.get('current_branch', 'unknown')}分支"
         if git_info.get("has_changes"):
             git_status += f" (有{git_info.get('changed_files', 0)}个文件变更)"
         summary_parts.append(git_status)
@@ -31,21 +29,15 @@ def _build_context_summary(context: Dict[str, Any]) -> str:
     if dir_info.get("project_type") and dir_info["project_type"] != "unknown":
         project_info = f"🚀 项目类型: {dir_info['project_type']}"
         if dir_info.get("key_files"):
-            project_info += (
-                f" (关键文件: {', '.join(dir_info['key_files'][:3])})"
-            )
+            project_info += f" (关键文件: {', '.join(dir_info['key_files'][:3])})"
         summary_parts.append(project_info)
 
     # 系统状态
     system_status = context.get("system_status", {})
     if system_status:
-        status_info = (
-            f"⚡ 系统状态: CPU {system_status.get('cpu_percent', 0):.1f}%"
-        )
+        status_info = f"⚡ 系统状态: CPU {system_status.get('cpu_percent', 0):.1f}%"
         if "memory" in system_status:
-            status_info += (
-                f", 内存 {system_status['memory'].get('percent', 0):.1f}%"
-            )
+            status_info += f", 内存 {system_status['memory'].get('percent', 0):.1f}%"
         summary_parts.append(status_info)
 
     # 最近的操作模式
@@ -68,30 +60,22 @@ def _build_intelligent_context_analysis(context: Dict[str, Any]) -> str:
 
     # 网络诊断分析
     network_context = context.get("network_context", {})
-    if network_context and network_context != {
-        "error": "network context collection failed"
-    }:
+    if network_context and network_context != {"error": "network context collection failed"}:
         network_analysis = []
         if network_context.get("internet_connectivity") is False:
             network_analysis.append("✗  网络连接异常")
         elif network_context.get("dns_resolution") == "failed":
             network_analysis.append("✗  DNS解析失败")
         elif network_context.get("proxy_settings"):
-            network_analysis.append(
-                f"🔄 代理设置: {network_context['proxy_settings']}"
-            )
+            network_analysis.append(f"🔄 代理设置: {network_context['proxy_settings']}")
         else:
             network_analysis.append("✓  网络连接正常")
 
         if network_context.get("local_open_ports"):
-            network_analysis.append(
-                f"🔌 本地开放端口: {network_context['local_open_ports']}"
-            )
+            network_analysis.append(f"🔌 本地开放端口: {network_context['local_open_ports']}")
 
         if network_analysis:
-            analysis_parts.append(
-                f"🌐 **网络状态**: {' | '.join(network_analysis)}"
-            )
+            analysis_parts.append(f"🌐 **网络状态**: {' | '.join(network_analysis)}")
 
     # 权限分析
     permission_context = context.get("permission_context", {})
@@ -125,27 +109,18 @@ def _build_intelligent_context_analysis(context: Dict[str, Any]) -> str:
             target_path = permission_context["target_path"]
             if permission_context.get("target_permissions"):
                 permission_analysis.append(
-                    f"目标 {target_path} 权限: "
-                    f"{permission_context['target_permissions']}"
+                    f"目标 {target_path} 权限: " f"{permission_context['target_permissions']}"
                 )
             elif permission_context.get("parent_dir_writable") is not None:
-                parent_writable = (
-                    "可写"
-                    if permission_context["parent_dir_writable"]
-                    else "不可写"
-                )
+                parent_writable = "可写" if permission_context["parent_dir_writable"] else "不可写"
                 permission_analysis.append(f"父目录{parent_writable}")
 
         if permission_analysis:
-            analysis_parts.append(
-                f"🔐 **权限状态**: {' | '.join(permission_analysis)}"
-            )
+            analysis_parts.append(f"🔐 **权限状态**: {' | '.join(permission_analysis)}")
 
     # 项目环境分析
     project_context = context.get("project_context", {})
-    if project_context and project_context != {
-        "error": "project context collection failed"
-    }:
+    if project_context and project_context != {"error": "project context collection failed"}:
         project_analysis = []
 
         project_type = project_context.get("project_type", "unknown")
@@ -153,35 +128,23 @@ def _build_intelligent_context_analysis(context: Dict[str, Any]) -> str:
             project_analysis.append(f"类型: {project_type}")
 
             if project_context.get("framework"):
-                project_analysis.append(
-                    f"框架: {project_context['framework']}"
-                )
+                project_analysis.append(f"框架: {project_context['framework']}")
 
             if project_context.get("package_manager"):
-                project_analysis.append(
-                    f"包管理: {project_context['package_manager']}"
-                )
+                project_analysis.append(f"包管理: {project_context['package_manager']}")
 
             if project_context.get("build_system"):
-                project_analysis.append(
-                    f"构建系统: {project_context['build_system']}"
-                )
+                project_analysis.append(f"构建系统: {project_context['build_system']}")
 
             # 配置文件状态
             config_files = project_context.get("config_files", {})
             if config_files:
-                existing_configs = [
-                    k for k, v in config_files.items() if v == "exists"
-                ]
+                existing_configs = [k for k, v in config_files.items() if v == "exists"]
                 if existing_configs:
-                    project_analysis.append(
-                        f"配置文件: {', '.join(existing_configs[:3])}"
-                    )
+                    project_analysis.append(f"配置文件: {', '.join(existing_configs[:3])}")
 
         if project_analysis:
-            analysis_parts.append(
-                f"🚀 **项目环境**: {' | '.join(project_analysis)}"
-            )
+            analysis_parts.append(f"🚀 **项目环境**: {' | '.join(project_analysis)}")
 
     # Git状态分析
     if context.get("git_branch"):
@@ -198,26 +161,16 @@ def _build_intelligent_context_analysis(context: Dict[str, Any]) -> str:
         for cmd in recent_history[-5:]:  # 分析最近5条命令
             if any(git_cmd in cmd for git_cmd in ["git", "GitHub", "gitlab"]):
                 command_types.append("Git操作")
-            elif any(
-                dev_cmd in cmd
-                for dev_cmd in ["npm", "pip", "poetry", "cargo", "mvn"]
-            ):
+            elif any(dev_cmd in cmd for dev_cmd in ["npm", "pip", "poetry", "cargo", "mvn"]):
                 command_types.append("依赖管理")
-            elif any(
-                sys_cmd in cmd
-                for sys_cmd in ["sudo", "chmod", "chown", "systemctl"]
-            ):
+            elif any(sys_cmd in cmd for sys_cmd in ["sudo", "chmod", "chown", "systemctl"]):
                 command_types.append("系统管理")
-            elif any(
-                net_cmd in cmd for net_cmd in ["curl", "wget", "ssh", "ping"]
-            ):
+            elif any(net_cmd in cmd for net_cmd in ["curl", "wget", "ssh", "ping"]):
                 command_types.append("网络操作")
 
         if command_types:
             unique_types = list(set(command_types))
-            analysis_parts.append(
-                f"📊 **操作模式**: {', '.join(unique_types)}"
-            )
+            analysis_parts.append(f"📊 **操作模式**: {', '.join(unique_types)}")
 
     return "\n".join(analysis_parts) if analysis_parts else "📋 基本环境信息"
 
@@ -233,14 +186,10 @@ def _determine_user_skill_level(context: Dict[str, Any]) -> str:
     intermediate_commands = ["git rebase", "docker", "ssh", "rsync", "tar"]
 
     advanced_count = sum(
-        1
-        for cmd in recent_history
-        if any(adv in cmd for adv in advanced_commands)
+        1 for cmd in recent_history if any(adv in cmd for adv in advanced_commands)
     )
     intermediate_count = sum(
-        1
-        for cmd in recent_history
-        if any(inter in cmd for inter in intermediate_commands)
+        1 for cmd in recent_history if any(inter in cmd for inter in intermediate_commands)
     )
 
     if advanced_count >= 2:
@@ -357,9 +306,7 @@ def _make_api_request(
     provider = config.get("providers", {}).get(provider_name)
 
     if not provider:
-        raise ValueError(
-            f"Provider '{provider_name}' not found in configuration"
-        )
+        raise ValueError(f"Provider '{provider_name}' not found in configuration")
 
     base_url = provider.get("base_url")
     model_name = provider.get("model_name")
@@ -393,8 +340,7 @@ def _make_api_request(
         raise ConnectionError(f"Failed to connect to AI service: {e}")
     except httpx.HTTPStatusError as e:
         raise ConnectionError(
-            f"AI service returned error {e.response.status_code}: "
-            f"{e.response.text}"
+            f"AI service returned error {e.response.status_code}: " f"{e.response.text}"
         )
     except Exception as e:
         raise RuntimeError(f"Unexpected error: {e}")
@@ -458,9 +404,7 @@ def analyze_error(
     ]
 
     try:
-        content = _make_api_request(
-            messages, config, temperature=0.3, max_tokens=2500
-        )
+        content = _make_api_request(messages, config, temperature=0.3, max_tokens=2500)
         if not content:
             return {
                 "explanation": "AI服务无响应，请检查网络连接或服务配置",
@@ -477,9 +421,7 @@ def analyze_error(
             # Fallback: try to extract from markdown code block
             import re
 
-            json_match = re.search(
-                r"```json\s*(\{.*?\})\s*```", content, re.DOTALL
-            )
+            json_match = re.search(r"```json\s*(\{.*?\})\s*```", content, re.DOTALL)
             if json_match:
                 try:
                     return json.loads(json_match.group(1))
@@ -493,14 +435,10 @@ def analyze_error(
                     # 尝试清理格式问题
                     json_content = json_match.group(0)
                     # 移除Python元组语法等
-                    json_content = re.sub(
-                        r'\(\s*"([^"]+)"\s*\)', r'"\1"', json_content
-                    )
+                    json_content = re.sub(r'\(\s*"([^"]+)"\s*\)', r'"\1"', json_content)
                     # 修复字符串连接问题
                     json_content = re.sub(r'"\s*\+\s*"', "", json_content)
-                    json_content = re.sub(
-                        r'"\s*\)\s*,\s*\(\s*"', "", json_content
-                    )
+                    json_content = re.sub(r'"\s*\)\s*,\s*\(\s*"', "", json_content)
                     return json.loads(json_content)
                 except json.JSONDecodeError:
                     pass
@@ -508,9 +446,7 @@ def analyze_error(
             # 如果还是解析失败，尝试使用更智能的方式解析
             try:
                 # 尝试提取explanation, suggestions和follow_up_questions
-                explanation_match = re.search(
-                    r'"explanation":\s*"([^"]+)', content, re.DOTALL
-                )
+                explanation_match = re.search(r'"explanation":\s*"([^"]+)', content, re.DOTALL)
                 if explanation_match:
                     explanation = explanation_match.group(1)
                     # 清理explanation中的格式问题

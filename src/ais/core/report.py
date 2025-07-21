@@ -23,9 +23,7 @@ class LearningReportGenerator:
         # 获取分析数据
         error_patterns = self.analyzer.analyze_error_patterns()
         skill_assessment = self.analyzer.generate_skill_assessment()
-        learning_recommendations = (
-            self.analyzer.generate_learning_recommendations()
-        )
+        learning_recommendations = self.analyzer.generate_learning_recommendations()
 
         # 构建报告
         report = {
@@ -42,9 +40,7 @@ class LearningReportGenerator:
             },
             "skill_assessment": skill_assessment,
             "learning_recommendations": learning_recommendations,
-            "improvement_insights": self._generate_improvement_insights(
-                error_patterns
-            ),
+            "improvement_insights": self._generate_improvement_insights(error_patterns),
             "next_steps": self._generate_next_steps(learning_recommendations),
         }
 
@@ -92,8 +88,7 @@ class LearningReportGenerator:
                     "type": "频率良好",
                     "title": "错误频率较低",
                     "description": (
-                        f"在过去{self.days_back}天里仅发生了{total_errors}次错误，"
-                        "表现优秀！"
+                        f"在过去{self.days_back}天里仅发生了{total_errors}次错误，" "表现优秀！"
                     ),
                     "severity": "低",
                 }
@@ -163,9 +158,7 @@ class LearningReportGenerator:
 
         return insights
 
-    def _generate_next_steps(
-        self, recommendations: List[Dict[str, Any]]
-    ) -> List[str]:
+    def _generate_next_steps(self, recommendations: List[Dict[str, Any]]) -> List[str]:
         """生成下一步行动建议。"""
         if not recommendations:
             return [
@@ -178,24 +171,18 @@ class LearningReportGenerator:
         next_steps = []
 
         # 基于高优先级建议
-        high_priority = [
-            rec for rec in recommendations if rec["priority"] == "高"
-        ]
+        high_priority = [rec for rec in recommendations if rec["priority"] == "高"]
         if high_priority:
             next_steps.append(f"优先学习：{high_priority[0]['title']}")
             if len(high_priority) > 1:
                 next_steps.append(f"其次关注：{high_priority[1]['title']}")
 
         # 基于建议类型
-        command_recs = [
-            rec for rec in recommendations if rec["type"] == "命令掌握"
-        ]
+        command_recs = [rec for rec in recommendations if rec["type"] == "命令掌握"]
         if command_recs:
             next_steps.append(f"命令技能：{command_recs[0]['title']}")
 
-        error_recs = [
-            rec for rec in recommendations if rec["type"] == "错误预防"
-        ]
+        error_recs = [rec for rec in recommendations if rec["type"] == "错误预防"]
         if error_recs:
             next_steps.append(f"错误预防：{error_recs[0]['title']}")
 
@@ -217,12 +204,10 @@ class LearningReportGenerator:
         # 报告标题
         lines.append("# 📊 AIS 学习成长报告")
         lines.append("")
-        lines.append(
-            f"**分析周期**: {report['report_info']['analysis_period']}"
+        lines.append(f"**分析周期**: {report['report_info']['analysis_period']}")
+        generated_time = datetime.fromisoformat(report["report_info"]["generated_at"]).strftime(
+            "%Y-%m-%d %H:%M:%S"
         )
-        generated_time = datetime.fromisoformat(
-            report["report_info"]["generated_at"]
-        ).strftime("%Y-%m-%d %H:%M:%S")
         lines.append(f"**生成时间**: {generated_time}")
         lines.append("")
 
@@ -249,20 +234,13 @@ class LearningReportGenerator:
         lines.append(f"- **当前水平**: {skill_assessment['skill_level']}")
 
         if skill_assessment["strengths"]:
-            lines.append(
-                "- **优势领域**: " + ", ".join(skill_assessment["strengths"])
-            )
+            lines.append("- **优势领域**: " + ", ".join(skill_assessment["strengths"]))
 
         if skill_assessment["weaknesses"]:
-            lines.append(
-                "- **需要改进**: " + ", ".join(skill_assessment["weaknesses"])
-            )
+            lines.append("- **需要改进**: " + ", ".join(skill_assessment["weaknesses"]))
 
         if skill_assessment["knowledge_gaps"]:
-            lines.append(
-                "- **知识盲点**: "
-                + ", ".join(skill_assessment["knowledge_gaps"])
-            )
+            lines.append("- **知识盲点**: " + ", ".join(skill_assessment["knowledge_gaps"]))
 
         lines.append("")
 
@@ -271,9 +249,7 @@ class LearningReportGenerator:
         if improvement_insights:
             lines.append("## 💡 改进洞察")
             for insight in improvement_insights:
-                severity_icon = {"高": "🔥", "中": "⚠️", "低": "✓ "}.get(
-                    insight["severity"], "💡"
-                )
+                severity_icon = {"高": "🔥", "中": "⚠️", "低": "✓ "}.get(insight["severity"], "💡")
                 lines.append(f"### {severity_icon} {insight['title']}")
                 lines.append(insight["description"])
                 lines.append("")
@@ -283,13 +259,9 @@ class LearningReportGenerator:
         if learning_recommendations:
             lines.append("## 🎯 学习建议")
             for i, rec in enumerate(learning_recommendations, 1):
-                priority_icon = {"高": "🔥", "中": "⚠️", "低": "💡"}.get(
-                    rec["priority"], "💡"
-                )
+                priority_icon = {"高": "🔥", "中": "⚠️", "低": "💡"}.get(rec["priority"], "💡")
                 lines.append(f"### {i}. {priority_icon} {rec['title']}")
-                lines.append(
-                    f"**类型**: {rec['type']} | **优先级**: {rec['priority']}"
-                )
+                lines.append(f"**类型**: {rec['type']} | **优先级**: {rec['priority']}")
                 lines.append(rec["description"])
 
                 if rec["learning_path"]:
