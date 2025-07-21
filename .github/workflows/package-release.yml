@@ -290,9 +290,21 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ needs.build-packages.outputs.version }}
-        name: "Release ${{ needs.build-packages.outputs.version }}"
+        name: "v${{ needs.build-packages.outputs.version }}"
         body: |
           ## 📦 安装方法
+          
+          ### 推荐：一键安装脚本
+          
+          ```bash
+          # 一键安装（推荐）
+          bash <(curl -fsSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh)
+          
+          # 国内用户使用镜像
+          bash <(curl -fsSL https://gitee.com/kangvcar/ais/raw/main/scripts/install.sh)
+          ```
+          
+          ### 其他安装方式
           
           ```bash
           # 使用pip安装
@@ -441,7 +453,8 @@ jobs:
         if [ "${{ needs.publish-pypi.result }}" == "success" ] && [ "${{ needs.publish-pypi.outputs.published }}" == "true" ]; then
           echo "✅ PyPI发布成功"
           echo "📦 PyPI: https://pypi.org/project/ais-terminal/${{ needs.build-packages.outputs.version }}/"
-          echo "安装命令: pip install ais-terminal==${{ needs.build-packages.outputs.version }}"
+          echo "推荐安装: bash <(curl -fsSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh)"
+          echo "pip安装: pip install ais-terminal==${{ needs.build-packages.outputs.version }}"
           
           # 检查安装测试状态
           if [ "${{ needs.test-installation.result }}" == "success" ]; then
