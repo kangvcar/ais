@@ -643,8 +643,7 @@ def collect_system_basic_info() -> Dict[str, Any]:
     try:
         # 检测网络连通性 ping 8.8.8.8
         ping_cmd = (
-            "ping -c 1 -W 2 8.8.8.8 >/dev/null 2>&1 "
-            "&& echo 'connected' || echo 'disconnected'"
+            "ping -c 1 -W 2 8.8.8.8 >/dev/null 2>&1 " "&& echo 'connected' || echo 'disconnected'"
         )
         ping_result = run_safe_command(ping_cmd, timeout=3)
         if ping_result:
