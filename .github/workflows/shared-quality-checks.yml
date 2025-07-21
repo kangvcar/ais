@@ -91,7 +91,7 @@ jobs:
       run: black --check src/ais/
     
     - name: Run Flake8 linter
-      run: flake8 src/ais/
+      run: flake8 src/ais/ --max-line-length=100
     
     - name: Run MyPy type checker
       run: mypy src/ais/ || echo "MyPy check completed with warnings"
