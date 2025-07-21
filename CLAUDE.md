@@ -13,7 +13,7 @@ source .venv/bin/activate && python3 -m pip install -e .
 pip install autopep8 black flake8
 
 # 自动修复所有代码格式问题
-source .venv/bin/activate && black src/ tests/ && autopep8 --in-place --aggressive --aggressive --max-line-length=79 src/ tests/ -r && flake8 src/ tests/ --max-line-length=79
+source .venv/bin/activate && black src/ tests/ && autopep8 --in-place --aggressive --aggressive --max-line-length=100 src/ tests/ -r && flake8 src/ tests/ --max-line-length=100
 ```
 
 ## 标准代码检查流程
@@ -26,7 +26,7 @@ python -m pytest tests/ -v
 source .venv/bin/activate && black src/ tests/
 
 # 代码质量检查
-source .venv/bin/activate && flake8 src/ tests/ --max-line-length=79
+source .venv/bin/activate && flake8 src/ tests/ --max-line-length=100
 ```
 
 ## 代码质量工具说明
@@ -37,7 +37,7 @@ source .venv/bin/activate && flake8 src/ tests/ --max-line-length=79
 
 ## 最佳实践建议
 1. **优先使用自动化工具**：使用 autopep8 替代手动修复格式问题
-2. **设置最大行长度**：统一使用 79 字符限制
+2. **设置最大行长度**：统一使用 100 字符限制
 3. **批量处理**：使用 `-r` 参数递归处理所有文件
 4. **激进修复**：使用 `--aggressive --aggressive` 修复更多问题
 
