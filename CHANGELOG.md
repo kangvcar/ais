@@ -7,8 +7,6 @@
 
 ## [Unreleased]
 
-## [2.5.0] - 2025-07-21
-
 ### Added
 - 🐳 **Docker完整支持**：提供基于Ubuntu 22.04的丰富工具Docker镜像
   - 升级Dockerfile基础镜像从python:3.11-slim到ubuntu:22.04，包含完整开发工具链
@@ -28,9 +26,6 @@
   - 添加时区设置（Asia/Shanghai）和中文环境支持
   - 优化多阶段构建减少最终镜像大小
   - 完善健康检查和容器生命周期管理
-
-### Changed
-- 发布版本 2.5.0
 
 ### Documentation
 - 📖 **文档站点更新**：优化Docker相关文档的导航和组织
