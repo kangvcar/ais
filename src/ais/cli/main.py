@@ -966,11 +966,8 @@ def show_history_detail_content(index):
                 suggestions = json.loads(log.ai_suggestions_json)
                 console.print("\n[bold yellow]💡 AI 建议:[/bold yellow]")
                 for i, suggestion in enumerate(suggestions, 1):
-                    risk_icon = (
-                        "✓ "
-                        if suggestion.get("risk_level") == "safe"
-                        else "⚠️"
-                    )
+                    risk_icon = ("✓ " if suggestion.get(
+                        "risk_level") == "safe" else "⚠️")
                     console.print(
                         f"{i}. {suggestion.get('command', 'N/A')} {risk_icon}"
                     )
