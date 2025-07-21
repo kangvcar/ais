@@ -34,6 +34,7 @@ def get_default_config() -> Dict[str, Any]:
             "max_context_length": 4000,
             "async_analysis": True,
             "cache_analysis": True,
+            "analysis_cooldown": 60,  # 重复分析避免间隔时间（秒）
         },
         "ask": {
             "context_level": "minimal",  # minimal, standard, detailed

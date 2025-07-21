@@ -11,6 +11,11 @@
 
 ### Added
 - 🧠 **ask命令智能上下文感知功能**：实现了基于环境上下文的智能问答系统
+- ⏱️ **可配置的重复分析避免间隔**：使重复分析冷却时间可在配置文件中设置
+  - 添加`advanced.analysis_cooldown`配置项，默认值60秒
+  - 支持通过`ais config --set advanced.analysis_cooldown=<秒数>`设置间隔时间  
+  - Shell集成脚本自动读取配置值，动态调整重复分析检测间隔
+  - 优化用户体验：避免相同命令短时间内重复触发AI分析
   - 添加三级上下文收集系统：minimal（基础信息）、standard（标准信息）、detailed（详细信息）
   - 新增`collect_ask_context()`函数专门为ask功能收集上下文信息
   - 新增`ask_ai_with_context()`函数提供上下文感知的AI问答

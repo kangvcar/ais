@@ -16,6 +16,13 @@ def _create_integration_script(script_path: str):
     """创建Shell集成脚本。"""
     import os
 
+    # 获取配置中的重复分析间隔时间
+    try:
+        config = get_config()
+        analysis_cooldown = config.get("advanced", {}).get("analysis_cooldown", 60)
+    except Exception:
+        analysis_cooldown = 60  # 默认60秒
+
     script_content = """#!/bin/bash
 # AIS Shell 集成脚本
 # 这个脚本通过 PROMPT_COMMAND 机制捕获命令执行错误和错误输出
@@ -126,10 +133,10 @@ _ais_should_analyze_command() {
         return 1
     fi
 
-    # 如果与上次分析的命令相同，且时间间隔小于30秒，跳过
+    # 如果与上次分析的命令相同，且时间间隔小于{analysis_cooldown}秒，跳过
     if [ "$command" = "$_AIS_LAST_ANALYZED_COMMAND" ]; then
         local time_diff=$((current_time - _AIS_LAST_ANALYZED_TIME))
-        if [ $time_diff -lt 30 ]; then
+        if [ $time_diff -lt {analysis_cooldown} ]; then
             return 1  # 跳过重复分析
         fi
     fi
@@ -210,8 +217,11 @@ else
 fi
 """
 
+    # 使用配置值格式化脚本内容
+    formatted_script = script_content.format(analysis_cooldown=analysis_cooldown)
+
     with open(script_path, "w") as f:
-        f.write(script_content)
+        f.write(formatted_script)
     os.chmod(script_path, 0o755)
 
 
@@ -565,6 +575,7 @@ def config(set_key, get_key, list_providers, help_context):
 [bold]其他配置项:[/bold]
   auto_analysis=true/false    - 开启/关闭自动错误分析
   default_provider=name       - 设置默认AI服务提供商
+  advanced.analysis_cooldown=秒数 - 重复分析避免间隔时间（默认60秒）
 
 [dim]查看当前配置: ais config[/dim]"""
             panels.config(help_content, "⚙️ 上下文收集级别配置帮助")

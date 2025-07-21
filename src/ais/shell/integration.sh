@@ -26,6 +26,22 @@ _ais_check_auto_analysis() {
     fi
 }
 
+# 获取配置中的分析冷却时间
+_ais_get_analysis_cooldown() {
+    local config_file="$HOME/.config/ais/config.toml"
+    local cooldown=60  # 默认60秒
+    
+    if [ -f "$config_file" ]; then
+        # 尝试从配置文件中读取 analysis_cooldown 值
+        local config_cooldown=$(grep "analysis_cooldown = " "$config_file" 2>/dev/null | head -1 | cut -d'=' -f2 | tr -d ' ')
+        if [ -n "$config_cooldown" ] && [ "$config_cooldown" -gt 0 ] 2>/dev/null; then
+            cooldown=$config_cooldown
+        fi
+    fi
+    
+    echo $cooldown
+}
+
 # 全局变量用于去重检测
 _AIS_LAST_ANALYZED_COMMAND=""
 _AIS_LAST_ANALYZED_TIME=0
@@ -108,10 +124,13 @@ _ais_should_analyze_command() {
         return 1
     fi
     
-    # 如果与上次分析的命令相同，且时间间隔小于30秒，跳过
+    # 获取配置的冷却时间
+    local cooldown=$(_ais_get_analysis_cooldown)
+    
+    # 如果与上次分析的命令相同，且时间间隔小于配置的冷却时间，跳过
     if [ "$command" = "$_AIS_LAST_ANALYZED_COMMAND" ]; then
         local time_diff=$((current_time - _AIS_LAST_ANALYZED_TIME))
-        if [ $time_diff -lt 30 ]; then
+        if [ $time_diff -lt $cooldown ]; then
             return 1  # 跳过重复分析
         fi
     fi
