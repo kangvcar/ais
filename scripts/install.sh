@@ -42,32 +42,49 @@ NC='\033[0m' # No Color
 # 进度和状态显示配置
 SPINNER="⠋⠙⠹⠸⠼⠴⠦⠧"
 SPINNER_PID=""
+PROGRESS_TOTAL=100
+PROGRESS_CURRENT=0
 
-# 状态显示函数 - 带改进的spinner
+# 获取当前时间戳
+get_timestamp() {
+    date '+%H:%M:%S'
+}
+
+# 状态显示函数 - 带改进的spinner、时间戳和进度百分比
 show_status() {
     local message="$1"
     local success="${2:-false}"
+    local timestamp=$(get_timestamp)
+    local progress_display=""
+    
+    # 计算进度百分比显示
+    if [ $PROGRESS_CURRENT -le $PROGRESS_TOTAL ]; then
+        progress_display="[${PROGRESS_CURRENT}%]"
+    fi
+    
     if [ "$success" = "true" ]; then
-        printf "\r\033[K${GREEN}✓${NC} ${message}\n"
+        printf "\r\033[K${GREEN}✓${NC} [%s]%s %s\n" "$timestamp" "$progress_display" "$message"
     else
         # 使用毫秒级时间戳获得更好的动态效果
         local spinner_index=$(( ($(date +%s%3N) / 100) % 8 ))
         local spinner_char="${SPINNER:$spinner_index:1}"
-        printf "\r\033[K${CYAN}${spinner_char}${NC} ${message}"
+        printf "\r\033[K${CYAN}%s${NC} [%s]%s %s" "$spinner_char" "$timestamp" "$progress_display" "$message"
     fi
 }
 
 # 进度更新函数（保持接口兼容）
 update_progress() {
-    local increment=${1:-5}
+    local new_progress=${1:-5}
     local message=${2:-""}
+    PROGRESS_CURRENT=$new_progress
     show_status "$message"
 }
 
 # 带Spinner的进度更新（保持接口兼容）
 update_progress_with_spinner() {
-    local increment=${1:-5}
+    local new_progress=${1:-5}
     local message=${2:-""}
+    PROGRESS_CURRENT=$new_progress
     show_status "$message"
     sleep 0.1
 }
@@ -506,7 +523,7 @@ run_pkg_manager() {
 install_system_dependencies() {
     local strategy=$1
     # 更新进度条并显示步骤
-    update_progress 25 "正在安装系统依赖..."
+    update_progress 15 "正在安装系统依赖..."
     
     case "$strategy" in
         "compile_python310")
@@ -523,7 +540,9 @@ install_system_dependencies() {
                 
                 if [ "$is_centos7" -eq 1 ]; then
                     # CentOS 7.x 特殊处理
+                    PROGRESS_CURRENT=20
                     install_package_if_needed "正在安装EPEL源..." "yum install -y epel-release" "EPEL源安装完成" "epel-release"
+                    PROGRESS_CURRENT=30
                     install_package_if_needed "正在安装编译依赖包..." "yum install -y gcc make patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel tk-devel libffi-devel xz-devel openssl11 openssl11-devel openssl11-libs ncurses-devel gdbm-devel db4-devel libpcap-devel expat-devel" "编译依赖包安装完成" "gcc make patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel tk-devel libffi-devel xz-devel openssl11 openssl11-devel openssl11-libs ncurses-devel gdbm-devel db4-devel libpcap-devel expat-devel"
                 else
                     # Kylin Linux 或其他系统
@@ -662,6 +681,7 @@ compile_python310() {
     # 下载文件（如果需要）
     if [ ! -f "$python_file" ]; then
         local download_success=0
+        PROGRESS_CURRENT=45
         for url in "${python_urls[@]}"; do
             for attempt in 1 2; do
                 if run_with_spinner "正在下载Python源码..." "wget --timeout=30 --tries=2 -O '$python_file' '$url'" "dots" "源码下载完成"; then
@@ -685,6 +705,7 @@ compile_python310() {
     fi
     
     # 解压并编译
+    PROGRESS_CURRENT=50
     run_with_spinner "正在解压Python源码..." "tar -xf '$python_file'" "dots" "源码解压完成" || {
         cd "$original_dir" 2>/dev/null || true
         return 1
@@ -729,7 +750,7 @@ compile_python310() {
     # 设置环境变量
     export PYTHON_CMD="$python_prefix/bin/python3.10"
     export PIP_CMD="$python_prefix/bin/python3.10 -m pip"
-    print_success "Python 3.10.9编译安装完成"
+    show_status "Python 3.10.9编译安装完成" true
     
     # 确保返回成功
     return 0
@@ -737,7 +758,7 @@ compile_python310() {
 
 setup_python_environment() {
     local strategy=$1
-    update_progress 45 "正在设置Python环境..."
+    update_progress 40 "正在设置Python环境..."
     
     case "$strategy" in
         "compile_python310")
@@ -760,7 +781,7 @@ setup_python_environment() {
 install_ais() {
     local strategy=$1
     # 更新进度条并显示步骤
-    update_progress 75 "正在安装AIS..."
+    update_progress 60 "正在安装AIS..."
     
     # 检查AIS安装状态（除非强制重新安装）
     if [ "$FORCE_REINSTALL" -eq 0 ]; then
@@ -869,7 +890,7 @@ fix_ais_command() {
         if [ "$ais_executable" != "/usr/local/bin/ais" ]; then
             run_with_spinner "正在创建AIS命令链接..." "ln -sf '$ais_executable' /usr/local/bin/ais" "dots" "AIS命令链接创建完成"
         fi
-        print_success "AIS命令已修复: $ais_executable"
+        show_status "AIS命令已修复: $ais_executable" true
     else
         # 作为最后手段，创建包装脚本
         print_warning "未找到ais可执行文件，创建包装脚本"
@@ -890,7 +911,7 @@ except ImportError as e:
 " "\$@"
 EOF
         chmod +x /usr/local/bin/ais
-        print_success "已创建AIS包装脚本"
+        show_status "已创建AIS包装脚本" true
     fi
 }
 
@@ -937,7 +958,7 @@ EOF
 
 # 设置Shell集成
 setup_shell_integration() {
-    update_progress 85 "正在设置Shell集成..."
+    update_progress 80 "正在设置Shell集成..."
     
     # 检查Shell集成状态
     local shell_status
@@ -969,7 +990,7 @@ setup_shell_integration() {
 command -v ais >/dev/null 2>&1 && eval "$(ais shell-integration 2>/dev/null || true)"
 EOF
     
-    print_success "Shell集成配置已更新"
+    show_status "Shell集成配置已更新" true
     
     # 安全创建配置文件，保护用户现有配置
     setup_ais_config
@@ -1017,13 +1038,13 @@ model_name = "gpt-4o-mini"
 api_key = "sk-97RxyS9R2dsqFTUxcUZOpZwhnbjQCSOaFboooKDeTv5nHJgg"
 EOF
     
-    print_success "AIS配置文件已创建"
+    show_status "AIS配置文件已创建" true
 }
 
 # 验证安装
 verify_installation() {
     # 更新进度条并显示步骤
-    update_progress 95 "正在验证安装..."
+    update_progress 90 "正在验证安装..."
     
     # 更新PATH - 包括所有可能的路径
     export PATH="/usr/local/bin:$HOME/.local/bin:$PATH"
@@ -1052,7 +1073,7 @@ sys.exit(main())
 " "\$@"
 EOF
         chmod +x /usr/local/bin/ais
-        print_success "已创建 AIS 便捷命令"
+        show_status "已创建 AIS 便捷命令" true
     fi
     
     if [ $ais_found -eq 0 ]; then
@@ -1062,6 +1083,7 @@ EOF
     fi
     
     # 最终进度更新
+    PROGRESS_CURRENT=100
     show_status "安装验证完成" true
     return 0
 }
@@ -1072,7 +1094,8 @@ main() {
     echo -e "${BLUE}版本: $AIS_VERSION | GitHub: https://github.com/$GITHUB_REPO${NC}"
     echo
     
-    # 检测系统环境
+    # 初始化进度并检测系统环境
+    PROGRESS_CURRENT=0
     update_progress 10 "正在检测系统环境..."
     local env
     env=$(detect_environment)
@@ -1082,6 +1105,7 @@ main() {
     system_info=$(get_system_info)
     IFS='|' read -r os_name os_version python_version <<< "$system_info"
     
+    PROGRESS_CURRENT=10
     show_status "检测到系统: $os_name $os_version, Python: $python_version" true
     
     # 显示安装策略和环境信息
