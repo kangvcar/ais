@@ -387,6 +387,38 @@ def _generate_contextual_system_prompt_for_ask(context: Dict[str, Any]) -> str:
     if context.get("user"):
         prompt_parts.append(f"- 用户: {context['user']}")
 
+    # 系统基础信息（minimal级别包含）
+    if context.get("distro"):
+        prompt_parts.append(f"- 系统发行版: {context['distro']}")
+    if context.get("kernel_version"):
+        prompt_parts.append(f"- 内核版本: {context['kernel_version']}")
+    if context.get("cpu_cores"):
+        cpu_info = f"{context['cpu_cores']}核"
+        if context.get("cpu_model"):
+            cpu_info += (
+                f" ({context['cpu_model'][:50]}{'...' if len(context['cpu_model']) > 50 else ''})"
+            )
+        prompt_parts.append(f"- CPU: {cpu_info}")
+    if context.get("memory"):
+        prompt_parts.append(f"- 内存: {context['memory']}")
+    if context.get("disk_usage"):
+        prompt_parts.append(f"- 磁盘: {context['disk_usage']}")
+    if context.get("load_average"):
+        prompt_parts.append(f"- 系统负载: {context['load_average']}")
+    if "internet_connectivity" in context:
+        conn_status = "可连接" if context["internet_connectivity"] else "不可连接"
+        prompt_parts.append(f"- 网络状态: {conn_status} (ping 114.114.114.114)")
+    if context.get("listening_ports"):
+        ports = ", ".join(context["listening_ports"][:8])
+        if len(context["listening_ports"]) > 8:
+            ports += "..."
+        prompt_parts.append(f"- 监听端口: {ports}")
+    if context.get("running_services"):
+        services = ", ".join(context["running_services"][:6])
+        if len(context["running_services"]) > 6:
+            services += "..."
+        prompt_parts.append(f"- 运行服务: {services}")
+
     # Git信息
     if context.get("git_branch"):
         prompt_parts.append(f"- Git分支: {context['git_branch']}")

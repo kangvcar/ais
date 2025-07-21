@@ -556,12 +556,18 @@ def collect_ask_context(config: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def collect_minimal_ask_context(cwd: str) -> Dict[str, Any]:
-    """收集ask功能的最小上下文信息。"""
+    """收集ask功能的最小上下文信息（包含系统基础信息）。"""
     context = {
         "cwd": cwd,
         "user": getpass.getuser(),
         "timestamp": run_safe_command("date"),
     }
+
+    # 添加系统基础信息
+    try:
+        context.update(collect_system_basic_info())
+    except Exception:
+        pass
 
     # 尝试获取Git信息（如果在仓库中）
     try:
@@ -581,3 +587,111 @@ def collect_minimal_ask_context(cwd: str) -> Dict[str, Any]:
         pass
 
     return context
+
+
+def collect_system_basic_info() -> Dict[str, Any]:
+    """收集系统基础信息。"""
+    info = {}
+
+    # 系统发行版本和内核信息
+    try:
+        # uname -a 完整系统信息
+        uname_info = run_safe_command("uname -a")
+        if uname_info:
+            info["system_info"] = uname_info
+
+        # 系统发行版信息
+        distro_cmd = (
+            "lsb_release -d 2>/dev/null || cat /etc/os-release 2>/dev/null "
+            "| grep PRETTY_NAME | cut -d'=' -f2 | tr -d '\"'"
+        )
+        distro_info = run_safe_command(distro_cmd)
+        if distro_info:
+            info["distro"] = distro_info.split("\n")[0]
+
+        # 内核版本
+        kernel_version = run_safe_command("uname -r")
+        if kernel_version:
+            info["kernel_version"] = kernel_version
+    except Exception:
+        pass
+
+    # 硬件信息
+    try:
+        # CPU核心数
+        cpu_cores = run_safe_command("nproc")
+        if cpu_cores and cpu_cores.isdigit():
+            info["cpu_cores"] = int(cpu_cores)
+
+        # CPU型号信息
+        cpu_model = run_safe_command(
+            "grep 'model name' /proc/cpuinfo | head -1 | cut -d':' -f2 | xargs"
+        )
+        if cpu_model:
+            info["cpu_model"] = cpu_model
+
+        # 内存信息
+        memory_info = run_safe_command(
+            'free -h | grep \'^Mem:\' | awk \'{print $2" total, "$3" used, "$7" available"}\''
+        )
+        if memory_info:
+            info["memory"] = memory_info
+    except Exception:
+        pass
+
+    # 网络连通性检测
+    try:
+        # 检测网络连通性 ping 114.114.114.114
+        ping_cmd = (
+            "ping -c 1 -W 2 114.114.114.114 >/dev/null 2>&1 "
+            "&& echo 'connected' || echo 'disconnected'"
+        )
+        ping_result = run_safe_command(ping_cmd, timeout=3)
+        if ping_result:
+            info["internet_connectivity"] = ping_result == "connected"
+    except Exception:
+        info["internet_connectivity"] = False
+
+    # 运行的服务和端口信息
+    try:
+        # 获取监听端口信息
+        listening_ports = run_safe_command(
+            "ss -tuln | grep LISTEN | awk '{print $5}' | cut -d':' -f2 | sort -n | uniq | head -10"
+        )
+        if listening_ports:
+            ports = [
+                p.strip() for p in listening_ports.split("\n") if p.strip() and p.strip().isdigit()
+            ]
+            info["listening_ports"] = ports[:10]  # 限制显示前10个端口
+
+        # 获取运行的关键服务
+        services_cmd = (
+            "systemctl list-units --type=service --state=running | grep '.service' "
+            "| awk '{print $1}' | sed 's/.service$//' | head -10"
+        )
+        services = run_safe_command(services_cmd)
+        if services:
+            service_list = [s.strip() for s in services.split("\n") if s.strip()]
+            info["running_services"] = service_list[:10]  # 限制显示前10个服务
+    except Exception:
+        pass
+
+    # 磁盘使用信息
+    try:
+        disk_usage = run_safe_command(
+            'df -h / | tail -1 | awk \'{print $2" total, "$3" used ("$5")"}\''
+        )
+        if disk_usage:
+            info["disk_usage"] = disk_usage
+    except Exception:
+        pass
+
+    # 系统负载
+    try:
+        load_avg = run_safe_command("uptime | awk -F'load average:' '{print $2}' | xargs")
+        if load_avg:
+            info["load_average"] = load_avg
+    except Exception:
+        pass
+
+    return info
