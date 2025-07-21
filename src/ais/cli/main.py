@@ -55,35 +55,35 @@ _ais_init_stderr_capture() {
     if [ "$_AIS_ORIGINAL_FD3_SET" = true ]; then
         return 0
     fi
-    
+
     # 创建临时文件
     touch "$_AIS_STDERR_FILE" 2>/dev/null || return 1
-    
+
     # 保存原始 stderr 到文件描述符 3
     exec 3>&2 2>/dev/null || return 1
     _AIS_ORIGINAL_FD3_SET=true
-    
+
     # 重定向 stderr 到 tee，同时显示和保存
     exec 2> >(tee -a "$_AIS_STDERR_FILE" >&3 2>/dev/null)
-    
+
     return 0
 }
 
 # 获取并清理捕获的 stderr
 _ais_get_captured_stderr() {
     local stderr_content=""
-    
+
     if [ -f "$_AIS_STDERR_FILE" ]; then
         # 等待一小段时间确保 tee 完成写入
         sleep 0.1
-        
+
         # 读取最后 100 行内容（避免过长）
         stderr_content=$(tail -n 100 "$_AIS_STDERR_FILE" 2>/dev/null | head -c 2000)
-        
+
         # 清空文件内容以准备下次捕获
         > "$_AIS_STDERR_FILE" 2>/dev/null
     fi
-    
+
     echo "$stderr_content"
 }
 
@@ -94,7 +94,7 @@ _ais_cleanup_stderr_capture() {
         exec 2>&3 3>&- 2>/dev/null
         _AIS_ORIGINAL_FD3_SET=false
     fi
-    
+
     # 清理临时文件
     if [ -f "$_AIS_STDERR_FILE" ]; then
         rm -f "$_AIS_STDERR_FILE" 2>/dev/null
@@ -104,16 +104,16 @@ _ais_cleanup_stderr_capture() {
 # 过滤和清理 stderr 内容
 _ais_filter_stderr() {
     local stderr_content="$1"
-    
+
     # 过滤掉一些不相关的内容
     stderr_content=$(echo "$stderr_content" | grep -v "^\\s*$" | \\
                     grep -v "_ais_" | \\
                     grep -v "tee:" | \\
                     head -c 1500)
-    
+
     # URL 编码特殊字符以便安全传递
     stderr_content=$(echo "$stderr_content" | sed 's/"/\\\\"/g' | tr '\\n' ' ')
-    
+
     echo "$stderr_content"
 }
 
@@ -157,13 +157,13 @@ _ais_precmd() {
             if [[ "$last_command" != *"_ais_"* ]] && \\
                [[ "$last_command" != *"ais_"* ]] && \\
                [[ "$last_command" != *"history"* ]]; then
-                
+
                 # 检查是否应该分析此命令（去重机制）
                 if _ais_should_analyze_command "$last_command"; then
                     # 获取捕获的 stderr 内容
                     local captured_stderr=$(_ais_get_captured_stderr)
                     local filtered_stderr=$(_ais_filter_stderr "$captured_stderr")
-                    
+
                     # 调用 ais analyze 进行分析，传递 stderr
                     echo  # 添加空行分隔
                     if [ -n "$filtered_stderr" ]; then
@@ -191,7 +191,7 @@ if [ -n "$ZSH_VERSION" ]; then
     # Zsh 设置
     autoload -U add-zsh-hook 2>/dev/null || return
     add-zsh-hook precmd _ais_precmd
-    
+
     # Zsh 退出清理
     add-zsh-hook zshexit _ais_cleanup_stderr_capture
 elif [ -n "$BASH_VERSION" ]; then
