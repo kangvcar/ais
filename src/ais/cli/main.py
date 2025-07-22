@@ -1360,7 +1360,7 @@ def _generate_html_report(output: str, open_browser: bool):
         html_content = html_generator.generate_html_report()
 
         # 保存文件
-        with open(output, 'w', encoding='utf-8') as f:
+        with open(output, "w", encoding="utf-8") as f:
             f.write(html_content)
 
         console.print(f"[green]✓ HTML报告已生成: {output}[/green]")
@@ -1369,7 +1369,7 @@ def _generate_html_report(output: str, open_browser: bool):
         # 自动打开浏览器
         if open_browser:
             try:
-                webbrowser.open(f'file://{os.path.abspath(output)}')
+                webbrowser.open(f"file://{os.path.abspath(output)}")
                 console.print("[green]✓ 已在浏览器中打开报告[/green]")
             except Exception as e:
                 console.print(f"[yellow]⚠️ 无法自动打开浏览器: {e}[/yellow]")

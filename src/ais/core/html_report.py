@@ -7,6 +7,7 @@ from typing import Dict, List, Any
 try:
     import plotly.graph_objects as go
     from plotly.subplots import make_subplots
+
     PLOTLY_AVAILABLE = True
 except ImportError:
     PLOTLY_AVAILABLE = False
@@ -50,23 +51,24 @@ class HTMLReportGenerator:
         charts = {}
 
         # 错误趋势图
-        charts['error_trend'] = self._create_error_trend_chart(error_logs)
+        charts["error_trend"] = self._create_error_trend_chart(error_logs)
 
         # 技能雷达图
-        charts['skill_radar'] = self._create_skill_radar_chart(report_data['skill_assessment'])
+        charts["skill_radar"] = self._create_skill_radar_chart(report_data["skill_assessment"])
 
         # 时间热力图
-        charts['time_heatmap'] = self._create_time_heatmap(error_logs)
+        charts["time_heatmap"] = self._create_time_heatmap(error_logs)
 
         # 命令频次图
-        charts['command_frequency'] = self._create_command_frequency_chart(
-            report_data['error_summary'])
+        charts["command_frequency"] = self._create_command_frequency_chart(
+            report_data["error_summary"]
+        )
 
         # 错误类型分布图
-        charts['error_types'] = self._create_error_types_chart(report_data['error_summary'])
+        charts["error_types"] = self._create_error_types_chart(report_data["error_summary"])
 
         # 学习进度图
-        charts['learning_progress'] = self._create_learning_progress_chart(error_logs)
+        charts["learning_progress"] = self._create_learning_progress_chart(error_logs)
 
         return charts
 
@@ -78,7 +80,7 @@ class HTMLReportGenerator:
         # 按日期聚合错误数量
         daily_errors = defaultdict(int)
         for log in error_logs:
-            date_str = log.timestamp.strftime('%Y-%m-%d')
+            date_str = log.timestamp.strftime("%Y-%m-%d")
             daily_errors[date_str] += 1
 
         # 填补缺失的日期
@@ -88,42 +90,33 @@ class HTMLReportGenerator:
 
         for i in range(self.days_back + 1):
             current_date = start_date + timedelta(days=i)
-            date_str = current_date.strftime('%Y-%m-%d')
+            date_str = current_date.strftime("%Y-%m-%d")
             date_range.append(date_str)
             error_counts.append(daily_errors.get(date_str, 0))
 
         # 创建图表
         fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            x=date_range,
-            y=error_counts,
-            mode='lines+markers',
-            name='错误数量',
-            line=dict(color='#ef4444', width=3),
-            marker=dict(size=6, color='#ef4444'),
-            fill='tonexty',
-            fillcolor='rgba(239, 68, 68, 0.1)'
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=date_range,
+                y=error_counts,
+                mode="lines+markers",
+                name="错误数量",
+                line=dict(color="#ef4444", width=3),
+                marker=dict(size=6, color="#ef4444"),
+                fill="tonexty",
+                fillcolor="rgba(239, 68, 68, 0.1)",
+            )
+        )
 
         fig.update_layout(
-            title=dict(
-                text='📈 错误趋势 (最近30天)',
-                font=dict(size=20, color='#1f2937')
-            ),
-            xaxis=dict(
-                title='日期',
-                gridcolor='#f3f4f6',
-                showgrid=True
-            ),
-            yaxis=dict(
-                title='错误次数',
-                gridcolor='#f3f4f6',
-                showgrid=True
-            ),
-            template='plotly_white',
+            title=dict(text="📈 错误趋势 (最近30天)", font=dict(size=20, color="#1f2937")),
+            xaxis=dict(title="日期", gridcolor="#f3f4f6", showgrid=True),
+            yaxis=dict(title="错误次数", gridcolor="#f3f4f6", showgrid=True),
+            template="plotly_white",
             height=350,
             margin=dict(l=50, r=50, t=60, b=50),
-            hovermode='x unified'
+            hovermode="x unified",
         )
 
         return fig.to_html(include_plotlyjs=False, div_id="error-trend-chart")
@@ -132,20 +125,20 @@ class HTMLReportGenerator:
         """生成技能雷达图。"""
         # 定义技能领域
         skill_areas = {
-            '基础命令': ['ls', 'cd', 'pwd', 'cat', 'mkdir', 'rm'],
-            '文件操作': ['find', 'grep', 'sed', 'awk', 'sort'],
-            '系统管理': ['ps', 'top', 'kill', 'chmod', 'sudo'],
-            '网络工具': ['curl', 'wget', 'ping', 'ssh'],
-            'Git版本控制': ['git'],
-            'Docker容器': ['docker'],
+            "基础命令": ["ls", "cd", "pwd", "cat", "mkdir", "rm"],
+            "文件操作": ["find", "grep", "sed", "awk", "sort"],
+            "系统管理": ["ps", "top", "kill", "chmod", "sudo"],
+            "网络工具": ["curl", "wget", "ping", "ssh"],
+            "Git版本控制": ["git"],
+            "Docker容器": ["docker"],
         }
 
         # 计算各领域得分 (0-10分)
         categories = list(skill_areas.keys())
         scores = []
 
-        strengths = skill_assessment.get('strengths', [])
-        weaknesses = skill_assessment.get('weaknesses', [])
+        strengths = skill_assessment.get("strengths", [])
+        weaknesses = skill_assessment.get("weaknesses", [])
 
         for category in categories:
             if category in strengths:
@@ -157,15 +150,17 @@ class HTMLReportGenerator:
 
         # 创建雷达图
         fig = go.Figure()
-        fig.add_trace(go.Scatterpolar(
-            r=scores,
-            theta=categories,
-            fill='toself',
-            name='当前水平',
-            fillcolor='rgba(59, 130, 246, 0.3)',
-            line=dict(color='#3b82f6', width=3),
-            marker=dict(size=8, color='#3b82f6')
-        ))
+        fig.add_trace(
+            go.Scatterpolar(
+                r=scores,
+                theta=categories,
+                fill="toself",
+                name="当前水平",
+                fillcolor="rgba(59, 130, 246, 0.3)",
+                line=dict(color="#3b82f6", width=3),
+                marker=dict(size=8, color="#3b82f6"),
+            )
+        )
 
         fig.update_layout(
             polar=dict(
@@ -173,20 +168,15 @@ class HTMLReportGenerator:
                     visible=True,
                     range=[0, 10],
                     tickvals=[2, 4, 6, 8, 10],
-                    ticktext=['新手', '入门', '熟练', '精通', '专家'],
-                    gridcolor='#e5e7eb'
+                    ticktext=["新手", "入门", "熟练", "精通", "专家"],
+                    gridcolor="#e5e7eb",
                 ),
-                angularaxis=dict(
-                    gridcolor='#e5e7eb'
-                )
+                angularaxis=dict(gridcolor="#e5e7eb"),
             ),
-            title=dict(
-                text='🎯 技能评估雷达图',
-                font=dict(size=20, color='#1f2937')
-            ),
-            template='plotly_white',
+            title=dict(text="🎯 技能评估雷达图", font=dict(size=20, color="#1f2937")),
+            template="plotly_white",
             height=400,
-            margin=dict(l=50, r=50, t=60, b=50)
+            margin=dict(l=50, r=50, t=60, b=50),
         )
 
         return fig.to_html(include_plotlyjs=False, div_id="skill-radar-chart")
@@ -205,44 +195,40 @@ class HTMLReportGenerator:
             time_matrix[weekday][hour] += 1
 
         # 星期标签
-        weekday_labels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
-        hour_labels = [f'{h:02d}:00' for h in range(24)]
+        weekday_labels = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
+        hour_labels = [f"{h:02d}:00" for h in range(24)]
 
-        fig = go.Figure(data=go.Heatmap(
-            z=time_matrix,
-            x=hour_labels,
-            y=weekday_labels,
-            colorscale=[
-                [0, '#f8fafc'],
-                [0.2, '#fef3c7'],
-                [0.4, '#fcd34d'],
-                [0.6, '#f59e0b'],
-                [0.8, '#d97706'],
-                [1, '#92400e']
-            ],
-            hoverongaps=False,
-            hovertemplate='%{y} %{x}<br>错误次数: %{z}<extra></extra>'
-        ))
+        fig = go.Figure(
+            data=go.Heatmap(
+                z=time_matrix,
+                x=hour_labels,
+                y=weekday_labels,
+                colorscale=[
+                    [0, "#f8fafc"],
+                    [0.2, "#fef3c7"],
+                    [0.4, "#fcd34d"],
+                    [0.6, "#f59e0b"],
+                    [0.8, "#d97706"],
+                    [1, "#92400e"],
+                ],
+                hoverongaps=False,
+                hovertemplate="%{y} %{x}<br>错误次数: %{z}<extra></extra>",
+            )
+        )
 
         fig.update_layout(
-            title=dict(
-                text='⏰ 错误时间分布热力图',
-                font=dict(size=20, color='#1f2937')
-            ),
-            xaxis=dict(
-                title='时间',
-                tickangle=45
-            ),
-            yaxis=dict(title='星期'),
+            title=dict(text="⏰ 错误时间分布热力图", font=dict(size=20, color="#1f2937")),
+            xaxis=dict(title="时间", tickangle=45),
+            yaxis=dict(title="星期"),
             height=300,
-            margin=dict(l=80, r=50, t=60, b=80)
+            margin=dict(l=80, r=50, t=60, b=80),
         )
 
         return fig.to_html(include_plotlyjs=False, div_id="time-heatmap")
 
     def _create_command_frequency_chart(self, error_summary: Dict[str, Any]) -> str:
         """生成命令频次图。"""
-        top_commands = error_summary.get('most_common_commands', [])[:8]
+        top_commands = error_summary.get("most_common_commands", [])[:8]
 
         if not top_commands:
             return self._create_empty_chart("暂无命令数据")
@@ -250,41 +236,31 @@ class HTMLReportGenerator:
         commands = [cmd for cmd, _ in top_commands]
         counts = [count for _, count in top_commands]
 
-        fig = go.Figure(data=[
-            go.Bar(
-                x=commands,
-                y=counts,
-                marker=dict(
-                    color='#8b5cf6',
-                    line=dict(color='#7c3aed', width=1)
-                ),
-                hovertemplate='命令: %{x}<br>错误次数: %{y}<extra></extra>'
-            )
-        ])
+        fig = go.Figure(
+            data=[
+                go.Bar(
+                    x=commands,
+                    y=counts,
+                    marker=dict(color="#8b5cf6", line=dict(color="#7c3aed", width=1)),
+                    hovertemplate="命令: %{x}<br>错误次数: %{y}<extra></extra>",
+                )
+            ]
+        )
 
         fig.update_layout(
-            title=dict(
-                text='📊 最常出错的命令',
-                font=dict(size=20, color='#1f2937')
-            ),
-            xaxis=dict(
-                title='命令',
-                tickangle=45
-            ),
-            yaxis=dict(
-                title='错误次数',
-                gridcolor='#f3f4f6'
-            ),
-            template='plotly_white',
+            title=dict(text="📊 最常出错的命令", font=dict(size=20, color="#1f2937")),
+            xaxis=dict(title="命令", tickangle=45),
+            yaxis=dict(title="错误次数", gridcolor="#f3f4f6"),
+            template="plotly_white",
             height=350,
-            margin=dict(l=50, r=50, t=60, b=80)
+            margin=dict(l=50, r=50, t=60, b=80),
         )
 
         return fig.to_html(include_plotlyjs=False, div_id="command-frequency-chart")
 
     def _create_error_types_chart(self, error_summary: Dict[str, Any]) -> str:
         """生成错误类型分布图。"""
-        error_types = error_summary.get('most_common_error_types', [])[:6]
+        error_types = error_summary.get("most_common_error_types", [])[:6]
 
         if not error_types:
             return self._create_empty_chart("暂无错误类型数据")
@@ -293,31 +269,26 @@ class HTMLReportGenerator:
         values = [count for _, count in error_types]
 
         # 定义颜色
-        colors = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899']
+        colors = ["#ef4444", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899"]
 
-        fig = go.Figure(data=[go.Pie(
-            labels=labels,
-            values=values,
-            hole=0.4,
-            marker=dict(colors=colors[:len(labels)]),
-            hovertemplate='%{label}<br>次数: %{value}<br>占比: %{percent}<extra></extra>'
-        )])
+        fig = go.Figure(
+            data=[
+                go.Pie(
+                    labels=labels,
+                    values=values,
+                    hole=0.4,
+                    marker=dict(colors=colors[: len(labels)]),
+                    hovertemplate="%{label}<br>次数: %{value}<br>占比: %{percent}<extra></extra>",
+                )
+            ]
+        )
 
         fig.update_layout(
-            title=dict(
-                text='🔍 错误类型分布',
-                font=dict(size=20, color='#1f2937')
-            ),
+            title=dict(text="🔍 错误类型分布", font=dict(size=20, color="#1f2937")),
             height=350,
             margin=dict(l=50, r=50, t=60, b=50),
             showlegend=True,
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=-0.2,
-                xanchor="center",
-                x=0.5
-            )
+            legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5),
         )
 
         return fig.to_html(include_plotlyjs=False, div_id="error-types-chart")
@@ -328,18 +299,18 @@ class HTMLReportGenerator:
             return self._create_empty_chart("数据不足以分析学习进度")
 
         # 按周统计
-        weekly_data = defaultdict(lambda: {'errors': 0, 'unique_commands': set()})
+        weekly_data = defaultdict(lambda: {"errors": 0, "unique_commands": set()})
 
         for log in error_logs:
-            week_key = log.timestamp.strftime('%Y-W%U')
-            weekly_data[week_key]['errors'] += 1
+            week_key = log.timestamp.strftime("%Y-W%U")
+            weekly_data[week_key]["errors"] += 1
             if log.original_command.split():
-                weekly_data[week_key]['unique_commands'].add(log.original_command.split()[0])
+                weekly_data[week_key]["unique_commands"].add(log.original_command.split()[0])
 
         # 准备数据
         weeks = sorted(weekly_data.keys())[-8:]  # 最近8周
-        error_counts = [weekly_data[week]['errors'] for week in weeks]
-        command_diversity = [len(weekly_data[week]['unique_commands']) for week in weeks]
+        error_counts = [weekly_data[week]["errors"] for week in weeks]
+        command_diversity = [len(weekly_data[week]["unique_commands"]) for week in weeks]
 
         # 创建双轴图表
         fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -349,10 +320,10 @@ class HTMLReportGenerator:
             go.Scatter(
                 x=weeks,
                 y=error_counts,
-                mode='lines+markers',
-                name='错误次数',
-                line=dict(color='#ef4444', width=3),
-                marker=dict(size=8)
+                mode="lines+markers",
+                name="错误次数",
+                line=dict(color="#ef4444", width=3),
+                marker=dict(size=8),
             ),
             secondary_y=False,
         )
@@ -362,28 +333,25 @@ class HTMLReportGenerator:
             go.Scatter(
                 x=weeks,
                 y=command_diversity,
-                mode='lines+markers',
-                name='探索的命令数',
-                line=dict(color='#10b981', width=3),
-                marker=dict(size=8)
+                mode="lines+markers",
+                name="探索的命令数",
+                line=dict(color="#10b981", width=3),
+                marker=dict(size=8),
             ),
             secondary_y=True,
         )
 
         # 设置轴标题
         fig.update_xaxes(title_text="周期")
-        fig.update_yaxes(title_text="错误次数", secondary_y=False, color='#ef4444')
-        fig.update_yaxes(title_text="探索命令数", secondary_y=True, color='#10b981')
+        fig.update_yaxes(title_text="错误次数", secondary_y=False, color="#ef4444")
+        fig.update_yaxes(title_text="探索命令数", secondary_y=True, color="#10b981")
 
         fig.update_layout(
-            title=dict(
-                text='📈 学习进度趋势',
-                font=dict(size=20, color='#1f2937')
-            ),
-            template='plotly_white',
+            title=dict(text="📈 学习进度趋势", font=dict(size=20, color="#1f2937")),
+            template="plotly_white",
             height=350,
             margin=dict(l=50, r=50, t=60, b=50),
-            hovermode='x unified'
+            hovermode="x unified",
         )
 
         return fig.to_html(include_plotlyjs=False, div_id="learning-progress-chart")
@@ -393,29 +361,33 @@ class HTMLReportGenerator:
         fig = go.Figure()
         fig.add_annotation(
             text=message,
-            xref="paper", yref="paper",
-            x=0.5, y=0.5,
-            xanchor='center', yanchor='middle',
-            font=dict(size=16, color='#6b7280')
+            xref="paper",
+            yref="paper",
+            x=0.5,
+            y=0.5,
+            xanchor="center",
+            yanchor="middle",
+            font=dict(size=16, color="#6b7280"),
         )
         fig.update_layout(
-            template='plotly_white',
+            template="plotly_white",
             height=250,
             margin=dict(l=50, r=50, t=50, b=50),
             xaxis=dict(visible=False),
-            yaxis=dict(visible=False)
+            yaxis=dict(visible=False),
         )
         return fig.to_html(include_plotlyjs=False)
 
     def _build_html_template(self, report_data: Dict[str, Any], charts: Dict[str, str]) -> str:
         """构建HTML模板。"""
         # 获取报告基本信息
-        ai_insights = report_data.get('ai_insights', '暂无AI洞察')
-        total_errors = report_data['error_summary']['total_errors']
-        skill_level = report_data['skill_assessment']['skill_level']
-        analysis_period = report_data['report_info']['analysis_period']
+        ai_insights = report_data.get("ai_insights", "暂无AI洞察")
+        total_errors = report_data["error_summary"]["total_errors"]
+        skill_level = report_data["skill_assessment"]["skill_level"]
+        analysis_period = report_data["report_info"]["analysis_period"]
         generated_time = datetime.fromisoformat(
-            report_data['report_info']['generated_at']).strftime('%Y-%m-%d %H:%M:%S')
+            report_data["report_info"]["generated_at"]
+        ).strftime("%Y-%m-%d %H:%M:%S")
 
         html_template = f"""
 <!DOCTYPE html>

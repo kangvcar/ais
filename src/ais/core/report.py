@@ -427,7 +427,7 @@ class LearningReportGenerator:
             "total_errors": total_errors,
             "skill_level": report["skill_assessment"]["skill_level"],
             "unique_commands": unique_commands,
-            "error_density": f"{total_errors/30:.1f}次/天" if total_errors > 0 else "0次/天",
+            "error_density": f"{total_errors / 30:.1f}次/天" if total_errors > 0 else "0次/天",
         }
 
     def _analyze_error_patterns_deep(
@@ -625,9 +625,9 @@ class LearningReportGenerator:
             older_rate = len(older_errors) / min(23, (now - error_logs[-1].timestamp).days)
 
             if recent_rate < older_rate * 0.7:
-                weekly_trend = f"显著改善（错误率下降{(1-recent_rate/older_rate)*100:.0f}%）"
+                weekly_trend = f"显著改善（错误率下降{(1 - recent_rate / older_rate) * 100:.0f}%）"
             elif recent_rate > older_rate * 1.3:
-                weekly_trend = f"学习加速期（新挑战增加{(recent_rate/older_rate-1)*100:.0f}%）"
+                weekly_trend = f"学习加速期（新挑战增加{(recent_rate / older_rate - 1) * 100:.0f}%）"
             else:
                 weekly_trend = "稳定发展中"
         else:
