@@ -31,15 +31,13 @@ AIS 支持多种 AI 服务提供商，让您可以根据需要选择最适合的
 ais provider-add openai \
   --url https://api.openai.com/v1/chat/completions \
   --model gpt-3.5-turbo \
-  --api-key YOUR_OPENAI_API_KEY
+  --key YOUR_OPENAI_API_KEY
 
-# 高级配置
+# 使用 GPT-4 模型
 ais provider-add openai \
   --url https://api.openai.com/v1/chat/completions \
   --model gpt-4 \
-  --api-key YOUR_OPENAI_API_KEY \
-  --max-tokens 4096 \
-  --temperature 0.7
+  --key YOUR_OPENAI_API_KEY
 ```
 
 ### 添加 Claude 提供商
@@ -48,29 +46,28 @@ ais provider-add openai \
 ais provider-add claude \
   --url https://api.anthropic.com/v1/messages \
   --model claude-3-sonnet-20240229 \
-  --api-key YOUR_ANTHROPIC_API_KEY
+  --key YOUR_ANTHROPIC_API_KEY
 
-# 指定版本
+# 使用其他 Claude 模型
 ais provider-add claude \
   --url https://api.anthropic.com/v1/messages \
   --model claude-3-opus-20240229 \
-  --api-key YOUR_ANTHROPIC_API_KEY \
-  --max-tokens 4096
+  --key YOUR_ANTHROPIC_API_KEY
 ```
 
 ### 添加 Ollama 提供商
 ```bash
-# 基本配置
+# 基本本地配置
 ais provider-add ollama \
   --url http://localhost:11434/v1/chat/completions \
   --model llama2
 
-# 指定不同模型
-ais provider-add ollama-codellama \
+# 添加不同的本地模型
+ais provider-add ollama-code \
   --url http://localhost:11434/v1/chat/completions \
   --model codellama
 
-# 远程 Ollama 服务
+# 连接远程 Ollama 服务
 ais provider-add ollama-remote \
   --url http://remote-server:11434/v1/chat/completions \
   --model llama2
@@ -82,8 +79,7 @@ ais provider-add ollama-remote \
 ais provider-add custom \
   --url https://your-api.example.com/v1/chat/completions \
   --model your-model \
-  --api-key YOUR_API_KEY \
-  --headers "Custom-Header: value"
+  --key YOUR_API_KEY
 ```
 
 ## 📋 提供商管理
@@ -93,11 +89,8 @@ ais provider-add custom \
 # 列出所有提供商
 ais provider-list
 
-# 查看当前提供商
-ais provider-current
-
-# 查看提供商详情
-ais provider-show openai
+# 查看提供商配置
+ais config --list-providers
 ```
 
 ### 切换提供商
@@ -105,195 +98,55 @@ ais provider-show openai
 # 切换到指定提供商
 ais provider-use openai
 
-# 临时使用提供商
-ais ask "test question" --provider claude
-
-# 为特定功能设置提供商
-ais config set analyze-provider openai
-ais config set learn-provider claude
+# 切换到其他提供商
+ais provider-use claude
+ais provider-use ollama
 ```
 
-### 测试提供商
+### 删除提供商
 ```bash
-# 测试提供商连接
-ais provider-test openai
-
-# 测试所有提供商
-ais provider-test --all
-
-# 详细测试
-ais provider-test openai --verbose
+# 删除指定提供商
+ais provider-remove openai
+ais provider-remove claude
 ```
 
-## ⚙️ 高级配置
+## ⚙️ 配置管理
 
-### 提供商优先级
+### 查看当前配置
 ```bash
-# 设置提供商优先级
-ais provider-priority set openai 1
-ais provider-priority set claude 2
-ais provider-priority set ollama 3
+# 查看完整配置
+ais config
 
-# 查看优先级
-ais provider-priority list
+# 查看特定配置项
+ais config --get default_provider
 
-# 自动故障转移
-ais config set auto-failover true
+# 查看所有提供商配置
+ais config --list-providers
 ```
 
-### 负载均衡
+### 配置设置
 ```bash
-# 启用负载均衡
-ais config set load-balancing true
+# 设置默认提供商（与 provider-use 相同）
+ais config --set default_provider=openai
 
-# 设置负载均衡策略
-ais config set balance-strategy round-robin  # 轮询
-ais config set balance-strategy least-load   # 最少负载
-ais config set balance-strategy random       # 随机
+# 设置上下文收集级别
+ais config --set ask.context_level=standard
 
-# 设置权重
-ais provider-weight set openai 0.5
-ais provider-weight set claude 0.3
-ais provider-weight set ollama 0.2
+# 设置自动分析
+ais config --set advanced.auto_analysis=true
 ```
 
-### 功能专用提供商
-```bash
-# 为不同功能设置专用提供商
-ais config set ask-provider openai      # 问答功能
-ais config set analyze-provider claude  # 错误分析
-ais config set learn-provider ollama    # 学习功能
-ais config set report-provider openai   # 报告生成
-```
+## 🔒 安全最佳实践
 
-## 🔒 安全配置
-
-### API 密钥管理
-```bash
-# 设置 API 密钥
-ais provider-key set openai YOUR_API_KEY
-
-# 从环境变量读取
-ais provider-key set openai --env OPENAI_API_KEY
-
-# 从文件读取
-ais provider-key set openai --file /path/to/keyfile
-
-# 加密存储
-ais config set encrypt-keys true
-```
+### API 密钥安全
+- 使用环境变量存储 API 密钥
+- 定期轮换 API 密钥
+- 不要在代码中硬编码密钥
 
 ### 网络安全
-```bash
-# 启用 SSL 验证
-ais config set verify-ssl true
-
-# 设置代理
-ais config set proxy http://proxy.example.com:8080
-
-# 设置超时
-ais config set request-timeout 30
-
-# 设置重试策略
-ais config set retry-attempts 3
-ais config set retry-delay 1
-```
-
-## 📊 监控和统计
-
-### 使用统计
-```bash
-# 查看提供商使用统计
-ais provider-stats
-
-# 查看成本统计
-ais provider-costs
-
-# 查看性能统计
-ais provider-performance
-```
-
-### 监控配置
-```bash
-# 启用使用监控
-ais config set monitor-usage true
-
-# 设置使用限制
-ais provider-limit set openai 1000 --daily
-
-# 设置成本限制
-ais provider-limit set openai 10.00 --daily --currency USD
-
-# 设置警告阈值
-ais provider-alert set openai 80% --usage
-```
-
-## 🌐 企业配置
-
-### 团队管理
-```bash
-# 创建团队配置
-ais team-config create "development-team"
-
-# 为团队设置提供商
-ais team-config set "development-team" provider openai
-
-# 应用团队配置
-ais team-config apply "development-team"
-```
-
-### 策略管理
-```bash
-# 创建使用策略
-ais policy create "corporate-policy"
-
-# 设置策略规则
-ais policy set "corporate-policy" max-tokens 2048
-ais policy set "corporate-policy" allowed-providers "openai,claude"
-
-# 应用策略
-ais policy apply "corporate-policy"
-```
-
-## 🔧 故障排除
-
-### 常见问题
-```bash
-# 检查提供商状态
-ais provider-diagnose openai
-
-# 检查网络连接
-ais provider-ping openai
-
-# 检查 API 密钥
-ais provider-validate openai
-```
-
-### 调试模式
-```bash
-# 启用调试模式
-ais config set debug true
-
-# 查看详细日志
-ais provider-test openai --debug
-
-# 查看请求详情
-ais ask "test" --provider openai --debug
-```
-
-### 错误处理
-```bash
-# 查看错误日志
-ais provider-errors openai
-
-# 清除错误记录
-ais provider-errors clear
-
-# 设置错误处理策略
-ais config set error-handling retry
-ais config set error-handling fallback
-ais config set error-handling fail
-```
+- 使用 HTTPS 连接
+- 在企业环境中注意防火墙配置
+- 优先考虑使用本地模型（Ollama）保护数据隐私
 
 ## 📋 配置模板
 
@@ -303,15 +156,13 @@ ais config set error-handling fail
 ais provider-add openai \
   --url https://api.openai.com/v1/chat/completions \
   --model gpt-3.5-turbo \
-  --api-key $OPENAI_API_KEY \
-  --temperature 0.7
+  --key $OPENAI_API_KEY
 
 ais provider-add ollama \
   --url http://localhost:11434/v1/chat/completions \
   --model codellama
 
 ais provider-use openai
-ais config set auto-failover true
 ```
 
 ### 生产环境配置
@@ -320,24 +171,19 @@ ais config set auto-failover true
 ais provider-add openai \
   --url https://api.openai.com/v1/chat/completions \
   --model gpt-4 \
-  --api-key $OPENAI_API_KEY \
-  --max-tokens 2048 \
-  --temperature 0.3
+  --key $OPENAI_API_KEY
 
 ais provider-add claude \
   --url https://api.anthropic.com/v1/messages \
   --model claude-3-sonnet-20240229 \
-  --api-key $ANTHROPIC_API_KEY
+  --key $ANTHROPIC_API_KEY
 
-ais provider-priority set openai 1
-ais provider-priority set claude 2
-ais config set auto-failover true
-ais config set load-balancing true
+ais provider-use openai
 ```
 
 ### 隐私保护配置
 ```bash
-# 隐私保护推荐配置
+# 隐私保护推荐配置（仅使用本地模型）
 ais provider-add ollama \
   --url http://localhost:11434/v1/chat/completions \
   --model llama2
@@ -347,30 +193,59 @@ ais provider-add ollama-code \
   --model codellama
 
 ais provider-use ollama
-ais config set data-local-only true
 ```
 
-## 🔄 备份和恢复
+## 🛠️ 故障排除
 
-### 配置备份
+### 常见问题
+
+#### 提供商连接失败
 ```bash
-# 备份提供商配置
-ais provider-backup providers.json
+# 检查提供商配置
+ais provider-list
 
-# 恢复提供商配置
-ais provider-restore providers.json
+# 测试网络连接
+ping api.openai.com
 
-# 导出特定提供商
-ais provider-export openai openai-config.json
+# 检查 API 密钥有效性
+# (通过尝试简单问答)
+ais ask "test"
 ```
 
-### 迁移配置
+#### Ollama 连接问题
 ```bash
-# 从旧版本迁移
-ais provider-migrate --from-version 0.2.0
+# 检查 Ollama 服务状态
+curl http://localhost:11434/api/version
 
-# 迁移到新环境
-ais provider-migrate --to-env production
+# 启动 Ollama 服务
+ollama serve
+
+# 拉取模型
+ollama pull llama2
+```
+
+#### 配置文件问题
+```bash
+# 查看配置文件位置
+echo ~/.config/ais/config.toml
+
+# 备份并重置配置
+cp ~/.config/ais/config.toml ~/.config/ais/config.toml.backup
+rm ~/.config/ais/config.toml
+ais setup
+```
+
+### 配置验证
+```bash
+# 验证配置
+ais config
+
+# 测试提供商工作
+ais ask "Hello, can you respond?"
+
+# 切换提供商测试
+ais provider-use claude
+ais ask "Test question"
 ```
 
 ---
@@ -378,19 +253,19 @@ ais provider-migrate --to-env production
 ## 下一步
 
 - [基本配置](../configuration/basic-config) - 配置基础设置
-- [隐私设置](../configuration/privacy-settings) - 配置隐私保护
+- [隐私设置](../configuration/privacy-settings) - 配置隐私保护  
 - [AI 问答](./ai-chat) - 使用 AI 问答功能
 
 ---
 
 ::: tip 提示
-建议配置多个提供商作为备份，并启用自动故障转移以确保服务的连续性。
+建议配置多个提供商，这样可以根据不同场景选择最适合的模型。
 :::
 
 ::: info 成本控制
-使用外部 AI 服务时，建议设置使用限制和成本警告，避免意外的高额费用。
+使用外部 AI 服务时，请注意 API 调用成本。可以先使用免费的本地模型（Ollama）进行测试。
 :::
 
 ::: warning 注意
-API 密钥是敏感信息，请妥善保管。建议使用环境变量或加密存储来管理密钥。
+API 密钥是敏感信息，请妥善保管。建议使用环境变量来管理密钥，避免在命令行中直接输入。
 :::
