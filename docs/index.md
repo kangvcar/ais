@@ -6,7 +6,7 @@ hero:
   text: "上下文感知的错误分析学习助手"
   tagline: "让每次报错都是成长，让每个错误都是学习"
   image:
-    src: /logo.png
+    src: /logo-robot.png
     alt: AIS Logo
   actions:
     - theme: brand

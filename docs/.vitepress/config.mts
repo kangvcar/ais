@@ -13,7 +13,7 @@ export default defineConfig({
   ],
   
   themeConfig: {
-    logo: '/logo.png',
+    logo: '/logo-robot.png',
     siteTitle: false,
     
     nav: [
