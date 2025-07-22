@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![ais](https://socialify.git.ci/kangvcar/ais/image?custom_description=AI%E9%A9%B1%E5%8A%A8%E7%9A%84%E6%99%BA%E8%83%BD%E7%BB%88%E7%AB%AF%E5%8A%A9%E6%89%8B%EF%BC%8C%E8%87%AA%E5%8A%A8%E5%88%86%E6%9E%90%E5%91%BD%E4%BB%A4%E9%94%99%E8%AF%AF%E3%80%81%E6%8F%90%E4%BE%9B%E6%99%BA%E8%83%BD%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E3%80%82%0A%E8%AE%A9%E6%AF%8F%E6%AC%A1%E6%8A%A5%E9%94%99%E9%83%BD%E6%98%AF%E6%88%90%E9%95%BF%EF%BC%8C%E8%AE%A9%E6%AF%8F%E4%B8%AA%E9%94%99%E8%AF%AF%E9%83%BD%E6%98%AF%E5%AD%A6%E4%B9%A0&custom_language=Shell&description=1&font=Bitter&forks=1&issues=1&language=1&logo=https%3A%2F%2Femojiisland.com%2Fcdn%2Fshop%2Fproducts%2FRobot_Emoji_Icon_abe1111a-1293-4668-bdf9-9ceb05cff58e_large.png%3Fv%3D1571606090&name=1&owner=1&pattern=Plus&stargazers=1&theme=Auto)
+![ais](https://socialify.git.ci/kangvcar/ais/image?custom_description=AI%E9%A9%B1%E5%8A%A8%E7%9A%84%E6%99%BA%E8%83%BD%E7%BB%88%E7%AB%AF%E5%8A%A9%E6%89%8B%EF%BC%8C%E8%87%AA%E5%8A%A8%E5%88%86%E6%9E%90%E5%91%BD%E4%BB%A4%E9%94%99%E8%AF%AF%E3%80%81%E6%8F%90%E4%BE%9B%E6%99%BA%E8%83%BD%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E3%80%82%0A%E8%AE%A9%E6%AF%8F%E6%AC%A1%E6%8A%A5%E9%94%99%E9%83%BD%E6%98%AF%E6%88%90%E9%95%BF%EF%BC%8C%E8%AE%A9%E6%AF%8F%E4%B8%AA%E9%94%99%E8%AF%AF%E9%83%BD%E6%98%AF%E5%AD%A6%E4%B9%A0&custom_language=Shell&description=1&font=Bitter&forks=1&issues=1&language=1&logo=https%3A%2F%2Fraw.githubusercontent.com%2Fkangvcar%2Fais%2Frefs%2Fheads%2Fmain%2Fdocs%2Fpublic%2Flogo-robot.svg&name=1&owner=1&pattern=Plus&stargazers=1&theme=Auto)
 
 [📖 安装指南](#installation) · [🚀 快速开始](#quickstart) · [🤝 贡献](#contributing)
 
