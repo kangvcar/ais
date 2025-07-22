@@ -45,12 +45,15 @@ detect_installation_method() {
     # 检查pipx系统级安装
     elif [ -d "/opt/pipx" ] && [ -f "/usr/local/bin/ais" ]; then
         method="pipx-system"
-    # 检查编译安装的Python 3.10.9环境
-    elif [ -x "/usr/local/python3.10/bin/ais" ] && [ -x "/usr/local/python3.10/bin/python3.10" ]; then
+    # 检查编译安装的Python 3.10.9环境（修复路径）
+    elif [ -x "/usr/local/bin/python3.10" ] && /usr/local/bin/python3.10 -m pip show ais-terminal >/dev/null 2>&1; then
         method="compiled-python310"
     # 检查编译安装的Python 3.9环境
-    elif [ -x "/usr/local/python3.9/bin/ais" ] && [ -x "/usr/local/python3.9/bin/python3.9" ]; then
+    elif [ -x "/usr/local/bin/python3.9" ] && /usr/local/bin/python3.9 -m pip show ais-terminal >/dev/null 2>&1; then
         method="compiled-python39"
+    # 检查python3.9升级安装
+    elif command_exists python3.9 && python3.9 -m pip show ais-terminal >/dev/null 2>&1; then
+        method="python-upgrade"
     # 检查pip安装
     elif python3 -m pip list 2>/dev/null | grep -q "ais-terminal"; then
         method="pip"
@@ -152,22 +155,26 @@ uninstall_container() {
 uninstall_compiled_python310() {
     print_info "🔄 卸载编译安装的Python 3.10.9环境..."
     
-    # 卸载AIS包
-    if [ -x "/usr/local/python3.10/bin/pip3.10" ]; then
-        /usr/local/python3.10/bin/pip3.10 uninstall -y ais-terminal 2>/dev/null || print_warning "pip卸载失败"
+    # 卸载AIS包（修复路径）
+    if [ -x "/usr/local/bin/python3.10" ]; then
+        /usr/local/bin/python3.10 -m pip uninstall -y ais-terminal 2>/dev/null || print_warning "pip卸载失败"
     fi
     
-    # 清理软链接
+    # 清理AIS命令和包装脚本
     if [ "$EUID" -eq 0 ]; then
         rm -f /usr/local/bin/ais 2>/dev/null || true
     else
         sudo rm -f /usr/local/bin/ais 2>/dev/null || true
     fi
     
+    # 清理临时构建文件
+    rm -rf /tmp/python_build 2>/dev/null || true
+    rm -f /tmp/ais_install_*.log 2>/dev/null || true
+    
     # 询问是否删除编译安装的Python环境
     echo
     print_warning "⚠️  检测到编译安装的Python 3.10.9环境"
-    print_info "位置: /usr/local/python3.10/"
+    print_info "位置: /usr/local/ (包含bin/python3.10, lib/python3.10等)"
     
     local remove_python=0
     if [ -t 0 ]; then
@@ -186,9 +193,18 @@ uninstall_compiled_python310() {
     if [ $remove_python -eq 1 ]; then
         print_info "正在删除Python 3.10.9环境..."
         if [ "$EUID" -eq 0 ]; then
-            rm -rf /usr/local/python3.10 2>/dev/null || true
+            # 删除编译安装的Python文件
+            rm -f /usr/local/bin/python3.10 2>/dev/null || true
+            rm -f /usr/local/bin/pip3.10 2>/dev/null || true
+            rm -rf /usr/local/lib/python3.10 2>/dev/null || true
+            rm -rf /usr/local/include/python3.10 2>/dev/null || true
+            rm -rf /usr/local/share/man/man1/python3.10* 2>/dev/null || true
         else
-            sudo rm -rf /usr/local/python3.10 2>/dev/null || true
+            sudo rm -f /usr/local/bin/python3.10 2>/dev/null || true
+            sudo rm -f /usr/local/bin/pip3.10 2>/dev/null || true
+            sudo rm -rf /usr/local/lib/python3.10 2>/dev/null || true
+            sudo rm -rf /usr/local/include/python3.10 2>/dev/null || true
+            sudo rm -rf /usr/local/share/man/man1/python3.10* 2>/dev/null || true
         fi
         print_success "Python 3.10.9环境已删除"
     else
@@ -203,10 +219,8 @@ uninstall_compiled_python39() {
     print_info "🔄 卸载编译安装的Python 3.9环境..."
     
     # 卸载AIS包
-    if [ -x "/usr/local/python3.9/bin/pip3.9" ]; then
-        /usr/local/python3.9/bin/pip3.9 uninstall -y ais-terminal 2>/dev/null || print_warning "pip卸载失败"
-    elif [ -x "/usr/local/python3.9/bin/pip3" ]; then
-        /usr/local/python3.9/bin/pip3 uninstall -y ais-terminal 2>/dev/null || print_warning "pip卸载失败"
+    if [ -x "/usr/local/bin/python3.9" ]; then
+        /usr/local/bin/python3.9 -m pip uninstall -y ais-terminal 2>/dev/null || print_warning "pip卸载失败"
     fi
     
     # 清理软链接
@@ -219,7 +233,7 @@ uninstall_compiled_python39() {
     # 询问是否删除编译安装的Python环境
     echo
     print_warning "⚠️  检测到编译安装的Python 3.9环境"
-    print_info "位置: /usr/local/python3.9/"
+    print_info "位置: /usr/local/ (包含bin/python3.9, lib/python3.9等)"
     
     local remove_python=0
     if [ -t 0 ]; then
@@ -238,9 +252,17 @@ uninstall_compiled_python39() {
     if [ $remove_python -eq 1 ]; then
         print_info "正在删除Python 3.9环境..."
         if [ "$EUID" -eq 0 ]; then
-            rm -rf /usr/local/python3.9 2>/dev/null || true
+            rm -f /usr/local/bin/python3.9 2>/dev/null || true
+            rm -f /usr/local/bin/pip3.9 2>/dev/null || true
+            rm -rf /usr/local/lib/python3.9 2>/dev/null || true
+            rm -rf /usr/local/include/python3.9 2>/dev/null || true
+            rm -rf /usr/local/share/man/man1/python3.9* 2>/dev/null || true
         else
-            sudo rm -rf /usr/local/python3.9 2>/dev/null || true
+            sudo rm -f /usr/local/bin/python3.9 2>/dev/null || true
+            sudo rm -f /usr/local/bin/pip3.9 2>/dev/null || true
+            sudo rm -rf /usr/local/lib/python3.9 2>/dev/null || true
+            sudo rm -rf /usr/local/include/python3.9 2>/dev/null || true
+            sudo rm -rf /usr/local/share/man/man1/python3.9* 2>/dev/null || true
         fi
         print_success "Python 3.9环境已删除"
     else
@@ -248,6 +270,25 @@ uninstall_compiled_python39() {
     fi
     
     print_success "编译安装的Python 3.9环境卸载完成"
+}
+
+# 卸载Python升级安装（python_upgrade策略）
+uninstall_python_upgrade() {
+    print_info "🔄 卸载Python升级安装..."
+    
+    # 卸载AIS包
+    if command_exists python3.9; then
+        python3.9 -m pip uninstall -y ais-terminal 2>/dev/null || print_warning "pip卸载失败"
+    fi
+    
+    # 清理AIS命令
+    if [ "$EUID" -eq 0 ]; then
+        rm -f /usr/local/bin/ais 2>/dev/null || true
+    else
+        sudo rm -f /usr/local/bin/ais 2>/dev/null || true
+    fi
+    
+    print_success "Python升级安装卸载完成"
 }
 
 # 清理用户配置和数据
@@ -277,10 +318,49 @@ cleanup_user_data() {
         cleaned=1
     fi
     
+    # 清理pipx本地安装路径（用户级）
+    if [ -d "$HOME/.local/share/pipx/venvs/ais-terminal" ]; then
+        rm -rf "$HOME/.local/share/pipx/venvs/ais-terminal"
+        print_info "  已清理: ~/.local/share/pipx/venvs/ais-terminal"
+        cleaned=1
+    fi
+    
     if [ $cleaned -eq 1 ]; then
         print_success "用户数据清理完成"
     else
         print_info "未找到用户数据，跳过清理"
+    fi
+}
+
+# 清理临时文件和日志
+cleanup_temp_files() {
+    print_info "🗑️ 清理临时文件和日志..."
+    
+    local cleaned=0
+    
+    # 清理编译临时目录
+    if [ -d "/tmp/python_build" ]; then
+        rm -rf /tmp/python_build
+        print_info "  已清理: /tmp/python_build"
+        cleaned=1
+    fi
+    
+    # 清理安装日志
+    rm -f /tmp/ais_install_*.log 2>/dev/null && {
+        print_info "  已清理: /tmp/ais_install_*.log"
+        cleaned=1
+    }
+    
+    # 清理其他可能的临时文件
+    rm -f /tmp/ais_install_error_* 2>/dev/null && {
+        print_info "  已清理: /tmp/ais_install_error_*"
+        cleaned=1
+    }
+    
+    if [ $cleaned -eq 1 ]; then
+        print_success "临时文件清理完成"
+    else
+        print_info "未找到临时文件，跳过清理"
     fi
 }
 
@@ -292,18 +372,44 @@ cleanup_shell_integration() {
     
     # 清理bashrc
     if [ -f "$HOME/.bashrc" ]; then
+        # 清理旧版集成格式
         if grep -q "START AIS INTEGRATION" "$HOME/.bashrc"; then
             sed -i '/# START AIS INTEGRATION/,/# END AIS INTEGRATION/d' "$HOME/.bashrc"
-            print_info "  已清理: ~/.bashrc"
+            print_info "  已清理旧版集成: ~/.bashrc"
+            cleaned=1
+        fi
+        # 清理新版集成格式
+        if grep -q "AIS INTEGRATION" "$HOME/.bashrc"; then
+            sed -i '/# AIS INTEGRATION/,/^$/d' "$HOME/.bashrc"
+            print_info "  已清理新版集成: ~/.bashrc"
+            cleaned=1
+        fi
+        # 清理其他可能的AIS相关配置
+        if grep -q "ais shell-integration" "$HOME/.bashrc"; then
+            sed -i '/command -v ais.*ais shell-integration/d' "$HOME/.bashrc"
+            print_info "  已清理shell-integration: ~/.bashrc"
             cleaned=1
         fi
     fi
     
     # 清理zshrc
     if [ -f "$HOME/.zshrc" ]; then
+        # 清理旧版集成格式
         if grep -q "START AIS INTEGRATION" "$HOME/.zshrc"; then
             sed -i '/# START AIS INTEGRATION/,/# END AIS INTEGRATION/d' "$HOME/.zshrc"
-            print_info "  已清理: ~/.zshrc"
+            print_info "  已清理旧版集成: ~/.zshrc"
+            cleaned=1
+        fi
+        # 清理新版集成格式
+        if grep -q "AIS INTEGRATION" "$HOME/.zshrc"; then
+            sed -i '/# AIS INTEGRATION/,/^$/d' "$HOME/.zshrc"
+            print_info "  已清理新版集成: ~/.zshrc"
+            cleaned=1
+        fi
+        # 清理其他可能的AIS相关配置
+        if grep -q "ais shell-integration" "$HOME/.zshrc"; then
+            sed -i '/command -v ais.*ais shell-integration/d' "$HOME/.zshrc"
+            print_info "  已清理shell-integration: ~/.zshrc"
             cleaned=1
         fi
     fi
@@ -313,6 +419,11 @@ cleanup_shell_integration() {
         if grep -q "START AIS INTEGRATION" "$HOME/.config/fish/config.fish"; then
             sed -i '/# START AIS INTEGRATION/,/# END AIS INTEGRATION/d' "$HOME/.config/fish/config.fish"
             print_info "  已清理: ~/.config/fish/config.fish"
+            cleaned=1
+        fi
+        if grep -q "AIS INTEGRATION" "$HOME/.config/fish/config.fish"; then
+            sed -i '/# AIS INTEGRATION/,/^$/d' "$HOME/.config/fish/config.fish"
+            print_info "  已清理新版集成: ~/.config/fish/config.fish"
             cleaned=1
         fi
     fi
@@ -406,6 +517,9 @@ main() {
         "compiled-python39")
             uninstall_compiled_python39
             ;;
+        "python-upgrade")
+            uninstall_python_upgrade
+            ;;
         "pip")
             uninstall_pip
             ;;
@@ -422,6 +536,7 @@ main() {
             uninstall_pipx_system 2>/dev/null || true
             uninstall_compiled_python310 2>/dev/null || true
             uninstall_compiled_python39 2>/dev/null || true
+            uninstall_python_upgrade 2>/dev/null || true
             uninstall_pip 2>/dev/null || true
             uninstall_system_old 2>/dev/null || true
             ;;
@@ -430,6 +545,7 @@ main() {
     # 清理用户数据和配置
     cleanup_user_data
     cleanup_shell_integration
+    cleanup_temp_files
     
     echo
     # 验证卸载结果
@@ -458,13 +574,14 @@ case "${1:-}" in
         echo "  验证卸载结果"
         echo
         echo "支持的安装方式:"
-        echo "  - pipx用户级安装"
-        echo "  - pipx系统级安装"
-        echo "  - 编译安装的Python 3.10.9环境"
-        echo "  - 编译安装的Python 3.9环境"
-        echo "  - pip安装"
-        echo "  - 系统级安装（旧方式）"
-        echo "  - 容器安装"
+        echo "  - pipx用户级安装 (pipx-user)"
+        echo "  - pipx系统级安装 (pipx-system)"
+        echo "  - 编译安装的Python 3.10.9环境 (compiled-python310)"
+        echo "  - 编译安装的Python 3.9环境 (compiled-python39)"
+        echo "  - Python升级安装 (python-upgrade)"
+        echo "  - pip直接安装 (pip)"
+        echo "  - 系统级安装（旧方式）(system-old)"
+        echo "  - 容器安装 (container)"
         exit 0
         ;;
     --force)

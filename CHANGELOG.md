@@ -7,6 +7,19 @@
 
 ## [Unreleased]
 
+## [2.5.4] - 2025-07-22
+
+### Fixed
+- 🔧 **卸载脚本全面优化**：深度分析install.sh脚本后完全匹配所有安装操作的卸载逻辑
+  - 修复编译Python路径错误：从`/usr/local/python3.10/`改为正确的`/usr/local/`
+  - 新增`python-upgrade`策略的卸载支持，完善所有4种install.sh安装策略的卸载
+  - 改进Shell集成清理：支持新版`ais shell-integration`格式和旧版格式的完全清理
+  - 增强临时文件清理：清理`/tmp/python_build`、`/tmp/ais_install_*.log`等安装残留
+  - 完善安装方式检测逻辑：修复路径检测错误，准确识别各种安装场景
+  - 扩展清理范围：清理pipx用户级虚拟环境、编译Python的所有相关文件（bin、lib、include、man等）
+  - 新增`cleanup_temp_files()`函数专门处理临时文件和构建残留清理
+  - 更新帮助信息：反映所有支持的安装方式和卸载能力
+
 ## [2.5.3] - 2025-07-22
 
 ### Fixed
