@@ -130,11 +130,8 @@ npm run dev
 
 ### 调试工具
 ```bash
-# 开启调试模式
-ais config set debug true
-
-# 查看调试日志
-tail -f ~/.local/share/ais/debug.log
+# 测试 AIS 集成
+ais test-integration
 
 # 性能分析
 python -m cProfile -o profile.stats src/ais/main.py

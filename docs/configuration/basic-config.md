@@ -76,17 +76,6 @@ ais off
 ais status
 ```
 
-### 分析触发条件
-```bash
-# 设置触发的最小退出码
-ais config set min-exit-code 1
-
-# 设置分析延迟（秒）
-ais config set analysis-delay 1
-
-# 设置最大分析时间（秒）
-ais config set max-analysis-time 30
-```
 
 ## 🧠 上下文收集
 

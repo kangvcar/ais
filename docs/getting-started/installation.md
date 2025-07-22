@@ -304,7 +304,7 @@ ais --help
 ais ask --help
 
 # 查看系统信息
-ais test-integration --verbose
+ais test-integration
 
 # 查看日志
 ais config show | grep log
