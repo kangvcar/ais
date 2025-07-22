@@ -7,6 +7,8 @@
 
 ## [Unreleased]
 
+## [2.5.2] - 2025-07-22
+
 ### Added
 - 📊 **HTML可视化报告功能**：全新的HTML格式报告导出，提供现代美观的数据可视化体验
   - 新增`ais report --html`命令支持生成交互式HTML报告
@@ -21,7 +23,6 @@
   - 在pyproject.toml中添加`[project.optional-dependencies.html]`配置
   - 包含plotly>=5.0.0和numpy>=1.20.0依赖
   - 用户可通过`pip install ais-terminal[html]`安装完整可视化功能
-
 ### Enhanced
 - 📚 **文档系统全面升级**：HTML可视化报告功能的完整文档体系
   - 更新主README.md，新增HTML报告功能详细介绍和使用示例
