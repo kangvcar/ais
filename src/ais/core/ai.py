@@ -327,7 +327,7 @@ def _make_api_request(
     }
 
     try:
-        with httpx.Client(timeout=30.0) as client:
+        with httpx.Client(timeout=120.0) as client:
             response = client.post(base_url, json=payload, headers=headers)
             response.raise_for_status()
             data = response.json()
