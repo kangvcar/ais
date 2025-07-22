@@ -14,7 +14,7 @@ export default defineConfig({
   
   themeConfig: {
     logo: '/logo-robot.png',
-    siteTitle: false,
+    siteTitle: 'AIS',
     
     nav: [
       { text: '首页', link: '/' },
