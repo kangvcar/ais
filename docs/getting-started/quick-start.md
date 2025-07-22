@@ -99,14 +99,14 @@ ais learn linux
 
 ### 学习报告
 ```bash
-# 生成学习报告
+# 生成文本格式学习报告
 ais report
 
-# 查看错误统计
-ais report --error-stats
+# 生成HTML可视化报告
+ais report --html
 
-# 查看技能评估
-ais report --skill-assessment
+# 生成并打开HTML报告
+ais report --html --open
 ```
 
 ## 📚 常用命令速查

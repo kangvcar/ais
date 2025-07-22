@@ -616,11 +616,11 @@ source .venv/bin/activate && flake8 src/ tests/ --max-line-length=100
 ### 自助资源
 
 ```bash
-# 一键诊断
-ais doctor
+# 测试系统集成
+ais test-integration
 
-# 详细调试
-ais --debug --version
+# 查看版本信息
+ais --version
 
 # 查看所有帮助
 ais help-all

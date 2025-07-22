@@ -31,8 +31,8 @@ exec fish          # Fish
 # 测试 Shell 集成
 ais test-integration
 
-# 查看集成状态
-ais status
+# 测试集成状态
+ais test-integration
 
 # 触发测试错误
 false && echo "这个命令会失败"
@@ -42,8 +42,9 @@ false && echo "这个命令会失败"
 
 ### Bash 配置
 ```bash
-# 添加到 ~/.bashrc
-echo 'eval "$(ais shell-integration bash)"' >> ~/.bashrc
+# AIS 已自动配置 shell 集成，无需手动添加
+# 如需重新配置，请运行：
+ais setup
 
 # 或者手动添加以下内容到 ~/.bashrc
 __ais_trap() {
@@ -57,8 +58,9 @@ trap __ais_trap ERR
 
 ### Zsh 配置
 ```bash
-# 添加到 ~/.zshrc
-echo 'eval "$(ais shell-integration zsh)"' >> ~/.zshrc
+# AIS 已自动配置 shell 集成，无需手动添加
+# 如需重新配置，请运行：
+ais setup
 
 # 或者手动添加以下内容到 ~/.zshrc
 __ais_preexec() {
@@ -77,8 +79,9 @@ add-zsh-hook precmd __ais_precmd
 
 ### Fish 配置
 ```bash
-# 添加到 ~/.config/fish/config.fish
-echo 'eval (ais shell-integration fish)' >> ~/.config/fish/config.fish
+# AIS 已自动配置 shell 集成，无需手动添加
+# 如需重新配置，请运行：
+ais setup
 
 # 或者手动添加以下内容到 ~/.config/fish/config.fish
 function __ais_command_not_found --on-event fish_command_not_found
@@ -96,15 +99,15 @@ end
 
 ### 基本选项
 ```bash
-# 查看集成选项
-ais config show shell-integration
+# 查看当前配置
+ais config
 
-# 启用/禁用集成
-ais config set shell-integration true
-ais config set shell-integration false
+# 启用/禁用自动分析
+ais on
+ais off
 
-# 设置触发延迟（秒）
-ais config set shell-integration-delay 1
+# 设置上下文收集级别
+ais config --set context_level=detailed
 ```
 
 
@@ -150,24 +153,21 @@ ais config --set context_level=standard
 # 临时禁用自动分析
 ais off
 
-# 临时禁用 Shell 集成
-ais config set shell-integration false
-
 # 重新启用
 ais on
-ais config set shell-integration true
 ```
 
 ### 完全卸载
 ```bash
-# 手动移除 Bash 集成
-sed -i '/ais shell-integration/d' ~/.bashrc
+# 手动移除 AIS 集成配置
+# 移除 Bash 集成
+sed -i '/START AIS INTEGRATION/,/END AIS INTEGRATION/d' ~/.bashrc
 
-# 手动移除 Zsh 集成
-sed -i '/ais shell-integration/d' ~/.zshrc
+# 移除 Zsh 集成
+sed -i '/START AIS INTEGRATION/,/END AIS INTEGRATION/d' ~/.zshrc
 
-# 手动移除 Fish 集成
-sed -i '/ais shell-integration/d' ~/.config/fish/config.fish
+# 或使用自动卸载脚本
+curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/uninstall.sh | bash
 ```
 
 ## 📋 集成模板

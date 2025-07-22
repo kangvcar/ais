@@ -10,9 +10,5 @@
 请你全面分析并检查所有文档内容确保文档中的内容都是ais程序存在的功能，并删除ais程序不存在的功能和内容。
 
 ```
-# 查看错误统计
-ais report --error-stats
-
-# 查看技能评估
-ais report --skill-assessment
+# 这些功能不存在，已删除
 
