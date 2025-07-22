@@ -38,21 +38,30 @@ curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh
 # 安装 pipx（如果尚未安装）
 pip install pipx
 
-# 使用 pipx 安装 AIS
+# 基础安装
 pipx install ais-terminal
+
+# 或完整安装（包含HTML可视化报告功能）
+pipx install "ais-terminal[html]"
 
 # 验证安装
 ais --version
+
+# 验证HTML功能（如果安装了html扩展）
+ais report --html --help
 ```
 
 ### 方式 2: 使用 pip 安装
 
 ```bash
-# 全局安装
+# 基础安装
 pip install ais-terminal
 
+# 完整安装（包含HTML可视化报告功能）
+pip install "ais-terminal[html]"
+
 # 用户安装
-pip install --user ais-terminal
+pip install --user "ais-terminal[html]"
 ```
 
 ### 方式 3: 从源码安装
@@ -63,10 +72,18 @@ git clone https://github.com/kangvcar/ais.git
 cd ais
 
 # 创建虚拟环境并安装
-source .venv/bin/activate && python3 -m pip install -e .
+python3 -m venv .venv
+source .venv/bin/activate
+
+# 基础安装
+python3 -m pip install -e .
+
+# 或完整安装（包含开发工具和HTML可视化功能）
+python3 -m pip install -e ".[dev,html]"
 
 # 验证安装
 ais --version
+ais report --html --help  # 如果安装了html扩展
 ```
 
 ### 方式 4: 使用 Docker
@@ -143,6 +160,12 @@ ais config show
 
 # 测试历史记录
 ais history --limit 5
+
+# 测试学习报告功能
+ais report
+
+# 测试HTML可视化报告（如果安装了html扩展）
+ais report --html -o test_report.html
 ```
 
 ## ⚙️ 初始配置

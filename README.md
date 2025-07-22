@@ -6,7 +6,7 @@
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://python.org)
 [![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Package Version](https://img.shields.io/badge/version-2.4.0-blue.svg)](https://github.com/kangvcar/ais)
+[![Package Version](https://img.shields.io/badge/version-2.5.2-blue.svg)](https://github.com/kangvcar/ais)
 [![CI Status](https://img.shields.io/github/workflow/status/kangvcar/ais/CI)](https://github.com/kangvcar/ais/actions)
 
 [📖 安装指南](#installation) · [🚀 快速开始](#quickstart) · [🤝 贡献](#contributing)
@@ -125,6 +125,9 @@ curl -sSL https://gitee.com/kangvcar/ais/raw/main/scripts/install.sh | bash -s -
 # 或手动安装
 pipx install ais-terminal
 ais setup
+
+# 安装HTML报告可视化功能（可选）
+pipx install "ais-terminal[html]"  # 包含plotly图表库
 ```
 
 **优势**: 最高安全性，独立虚拟环境，无需sudo权限
@@ -173,7 +176,7 @@ pipx install -e .
 # 或使用虚拟环境
 python -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev]"
+pip install -e ".[dev,html]"  # 包含开发和HTML可视化依赖
 ```
 
 **优势**: 实时修改效果，完整开发工具链，易于调试
@@ -247,8 +250,13 @@ ls /not/exist         # 路径不存在
 git statuss           # 命令错误
 ```
 
-#### 📊 历史管理
+#### 📊 学习成长报告
 ```bash
+ais report                     # 生成文本格式学习报告
+ais report --html             # 生成HTML可视化报告
+ais report --html -o my_report.html --open  # 生成并打开HTML报告
+
+# 历史记录管理
 ais history                    # 查看最近的命令记录
 ais history --failed-only     # 只显示失败的命令
 ais history 3                 # 查看第3条记录的详细分析
@@ -292,6 +300,56 @@ ais ask --help-detail
 - 🎯 **环境感知回答**：基于实际系统配置提供针对性建议  
 - ⚡ **三级可配置**：从轻量到详细，满足不同场景需求
 - 🔒 **隐私保护**：敏感信息自动过滤，安全目录跳过收集
+
+### 学习成长报告 - `ais report`
+
+生成详细的个人化学习成长分析报告，支持文本和可视化HTML两种格式：
+
+```bash
+# 📊 文本格式报告（默认）
+ais report
+
+# 📈 HTML可视化报告（推荐）
+ais report --html
+ais report --html -o custom_report.html
+ais report --html --open  # 生成后自动打开浏览器
+
+# 📋 查看详细帮助
+ais report --help
+```
+
+#### 🌟 HTML可视化报告特性
+
+**6种专业图表类型**：
+- 📈 **错误趋势图**：30天错误变化趋势，识别学习进步轨迹
+- 🎯 **技能评估雷达图**：多维度技能水平可视化展示
+- ⏰ **时间热力图**：错误发生时间分布，发现学习时间规律
+- 📊 **命令频次图**：最常出错命令排序，重点学习优化
+- 🔍 **错误类型分布**：饼图展示错误模式，针对性改进
+- 📈 **学习进度趋势**：双轴图展示错误减少和技能提升
+
+**现代化用户体验**：
+- 🎨 **响应式设计**：完美适配桌面、平板、手机
+- 🖱️ **交互式图表**：支持悬停提示、缩放、数据钻取
+- 💡 **AI智能洞察**：个性化分析和改进建议
+- 🌐 **浏览器友好**：支持所有现代浏览器，无需额外插件
+
+**灵活配置选项**：
+```bash
+# 自定义输出文件名
+ais report --html -o "2024-学习报告.html"
+
+# 生成后自动打开浏览器查看
+ais report --html --open
+
+# 组合使用
+ais report --html -o weekly_progress.html --open
+```
+
+**数据安全保证**：
+- 📊 所有数据本地生成，无云端上传
+- 🔒 敏感信息自动过滤
+- 📁 支持离线查看和分享
 
 ### 知识学习 - `ais learn`
 
@@ -380,6 +438,43 @@ AIS重视用户隐私和数据安全：
 ---
 
 ## 🆕 最新功能亮点
+
+### 📊 HTML可视化报告系统 (v2.5.2)
+
+AIS现在支持生成专业的HTML可视化学习报告，将枯燥的数据转化为直观美观的图表：
+
+#### 🎨 **现代化可视化设计**
+```bash
+$ ais report --html --open
+
+# 自动生成包含以下图表的HTML报告：
+📈 错误趋势分析 - 清晰展示30天学习进步轨迹
+🎯 技能评估雷达图 - 多维度技能水平一目了然  
+⏰ 时间分布热力图 - 发现最佳学习时间段
+📊 命令频次统计 - 识别需要重点改进的命令
+🔍 错误类型分析 - 针对性解决常见问题
+📈 学习进度趋势 - 量化展示技能成长
+```
+
+#### 💻 **交互式用户体验**
+- **响应式设计**: 完美支持桌面、平板、手机
+- **交互式图表**: 悬停查看详情，缩放探索数据
+- **AI智能洞察**: 个性化分析每个图表背后的含义
+- **一键分享**: 生成静态HTML文件，轻松分享学习成果
+
+#### 🔧 **灵活配置选项**
+```bash
+# 快速生成并查看
+ais report --html --open
+
+# 自定义文件名
+ais report --html -o "我的技能成长报告.html"
+
+# 适用场景
+ais report --html -o weekly_report.html    # 周报
+ais report --html -o monthly_review.html   # 月度回顾
+ais report --html -o skill_assessment.html # 技能评估
+```
 
 ### 🧠 智能上下文感知系统 (v2.4.0)
 
@@ -578,6 +673,8 @@ ais help-all
 - **Rich** - 终端美化和格式化
 - **SQLModel** - 数据库ORM
 - **httpx** - HTTP客户端
+- **Plotly** - 交互式图表可视化（HTML报告）
+- **NumPy** - 数值计算支持（可视化依赖）
 - **pytest** - 测试框架
 
 ---

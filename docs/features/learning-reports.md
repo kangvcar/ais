@@ -1,375 +1,234 @@
 # 学习报告
 
-AIS 的学习报告功能为您提供详细的学习成长分析，帮助您了解技能发展趋势、识别学习重点，并制定个性化的学习计划。
+AIS 的学习报告功能为您提供详细的学习成长分析，包括文本格式和可视化HTML两种报告形式，帮助您了解技能发展趋势、识别学习重点，并制定个性化的学习计划。
 
 ## 📊 功能概览
 
 ### 核心特性
 - **错误模式分析**：统计最常见的错误类型和命令
 - **技能评估**：基于历史错误数据评估用户技能水平
-- **个性化建议**：生成针对性的学习建议和改进路径
+- **AI智能洞察**：提供个性化的深度分析和改进建议
 - **趋势分析**：展示用户的学习进步趋势
 - **多维度统计**：从时间、技能、领域等多个维度分析
+- **可视化展示**：HTML格式支持6种专业图表类型
 
 ## 🚀 生成学习报告
 
-### 基本报告
+### 📄 文本格式报告（默认）
 ```bash
-# 生成综合学习报告
+# 生成文本格式学习报告（默认）
 ais report
 
-# 生成简要报告
-ais report --brief
-
-# 生成详细报告
-ais report --detailed
+# 查看历史记录
+ais history
+ais history --failed-only
+ais history 3  # 查看第3条记录详情
 ```
 
-### 时间范围报告
+### 📈 HTML可视化报告（推荐）
 ```bash
-# 最近一周的报告
-ais report --days 7
+# 生成HTML可视化报告
+ais report --html
 
-# 最近一个月的报告
-ais report --month
+# 自定义输出文件名
+ais report --html -o my_report.html
 
-# 指定时间范围
-ais report --from 2024-01-01 --to 2024-01-31
+# 生成后自动打开浏览器
+ais report --html --open
+
+# 组合使用
+ais report --html -o weekly_progress.html --open
 ```
 
-### 特定领域报告
+#### HTML报告的6种图表类型：
+- 📈 **错误趋势图**：30天错误变化趋势
+- 🎯 **技能评估雷达图**：多维度技能水平展示
+- ⏰ **时间热力图**：错误时间分布规律
+- 📊 **命令频次图**：最常出错命令排序
+- 🔍 **错误类型分布**：错误模式饼图分析
+- 📈 **学习进度趋势**：错误减少与技能提升关系
+
+### 安装可视化依赖
+
+要使用HTML可视化报告功能，需要安装额外的依赖：
+
 ```bash
-# Docker 相关报告
-ais report --topic docker
+# 使用 pipx 安装（推荐）
+pipx install "ais-terminal[html]"
 
-# Python 开发报告
-ais report --topic python
+# 或者在现有安装基础上添加
+pip install plotly numpy
 
-# 系统管理报告
-ais report --topic linux
+# 验证安装
+ais report --html --help
 ```
 
 ## 📈 报告内容解析
 
-### 错误分析统计
+### 📄 文本格式报告内容
+
+AIS的文本报告包含以下主要部分：
+
+#### 🧠 AI智能洞察
+位于报告顶部的个性化分析总结，基于您的错误模式和学习轨迹生成3-5句深度洞察。
+
+#### 🔍 错误概览
+- 总错误数统计（最近30天）
+- 最常出错的命令列表（前5名）
+- 最常见的错误类型分布（前5名）
+
+#### 💪 技能评估
+- 当前技能水平（初学者/中级用户/熟练者/探索者）
+- 技能优势领域识别
+- 需要改进的薄弱环节
+- 知识盲点提醒
+
+#### 💡 改进洞察
+基于错误频率和类型的智能分析：
+- 高频错误警告和建议
+- 错误趋势分析（上升/下降/稳定）
+- 技能集中度分析
+
+#### 🎯 学习建议
+个性化学习路径推荐：
+- 命令掌握建议（基于高频错误）
+- 错误预防技巧学习
+- 技能提升专项训练
+
+#### 🚀 下一步行动
+具体可执行的学习计划，包括优先级排序的学习步骤。
+
+### 📊 HTML可视化报告内容
+
+HTML报告提供更丰富的数据可视化体验：
+
+#### 🎯 交互式图表展示
+- **错误趋势图**：折线图显示30天错误变化
+- **技能雷达图**：多维度技能水平可视化
+- **时间热力图**：错误时间分布模式
+- **命令频次图**：柱状图显示高频错误命令
+- **错误类型分布**：饼图展示错误模式
+- **学习进度趋势**：双轴图显示错误与技能关系
+
+#### 🎨 现代化用户界面
+- 响应式设计，完美适配各种设备
+- 悬停交互，查看图表详细数据
+- 专业配色方案和视觉效果
+- AI洞察高亮展示
+
+> 💡 **查看详细使用指南**：[HTML可视化报告完整文档](./html-reports.md)
+
+## 🎯 使用场景
+
+### 📚 个人学习跟踪
+
+定期生成报告，跟踪自己的技能成长轨迹：
+
 ```bash
-📊 错误分析报告
-─────────────────────────────
+# 每周生成学习报告
+ais report --html -o "第$(date +%U)周学习报告.html"
 
-📈 最常见错误类型:
-  1. 权限错误 (32%)
-  2. 依赖错误 (28%)
-  3. 网络错误 (20%)
-  4. 命令未找到 (20%)
-
-🔍 最常见错误命令:
-  1. docker run (15 次)
-  2. npm install (12 次)
-  3. sudo systemctl (8 次)
-  4. git push (6 次)
-
-📅 错误趋势分析:
-  • 本周错误数量: 23 (-15% 相比上周)
-  • 重复错误率: 35% (-10% 相比上周)
-  • 解决成功率: 85% (+5% 相比上周)
+# 每月生成技能评估
+ais report --html -o "$(date +%Y年%m月)技能评估.html" --open
 ```
 
-### 技能水平评估
+### 💼 技能展示
+
+用于面试、求职或工作汇报：
+
 ```bash
-🎯 技能评估报告
-─────────────────────────────
-
-📊 技能水平分析:
-  • Docker 容器化: 中级 → 高级 (↑)
-  • Python 开发: 中级 → 中级 (→)
-  • Linux 系统: 初级 → 中级 (↑)
-  • Git 版本控制: 高级 → 高级 (→)
-
-🚀 技能提升速度:
-  • 学习效率: 良好 (85/100)
-  • 问题解决能力: 优秀 (92/100)
-  • 知识应用能力: 良好 (78/100)
-
-📚 学习活跃度:
-  • 本月学习时长: 15.2 小时
-  • 学习主题数: 8 个
-  • 实践练习: 25 个
+# 生成技能展示报告
+ais report --html -o "个人技能展示_$(date +%Y%m%d).html"
 ```
 
-### 学习建议
+### 🎓 学习计划制定
+
+基于报告数据制定针对性的学习计划：
+
+1. 查看技能雷达图识别薄弱领域
+2. 分析错误频次图找出重点命令
+3. 利用时间热力图优化学习时间
+4. 根据AI洞察调整学习策略
+
+### 👥 团队技能分析
+
+在团队中使用，了解团队整体技能分布：
+
 ```bash
-💡 个性化学习建议
-─────────────────────────────
-
-🎯 重点改进领域:
-  1. 网络配置和诊断
-     - 建议学习: ais learn networking
-     - 预计时间: 2-3 小时
-     - 优先级: 高
-
-  2. Python 异步编程
-     - 建议学习: ais learn python-async
-     - 预计时间: 4-5 小时
-     - 优先级: 中
-
-  3. Docker 网络管理
-     - 建议学习: ais learn docker-networking
-     - 预计时间: 3-4 小时
-     - 优先级: 中
-
-🔄 复习建议:
-  • 建议复习 Git 分支管理 (上次学习: 2 周前)
-  • 建议复习 Linux 权限管理 (掌握度: 65%)
+# 团队成员分别生成报告
+ais report --html -o "团队成员_张三_$(date +%m%d).html"
+ais report --html -o "团队成员_李四_$(date +%m%d).html"
 ```
 
-## 🎯 详细分析
+## 🔧 高级功能
 
-### 错误模式分析
+### 📊 数据隐私控制
+
+AIS注重用户隐私，所有数据本地存储：
+
 ```bash
-# 查看详细错误模式
-ais report --error-patterns
+# 查看数据存储位置
+ais config | grep database
 
-📊 错误模式深度分析
-─────────────────────────────
-
-🔍 权限错误 (32%):
-  • 最常见场景: 文件操作 (45%)
-  • 最常见命令: sudo, chmod, chown
-  • 改进建议: 学习 Linux 权限管理
-  • 相关错误: Permission denied, Access forbidden
-
-🔍 依赖错误 (28%):
-  • 最常见场景: 包安装 (60%)
-  • 最常见命令: npm install, pip install
-  • 改进建议: 学习包管理最佳实践
-  • 相关错误: Module not found, Package not found
-
-🔍 网络错误 (20%):
-  • 最常见场景: 远程访问 (55%)
-  • 最常见命令: curl, wget, ssh
-  • 改进建议: 学习网络诊断技巧
-  • 相关错误: Connection timeout, DNS resolution failed
+# 清理历史数据（谨慎操作）
+# sqlite3 ~/.local/share/ais/ais.db "DELETE FROM command_logs WHERE timestamp < datetime('now', '-90 days');"
 ```
 
-### 学习进度跟踪
+### ⚙️ 报告配置
+
 ```bash
-# 查看学习进度
-ais report --learning-progress
+# 查看当前配置
+ais config
 
-📚 学习进度报告
-─────────────────────────────
+# 设置上下文收集级别（影响报告详细度）
+ais config --set context_level=detailed
 
-🎓 已完成学习:
-  ✓ Git 基础 (100%) - 2024-01-15
-  ✓ Docker 基础 (100%) - 2024-01-20
-  ✓ Linux 基础 (100%) - 2024-01-25
-
-🔄 进行中学习:
-  📖 Python 高级 (75%) - 预计完成: 2024-02-01
-  📖 Kubernetes 基础 (45%) - 预计完成: 2024-02-10
-
-📅 计划中学习:
-  📋 网络安全基础 - 计划开始: 2024-02-05
-  📋 数据库优化 - 计划开始: 2024-02-15
+# 设置AI问答的上下文级别
+ais config --set ask.context_level=standard
 ```
 
-## 📊 可视化报告
+## 🚀 最佳实践
 
-### 图表展示
+### 📅 建立定期报告习惯
+
 ```bash
-# 生成图表报告
-ais report --charts
-
-# 技能雷达图
-ais report --skill-radar
-
-# 学习趋势图
-ais report --trend-chart
+# 可以添加到 crontab 定期执行
+# 每周一上午9点生成报告
+# 0 9 * * 1 ais report --html -o ~/reports/weekly_$(date +\%Y\%U).html
 ```
 
-### 导出报告
-```bash
-# 导出为 PDF
-ais report --export pdf report.pdf
+### 📈 持续改进流程
 
-# 导出为 HTML
-ais report --export html report.html
+1. **每周回顾**：生成HTML报告，分析学习进展
+2. **识别问题**：关注高频错误和薄弱技能
+3. **制定计划**：基于AI建议制定下周学习重点
+4. **实践练习**：针对性练习识别出的问题命令
+5. **追踪效果**：下周报告对比，验证改进效果
 
-# 导出为 Markdown
-ais report --export md report.md
+### 🎯 目标导向学习
 
-# 导出为 JSON
-ais report --export json report.json
-```
+- 设定具体的技能提升目标
+- 利用雷达图跟踪进度
+- 关注错误趋势的下降
+- 定期调整学习策略
 
-## 🎯 目标设定与跟踪
+## 📚 相关文档
 
-### 学习目标
-```bash
-# 设定学习目标
-ais goal set "掌握 Kubernetes 部署" --deadline 2024-02-01
+- [HTML可视化报告详细指南](./html-reports.md) - 深入了解可视化功能
+- [错误分析](./error-analysis.md) - 从错误中学习
+- [学习系统](./learning-system.md) - 系统化技术学习
+- [AI问答](./ai-chat.md) - 智能问答助手
 
-# 查看目标进度
-ais goal progress
+## 💡 提示
 
-# 更新目标状态
-ais goal update "掌握 Kubernetes 部署" --progress 60%
-```
+- 报告质量随着使用时间增长而提高，建议持续使用
+- AI洞察基于真实数据分析，比通用建议更有针对性
+- HTML报告支持离线查看和分享
+- 可视化图表有助于快速识别学习模式和趋势
 
-### 技能目标
-```bash
-# 设定技能目标
-ais skill-goal set docker advanced --deadline 2024-03-01
+## ⚠️ 注意事项
 
-# 查看技能目标
-ais skill-goal list
-
-# 技能目标进度
-ais skill-goal progress
-```
-
-## 📅 定期报告
-
-### 自动报告
-```bash
-# 启用每周报告
-ais config set weekly-report true
-
-# 启用每月报告
-ais config set monthly-report true
-
-# 设置报告发送时间
-ais config set report-time "Sunday 09:00"
-```
-
-### 报告订阅
-```bash
-# 订阅报告类型
-ais report-subscribe --type weekly --format html
-
-# 取消订阅
-ais report-unsubscribe --type weekly
-```
-
-## 🔍 高级分析
-
-### 对比分析
-```bash
-# 与上月对比
-ais report --compare-month
-
-# 与同期对比
-ais report --compare-period "last year"
-
-# 与预期目标对比
-ais report --compare-goal
-```
-
-### 团队对比
-```bash
-# 团队学习报告
-ais report --team
-
-# 个人在团队中的位置
-ais report --team-ranking
-
-# 团队学习趋势
-ais report --team-trend
-```
-
-## 📈 学习建议系统
-
-### 智能推荐
-```bash
-# 基于报告的推荐
-ais recommend --based-on-report
-
-# 推荐学习路径
-ais recommend --learning-path
-
-# 推荐学习资源
-ais recommend --resources
-```
-
-### 个性化建议
-```bash
-# 基于错误模式的建议
-ais suggest --error-based
-
-# 基于技能水平的建议
-ais suggest --skill-based
-
-# 基于学习历史的建议
-ais suggest --history-based
-```
-
-## 🎨 报告定制
-
-### 自定义报告
-```bash
-# 创建自定义报告模板
-ais report-template create "我的报告"
-
-# 使用自定义模板
-ais report --template "我的报告"
-
-# 编辑报告模板
-ais report-template edit "我的报告"
-```
-
-### 报告配置
-```bash
-# 设置报告语言
-ais config set report-language zh-CN
-
-# 设置报告主题
-ais config set report-theme dark
-
-# 设置报告详细级别
-ais config set report-detail-level standard
-```
-
-## 📊 数据隐私
-
-### 数据控制
-```bash
-# 查看收集的数据
-ais data-privacy show
-
-# 删除特定数据
-ais data-privacy delete --type learning-history
-
-# 数据匿名化
-ais data-privacy anonymize
-```
-
-### 隐私设置
-```bash
-# 设置数据保留期
-ais config set data-retention 365
-
-# 启用数据加密
-ais config set data-encryption true
-```
-
----
-
-## 下一步
-
-- [学习系统](./learning-system) - 系统化技术学习
-- [错误分析](./error-analysis) - 从错误中学习
-- [AI 问答](./ai-chat) - 智能问答助手
-
----
-
-::: tip 提示
-学习报告会随着使用时间的增长变得更加准确和有价值，建议定期查看。
-:::
-
-::: info 个性化建议
-AIS 会根据您的错误模式和学习历史生成个性化的学习建议，帮助您更高效地提升技能。
-:::
-
-::: warning 注意
-报告中的技能评估基于错误分析数据，实际技能水平可能因个人情况而有所不同。
-:::
+- HTML报告需要安装额外依赖（plotly、numpy）
+- 技能评估基于错误分析，实际能力可能有差异
+- 建议结合实际项目经验综合评估技能水平
+- 数据完全本地存储，无云端上传风险

@@ -1297,38 +1297,90 @@ def test_integration():
 
 
 @main.command("report")
-def generate_report():
+@click.option("--html", is_flag=True, help="生成HTML格式的可视化报告")
+@click.option("--output", "-o", default="ais_report.html", help="HTML报告输出文件名")
+@click.option("--open", "open_browser", is_flag=True, help="生成后自动打开浏览器")
+def generate_report(html, output, open_browser):
     """生成学习成长报告。"""
     try:
-        from ..core.report import LearningReportGenerator
-        from rich.markdown import Markdown
-
-        console.print("[bold blue]📊 生成学习成长报告...[/bold blue]")
-
-        # 创建报告生成器
-        report_generator = LearningReportGenerator(days_back=30)
-
-        # 生成报告
-        report = report_generator.generate_report()
-
-        # 检查是否有数据
-        if report["error_summary"]["total_errors"] == 0:
-            console.print("\n[yellow]📝 暂无错误历史数据[/yellow]")
-            console.print("\n[dim]提示:[/dim]")
-            console.print("- 使用命令行时遇到错误，AIS会自动记录和分析")
-            console.print("- 运行一些命令后再使用 'ais report' 查看学习报告")
-            console.print("- 你也可以手动运行 'ais analyze' 分析特定错误")
-            return
-
-        # 格式化并显示报告
-        formatted_report = report_generator.format_report_for_display(report)
-
-        # 使用Panel显示报告
-        panels.learning_content(Markdown(formatted_report), "📊 学习成长报告")
+        if html:
+            # 生成HTML报告
+            _generate_html_report(output, open_browser)
+        else:
+            # 生成传统文本报告
+            _generate_text_report()
 
     except Exception as e:
         console.print(f"[red]报告生成失败: {e}[/red]")
         console.print("[dim]提示: 请确保已有命令执行历史记录[/dim]")
+
+
+def _generate_text_report():
+    """生成传统文本报告。"""
+    from ..core.report import LearningReportGenerator
+    from rich.markdown import Markdown
+
+    console.print("[bold blue]📊 生成学习成长报告...[/bold blue]")
+
+    # 创建报告生成器
+    report_generator = LearningReportGenerator(days_back=30)
+
+    # 生成报告
+    report = report_generator.generate_report()
+
+    # 检查是否有数据
+    if report["error_summary"]["total_errors"] == 0:
+        console.print("\n[yellow]📝 暂无错误历史数据[/yellow]")
+        console.print("\n[dim]提示:[/dim]")
+        console.print("- 使用命令行时遇到错误，AIS会自动记录和分析")
+        console.print("- 运行一些命令后再使用 'ais report' 查看学习报告")
+        console.print("- 你也可以手动运行 'ais analyze' 分析特定错误")
+        return
+
+    # 格式化并显示报告
+    formatted_report = report_generator.format_report_for_display(report)
+
+    # 使用Panel显示报告
+    panels.learning_content(Markdown(formatted_report), "📊 学习成长报告")
+
+
+def _generate_html_report(output: str, open_browser: bool):
+    """生成HTML格式报告。"""
+    try:
+        from ..core.html_report import HTMLReportGenerator
+        import webbrowser
+        import os
+
+        console.print("[bold blue]📊 生成HTML可视化报告...[/bold blue]")
+
+        # 创建HTML报告生成器
+        html_generator = HTMLReportGenerator(days_back=30)
+
+        # 生成HTML报告
+        html_content = html_generator.generate_html_report()
+
+        # 保存文件
+        with open(output, 'w', encoding='utf-8') as f:
+            f.write(html_content)
+
+        console.print(f"[green]✓ HTML报告已生成: {output}[/green]")
+        console.print(f"[dim]文件路径: {os.path.abspath(output)}[/dim]")
+
+        # 自动打开浏览器
+        if open_browser:
+            try:
+                webbrowser.open(f'file://{os.path.abspath(output)}')
+                console.print("[green]✓ 已在浏览器中打开报告[/green]")
+            except Exception as e:
+                console.print(f"[yellow]⚠️ 无法自动打开浏览器: {e}[/yellow]")
+                console.print(f"[dim]请手动打开: {os.path.abspath(output)}[/dim]")
+
+    except ImportError:
+        console.print("[red]✗ 缺少依赖库[/red]")
+        console.print("请安装必要的依赖：")
+        console.print("[bold cyan]pip install plotly[/bold cyan]")
+    except Exception as e:
+        console.print(f"[red]HTML报告生成失败: {e}[/red]")
 
 
 @main.command("help-all")
@@ -1339,7 +1391,9 @@ def help_all():
     console.print("[bold]核心功能命令:[/bold]")
     console.print("  ais ask --help-detail       - AI 问答功能详细说明")
     console.print("  ais learn --help-detail     - 学习功能详细说明")
-    console.print("  ais report                  - 生成学习成长报告")
+    console.print("  ais report                  - 生成文本格式学习成长报告")
+    console.print("  ais report --html           - 生成HTML可视化报告（推荐）")
+    console.print("  ais report --html --open    - 生成HTML报告并自动打开浏览器")
     console.print()
     console.print("[bold]配置管理命令:[/bold]")
     console.print("  ais config --help-context   - 配置管理详细说明")
