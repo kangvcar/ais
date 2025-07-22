@@ -60,7 +60,7 @@ export default defineConfig({
       },
       {
         text: '配置指南',
-        collapsed: true,
+        collapsed: false,
         items: [
           { text: '基本配置', link: '/configuration/basic-config' },
           { text: 'Shell 集成', link: '/configuration/shell-integration' },
@@ -69,7 +69,7 @@ export default defineConfig({
       },
       {
         text: '开发者指南',
-        collapsed: true,
+        collapsed: false,
         items: [
           { text: '贡献指南', link: '/development/contributing' },
           { text: '测试指南', link: '/development/testing' },
@@ -78,7 +78,7 @@ export default defineConfig({
       },
       {
         text: '故障排除',
-        collapsed: true,
+        collapsed: false,
         items: [
           { text: '常见问题', link: '/troubleshooting/common-issues' },
           { text: '常见问答', link: '/troubleshooting/faq' }
