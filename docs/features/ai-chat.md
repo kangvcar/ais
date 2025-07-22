@@ -139,26 +139,14 @@ ais ask "如何优化这个应用？"
 
 ### 基本配置
 ```bash
-# 设置默认 AI 提供商
-ais config set ai-provider openai
-
-# 设置回答语言
-ais config set language zh-CN
-
-# 设置回答详细程度
-ais config set answer-detail-level standard
-```
-
-### 高级配置
-```bash
-# 启用上下文感知
-ais config set context-aware true
+# 查看当前配置
+ais config
 
 # 设置上下文收集级别
-ais config set context-level standard
+ais config --set ask.context_level=standard
 
-# 启用历史记录
-ais config set save-history true
+# 查看配置帮助
+ais config --help-context
 ```
 
 ## 🎨 输出格式
@@ -173,15 +161,7 @@ ais config set save-history true
 ```
 
 ### 流式输出
-```bash
-# 启用流式输出
-ais config set enable-streaming true
-
-# 设置流式输出模式
-ais config set stream-mode progressive  # 步骤化显示
-ais config set stream-mode realtime     # 实时进度条
-ais config set stream-mode spinner      # 简单转圈
-```
+AIS 问答支持流式输出，您可以实时看到 AI 回答的生成过程，提供更好的交互体验。
 
 ## 📚 使用场景
 
@@ -225,26 +205,14 @@ ais ask "Web 开发有哪些最佳实践？"
 
 ### 查看历史
 ```bash
-# 查看最近的问答
-ais history --type ask --limit 10
+# 查看最近的历史记录
+ais history --limit 10
 
-# 搜索历史问答
-ais history --search "Docker"
+# 搜索历史记录
+ais history --command-filter "docker"
 
-# 查看特定时间的问答
-ais history --date 2024-01-01 --type ask
-```
-
-### 历史管理
-```bash
-# 清空问答历史
-ais history clear --type ask
-
-# 导出问答历史
-ais history export --type ask questions.json
-
-# 导入问答历史
-ais history import questions.json
+# 查看失败的命令
+ais history --failed-only
 ```
 
 ## 🤝 多 AI 提供商支持
@@ -255,7 +223,7 @@ ais history import questions.json
 ais provider-add openai \
   --url https://api.openai.com/v1/chat/completions \
   --model gpt-3.5-turbo \
-  --api-key YOUR_API_KEY
+  --key YOUR_API_KEY
 
 # 使用 OpenAI
 ais provider-use openai
@@ -268,7 +236,7 @@ ais ask "测试 OpenAI 连接"
 ais provider-add claude \
   --url https://api.anthropic.com/v1/messages \
   --model claude-3-sonnet-20240229 \
-  --api-key YOUR_API_KEY
+  --key YOUR_API_KEY
 
 # 使用 Claude
 ais provider-use claude
@@ -290,43 +258,13 @@ ais ask "测试本地 AI 连接"
 ## 🔒 隐私保护
 
 ### 敏感信息过滤
-```bash
-# 自动过滤敏感信息
-ais ask "如何配置数据库连接？"
-# 您的实际数据库密码不会被发送给 AI
-
-# 查看过滤规则
-ais config show privacy-filters
-```
+AIS 会自动过滤敏感信息，如 API 密钥、密码等，确保您的隐私安全。
 
 ### 本地 AI 使用
 ```bash
 # 使用本地 AI 模型保护隐私
 ais provider-use ollama
 ais ask "这样就不会向外部服务发送数据"
-```
-
-## 📊 性能优化
-
-### 缓存机制
-```bash
-# 启用答案缓存
-ais config set enable-cache true
-
-# 设置缓存过期时间
-ais config set cache-ttl 3600
-
-# 清空缓存
-ais config clear-cache
-```
-
-### 异步处理
-```bash
-# 启用异步处理
-ais config set async-processing true
-
-# 设置并发数
-ais config set max-concurrent 3
 ```
 
 ## 🎓 学习集成
@@ -337,17 +275,9 @@ ais config set max-concurrent 3
 ais ask "什么是 Docker？"
 # 然后运行: ais learn docker
 
-# 将问答转换为学习笔记
-ais ask "如何使用 Git 分支？" --save-as-learning
-```
-
-### 知识图谱
-```bash
-# 查看相关知识点
-ais ask "什么是 Kubernetes？" --show-related
-
-# 构建知识图谱
-ais knowledge-graph --topic "容器化技术"
+# 先问后学的学习模式
+ais ask "Kubernetes 有哪些核心概念？"
+ais learn kubernetes
 ```
 
 ---
@@ -361,11 +291,11 @@ ais knowledge-graph --topic "容器化技术"
 ---
 
 ::: tip 提示
-AI 问答功能会随着使用变得更加智能，建议开启历史记录以获得更好的体验。
+AI 问答功能会随着使用变得更加智能，建议开启上下文感知以获得更好的体验。
 :::
 
 ::: info 上下文感知
-AIS 会自动收集环境信息来提供更准确的回答，您可以在隐私设置中调整收集级别。
+AIS 会自动收集环境信息来提供更准确的回答，您可以在配置中调整收集级别。
 :::
 
 ::: warning 注意

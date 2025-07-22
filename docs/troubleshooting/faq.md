@@ -9,9 +9,9 @@ AIS (AI Shell) 是一个**上下文感知的错误分析学习助手**。它通�
 
 ### AIS 的核心功能有哪些？
 1. **智能错误分析**：自动捕获和分析命令执行错误
-2. **AI 问答助手**：快速获取技术问题的答案
+2. **AI 问答助手**：快速获取技术问题的答案，支持上下文感知
 3. **系统化学习**：提供结构化的技术学习内容
-4. **学习成长报告**：分析学习进步和技能提升
+4. **学习成长报告**：分析学习进步和技能提升，支持 HTML 可视化报告
 5. **多 AI 提供商支持**：支持 OpenAI、Claude、Ollama 等
 
 ### AIS 是否免费？
@@ -29,19 +29,14 @@ AIS 本身是开源免费的，但某些 AI 服务（如 OpenAI、Claude）需�
 
 ### 需要什么依赖？
 - **Python**: 3.8 或更高版本
-- **Shell**: Bash 4.0+, Zsh 5.0+, Fish 3.0+
+- **Shell**: Bash 4.0+, Zsh 5.0+
 - **网络**: 用于 AI 服务（本地 AI 除外）
 
 ### 如何安装 AIS？
 ```bash
-# 一键安装（推荐）
-curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh | bash
-
-# 国内用户可使用Gitee镜像
-curl -sSL https://gitee.com/kangvcar/ais/raw/main/scripts/install.sh | bash
-
-# 或手动安装
-pipx install ais-terminal
+# 从源码安装
+cd /path/to/ais
+source .venv/bin/activate && python3 -m pip install -e .
 
 # 验证安装
 ais --version
@@ -56,7 +51,7 @@ ais setup
 ais provider-add openai \
   --url https://api.openai.com/v1/chat/completions \
   --model gpt-3.5-turbo \
-  --api-key YOUR_API_KEY
+  --key YOUR_API_KEY
 
 # 3. 开启自动分析
 ais on
@@ -99,19 +94,12 @@ ais provider-add ollama \
 ais provider-use ollama
 ```
 
-### AI 响应不准确怎么办？
-1. **检查上下文收集**：`ais config set context-level detailed`
-2. **更换模型**：尝试更高级的模型（如 GPT-4）
-3. **添加更多信息**：在问题中包含更多背景信息
-4. **调整温度**：`ais config set temperature 0.3`（更保守）
-
 ## 🐚 Shell 集成
 
 ### Shell 集成是如何工作的？
 AIS 通过 Shell 钩子（hooks）机制监听命令执行：
 - **Bash**: 使用 `trap` 和 `ERR` 信号
 - **Zsh**: 使用 `preexec` 和 `precmd` 钩子
-- **Fish**: 使用事件系统
 
 ### 集成会影响性能吗？
 不会。AIS 的集成机制：
@@ -126,25 +114,12 @@ ais off
 
 # 重新启用
 ais on
-
-# 查看状态
-ais status
-```
-
-### 某些命令不想被分析怎么办？
-```bash
-# 添加忽略的命令
-ais config add-ignored-command "grep"
-ais config add-ignored-command "find"
-
-# 添加忽略的错误模式
-ais config add-ignored-pattern "Permission denied"
 ```
 
 ## 💾 数据和隐私
 
 ### 数据存储在哪里？
-- **配置文件**: `~/.config/ais/config.yaml`
+- **配置文件**: `~/.config/ais/config.toml`
 - **数据库**: `~/.local/share/ais/database.db`
 - **日志**: `~/.local/share/ais/logs/`
 
@@ -161,70 +136,35 @@ ais config add-ignored-pattern "Permission denied"
 ais provider-use ollama
 
 # 2. 最小化上下文收集
-ais config set context-level minimal
+ais config --set ask.context_level=minimal
 
-# 3. 添加敏感信息过滤
-ais config add-sensitive-pattern "*password*"
-
-# 4. 排除敏感目录
-ais config add-excluded-dir ~/.ssh
-```
-
-### 可以删除历史数据吗？
-```bash
-# 清空所有历史
-ais history clear
-
-# 删除特定类型
-ais history clear --type analyze
-
-# 删除所有数据
-ais data clear --all
+# 3. 查看隐私配置
+ais config --help-context
 ```
 
 ## 🎓 学习功能
 
 ### 学习功能支持哪些主题？
-- **版本控制**: Git, GitHub, SVN
-- **容器化**: Docker, Kubernetes
-- **编程语言**: Python, JavaScript, Go
-- **系统管理**: Linux, SSH, 网络
-- **开发工具**: Vim, Make, CMake
+AIS 目前支持以下内置学习主题：
+- **git** - Git 版本控制系统
+- **ssh** - SSH 远程连接和配置
+- **docker** - Docker 容器化技术
+- **vim** - Vim 编辑器使用技巧
+- **grep** - 文本搜索和正则表达式
+- **find** - 文件查找命令
+- **permissions** - Linux 文件权限管理
+- **process** - 进程管理和监控
+- **network** - 网络诊断和配置
 
-### 如何查看支持的学习主题？
+### 如何使用学习功能？
 ```bash
-# 查看所有主题
-ais learn --list
+# 查看所有可用主题
+ais learn
 
-# 搜索主题
-ais learn --search docker
-
-# 查看主题详情
-ais learn --info docker
-```
-
-### 学习内容可以自定义吗？
-```bash
-# 指定学习级别
-ais learn docker --level beginner
-
-# 指定学习格式
-ais learn docker --format interactive
-
-# 指定学习深度
-ais learn docker --depth basic
-```
-
-### 学习进度如何跟踪？
-```bash
-# 查看学习历史
-ais learn-history
-
-# 查看学习统计
-ais learn-stats
-
-# 生成学习报告
-ais learn-report
+# 学习特定主题
+ais learn git
+ais learn docker
+ais learn vim
 ```
 
 ## 📊 报告功能
@@ -234,116 +174,94 @@ ais learn-report
 - **技能评估**: 基于历史数据的技能水平
 - **学习建议**: 个性化的学习路径推荐
 - **进步趋势**: 技能提升和学习进度
+- **AI智能洞察**: 深度个性化分析总结
 
 ### 如何生成报告？
 ```bash
-# 生成综合报告
+# 生成文本格式报告
 ais report
 
-# 生成特定时间段报告
-ais report --days 30
+# 生成 HTML 可视化报告
+ais report --html
 
-# 生成特定主题报告
-ais report --topic docker
+# 指定输出文件名
+ais report --html -o my-report.html
+
+# 生成后自动打开浏览器
+ais report --html --open
 ```
 
-### 报告可以导出吗？
+## 📝 历史记录
+
+### 如何查看命令历史？
 ```bash
-# 导出为 HTML
-ais report --export html report.html
+# 查看最近的历史记录
+ais history
 
-# 导出为 PDF
-ais report --export pdf report.pdf
+# 限制显示数量
+ais history --limit 10
 
-# 导出为 Markdown
-ais report --export md report.md
+# 只查看失败的命令
+ais history --failed-only
+
+# 按命令过滤
+ais history --command-filter "docker"
 ```
 
-## 🔧 高级使用
+## 🔧 配置管理
 
-### 如何配置多个 AI 提供商？
+### 如何管理配置？
 ```bash
-# 添加多个提供商
-ais provider-add openai --api-key KEY1 --model gpt-3.5-turbo
-ais provider-add claude --api-key KEY2 --model claude-3-sonnet
-ais provider-add ollama --url http://localhost:11434/v1/chat/completions --model llama2
+# 查看当前配置
+ais config
 
-# 设置优先级
-ais provider-priority set openai 1
-ais provider-priority set claude 2
-ais provider-priority set ollama 3
+# 设置配置项
+ais config --set ask.context_level=standard
 
-# 启用故障转移
-ais config set auto-failover true
+# 获取配置项
+ais config --get ask.context_level
+
+# 查看提供商列表
+ais config --list-providers
 ```
 
-### 如何为不同功能使用不同的 AI？
+## 🤝 多 AI 提供商支持
+
+### 如何管理多个 AI 提供商？
 ```bash
-# 为问答使用 OpenAI
-ais config set ask-provider openai
+# 添加提供商
+ais provider-add openai --url https://api.openai.com/v1/chat/completions --model gpt-3.5-turbo --key KEY
+ais provider-add claude --url https://api.anthropic.com/v1/messages --model claude-3-sonnet --key KEY
 
-# 为分析使用 Claude
-ais config set analyze-provider claude
+# 查看所有提供商
+ais provider-list
 
-# 为学习使用本地模型
-ais config set learn-provider ollama
+# 切换提供商
+ais provider-use openai
+
+# 删除提供商
+ais provider-remove claude
 ```
-
-### 如何在团队中使用 AIS？
-```bash
-# 创建团队配置
-ais team-config create "dev-team"
-
-# 设置团队默认配置
-ais team-config set "dev-team" provider openai
-ais team-config set "dev-team" context-level standard
-
-# 应用团队配置
-ais team-config apply "dev-team"
-```
-
-## 🚀 性能优化
-
-### 如何提高响应速度？
-1. **使用更快的模型**：GPT-3.5-turbo 比 GPT-4 快
-2. **减少上下文**：`ais config set context-level minimal`
-3. **启用缓存**：`ais config set enable-cache true`
-4. **使用本地模型**：Ollama 响应更快
-5. **优化网络**：配置代理和 DNS
-
-### 如何减少成本？
-1. **使用免费模型**：Ollama 完全免费
-2. **设置使用限制**：`ais provider-limit set openai 100 --daily`
-3. **只在需要时使用**：按需开启/关闭功能
-4. **选择合适的模型**：根据任务选择性价比最高的模型
 
 ## 🛠️ 故障排除
 
 ### 常见错误如何解决？
 参考 [常见问题](./common-issues) 文档中的详细解决方案。
 
-### 如何获取调试信息？
+### 如何测试 Shell 集成？
 ```bash
-# 启用调试模式
-ais config set debug true
-
-# 查看调试日志
-tail -f ~/.local/share/ais/debug.log
-
-# 生成诊断报告
-ais diagnose
+# 测试集成是否正常工作
+ais test-integration
 ```
 
-### 如何重置 AIS？
+### 如何获取详细帮助？
 ```bash
-# 重置配置
-ais config reset
+# 查看所有命令的详细帮助
+ais help-all
 
-# 重置所有数据
-ais reset --all
-
-# 重新初始化
-ais setup
+# 查看特定命令的详细帮助
+ais ask --help-detail
+ais learn --help-detail
 ```
 
 ## 📚 更多资源
@@ -359,10 +277,6 @@ ais setup
 - **Issues**: 报告问题和建议
 - **讨论区**: 技术交流
 
-### 联系方式
-- **邮件**: 项目相关问题
-- **GitHub Issues**: Bug 报告和功能请求
-
 ---
 
 ## 没有找到答案？
@@ -376,7 +290,7 @@ ais setup
 ---
 
 ::: tip 提示
-大多数问题都可以通过 `ais diagnose` 命令自动检测和解决。
+大多数功能问题都可以通过 `ais help-all` 和 `ais test-integration` 命令检测和解决。
 :::
 
 ::: info 更新

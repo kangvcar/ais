@@ -1,6 +1,6 @@
 # 隐私设置
 
-AIS 非常重视用户隐私，提供了全面的隐私保护机制。所有数据都存储在本地，您可以完全控制数据的收集和使用。
+AIS 非常重视用户隐私，提供了隐私保护机制。所有数据都存储在本地，您可以控制数据的收集和使用。
 
 ## 🔒 隐私原则
 
@@ -11,146 +11,58 @@ AIS 非常重视用户隐私，提供了全面的隐私保护机制。所有数�
 
 ### 敏感信息过滤
 - 自动过滤密码、API 密钥等敏感信息
-- 支持自定义敏感信息模式
 - 在发送给 AI 之前进行数据清洗
-
-## 🛡️ 敏感信息过滤
-
-### 默认过滤规则
-AIS 默认过滤以下类型的敏感信息：
-- 密码和密钥
-- API 令牌
-- 数据库连接字符串
-- 私钥文件内容
-- 环境变量中的敏感信息
-
-### 查看过滤规则
-```bash
-# 查看所有过滤规则
-ais config show privacy
-
-# 查看敏感模式
-ais config show sensitive-patterns
-
-# 查看排除目录
-ais config show excluded-dirs
-```
-
-### 自定义过滤规则
-```bash
-# 添加敏感信息模式
-ais config add-sensitive-pattern "*password*"
-ais config add-sensitive-pattern "*token*"
-ais config add-sensitive-pattern "*secret*"
-ais config add-sensitive-pattern "*key*"
-
-# 添加敏感命令
-ais config add-sensitive-command "mysql"
-ais config add-sensitive-command "ssh"
-ais config add-sensitive-command "curl"
-
-# 添加敏感环境变量
-ais config add-sensitive-env "AWS_SECRET_ACCESS_KEY"
-ais config add-sensitive-env "GITHUB_TOKEN"
-```
-
-## 📁 目录和文件排除
-
-### 默认排除目录
-```bash
-# 查看默认排除目录
-ais config show excluded-dirs
-
-# 默认排除的目录包括：
-# ~/.ssh/
-# ~/.gnupg/
-# ~/.aws/
-# ~/.config/gcloud/
-# /etc/ssl/private/
-```
-
-### 自定义排除规则
-```bash
-# 添加排除目录
-ais config add-excluded-dir ~/.secrets
-ais config add-excluded-dir /opt/company/secrets
-ais config add-excluded-dir ~/.config/sensitive-app
-
-# 添加排除文件模式
-ais config add-excluded-pattern "*.key"
-ais config add-excluded-pattern "*.pem"
-ais config add-excluded-pattern "*.p12"
-ais config add-excluded-pattern "*secret*"
-ais config add-excluded-pattern "*password*"
-
-# 移除排除规则
-ais config remove-excluded-dir ~/.secrets
-ais config remove-excluded-pattern "*.key"
-```
 
 ## 🔍 上下文收集控制
 
-### 收集级别
+### 收集级别配置
 ```bash
 # 最小收集（推荐隐私敏感用户）
-ais config set context-level minimal
+ais config --set ask.context_level=minimal
 
 # 标准收集（默认）
-ais config set context-level standard
+ais config --set ask.context_level=standard
 
 # 详细收集（开发调试用）
-ais config set context-level detailed
+ais config --set ask.context_level=detailed
+
+# 查看当前设置
+ais config --get ask.context_level
+
+# 查看上下文帮助
+ais config --help-context
 ```
 
 ### 收集级别详情
 
 #### minimal（最小）
-```bash
-收集内容：
-- 基本系统信息（OS、架构）
+- 基本系统信息（OS、CPU、内存）
 - 命令和退出码
-- 最小环境变量（PATH、HOME）
-- 不收集网络信息
-- 不收集文件内容
-```
+- 基础网络连通性检测
+- 监听端口和服务信息
+- 基本Git状态
 
 #### standard（标准）
-```bash
-收集内容：
-- 完整系统信息
-- 网络连接状态（不含详细信息）
-- 项目类型检测
-- 常用环境变量
-- 基本权限信息
-```
+- minimal级别的所有信息
+- 项目类型检测和文件列表
+- 命令历史记录
+- 更详细的环境信息
 
 #### detailed（详细）
-```bash
-收集内容：
-- 所有系统信息
-- 详细网络诊断
-- 完整环境变量
-- 详细权限检查
-- 相关文件内容（经过过滤）
-```
+- standard级别的所有信息
+- 完整的环境变量
+- 详细的权限信息
+- 网络诊断信息
 
 ## 🌐 网络隐私
 
-### 网络信息收集
+### 使用本地 AI 模型（推荐）
 ```bash
-# 禁用网络状态收集
-ais config set collect-network-info false
+# 安装和配置 Ollama
+ollama serve
+ollama pull llama2
 
-# 禁用 DNS 检查
-ais config set collect-dns-info false
-
-# 禁用外部 IP 检查
-ais config set collect-external-ip false
-```
-
-### AI 服务隐私
-```bash
-# 使用本地 AI 模型（推荐）
+# 添加本地 AI 提供商
 ais provider-add ollama \
   --url http://localhost:11434/v1/chat/completions \
   --model llama2
@@ -158,196 +70,117 @@ ais provider-add ollama \
 # 设置为默认提供商
 ais provider-use ollama
 
-# 验证本地模型
-ais provider-test ollama
+# 验证本地模型工作
+ais ask "这是本地AI测试"
 ```
+
+### 避免使用外部 AI 服务
+如果必须使用外部 AI 服务，请注意：
+- 使用最小化的上下文收集级别
+- 定期检查发送给 AI 的数据内容
+- 使用可信的 AI 提供商
 
 ## 📊 数据管理
 
 ### 数据存储位置
 ```bash
-# 查看数据存储位置
-ais config show data-dir
+# 配置文件位置
+~/.config/ais/config.toml
 
-# 自定义数据存储位置
-ais config set data-dir /secure/location/ais-data
+# 数据库文件位置
+~/.local/share/ais/database.db
+
+# 日志文件位置
+~/.local/share/ais/logs/
 ```
 
-### 数据清理
+### 查看和清理数据
 ```bash
-# 清理历史记录
-ais history clear
+# 查看历史记录
+ais history
 
-# 清理分析缓存
-ais config clear-cache
+# 查看配置
+ais config
 
-# 清理所有数据
-ais data clear --all
-
-# 安全删除数据
-ais data secure-delete
+# 清理历史记录（如需要）
+# 注意：没有内置的清理命令，需要手动删除数据库文件
+rm ~/.local/share/ais/database.db
 ```
 
-### 数据备份
-```bash
-# 备份数据
-ais data backup backup.tar.gz
+## 🚫 控制功能
 
-# 恢复数据
-ais data restore backup.tar.gz
-
-# 导出数据（去敏感化）
-ais data export --anonymize export.json
-```
-
-## 🔐 加密设置
-
-### 数据库加密
-```bash
-# 启用数据库加密
-ais config set database-encryption true
-
-# 设置加密密钥
-ais config set-encryption-key
-
-# 验证加密状态
-ais config show encryption-status
-```
-
-### 传输加密
-```bash
-# 强制使用 HTTPS
-ais config set force-https true
-
-# 验证 SSL 证书
-ais config set verify-ssl true
-
-# 使用自定义 CA 证书
-ais config set ca-cert-path /path/to/ca.pem
-```
-
-## 🚫 禁用功能
-
-### 禁用特定功能
+### 自动分析控制
 ```bash
 # 禁用自动分析
 ais off
 
-# 禁用学习功能
-ais config set learning-enabled false
+# 启用自动分析
+ais on
 
-# 禁用历史记录
-ais config set history-enabled false
-
-# 禁用统计收集
-ais config set stats-enabled false
+# 调整分析冷却时间
+ais config --set advanced.analysis_cooldown=120
 ```
 
-### 禁用网络功能
-```bash
-# 禁用所有网络功能
-ais config set network-enabled false
+### 敏感目录保护
+AIS 内置了敏感目录保护机制，会自动避免收集某些敏感目录的信息。
 
-# 禁用更新检查
-ais config set update-check false
-
-# 禁用遥测
-ais config set telemetry false
-```
-
-## 🔍 隐私审计
-
-### 审计数据收集
-```bash
-# 查看将要收集的数据
-ais audit --dry-run
-
-# 查看历史数据收集
-ais audit --history
-
-# 生成隐私报告
-ais audit --report
-```
-
-### 数据清单
-```bash
-# 查看存储的数据类型
-ais data inventory
-
-# 查看数据统计
-ais data stats
-
-# 查看敏感数据检测结果
-ais data scan-sensitive
-```
-
-## 📋 隐私配置模板
+## 📋 隐私配置推荐
 
 ### 高隐私模式
 ```bash
 # 适合隐私敏感用户的配置
-ais config set context-level minimal
-ais config set collect-network-info false
-ais config set collect-dns-info false
-ais config set history-enabled false
-ais config set stats-enabled false
-ais config set telemetry false
-ais config set database-encryption true
+ais config --set ask.context_level=minimal
 
 # 使用本地 AI 模型
 ais provider-add ollama --url http://localhost:11434/v1/chat/completions --model llama2
 ais provider-use ollama
-```
 
-### 企业安全模式
-```bash
-# 适合企业环境的配置
-ais config set context-level standard
-ais config set force-https true
-ais config set verify-ssl true
-ais config set database-encryption true
-ais config add-excluded-dir /opt/company
-ais config add-sensitive-pattern "*company*"
-ais config add-sensitive-pattern "*internal*"
+# 禁用自动分析（如需要）
+ais off
 ```
 
 ### 开发者模式
 ```bash
 # 适合开发者的配置（平衡隐私和功能）
-ais config set context-level standard
-ais config set collect-network-info true
-ais config set history-enabled true
-ais config set stats-enabled true
-ais config add-excluded-dir ~/.ssh
-ais config add-excluded-dir ~/.aws
-ais config add-sensitive-pattern "*password*"
-ais config add-sensitive-pattern "*token*"
+ais config --set ask.context_level=standard
+
+# 配置可信的外部 AI 提供商
+ais provider-add openai --url https://api.openai.com/v1/chat/completions --model gpt-3.5-turbo --key YOUR_KEY
 ```
 
 ## 🔒 隐私最佳实践
 
 ### 定期检查
+- 定期查看 `ais config` 了解当前设置
+- 检查 `ais provider-list` 确认使用的 AI 提供商
+- 查看 `ais history` 了解记录的数据
+
+### 安全建议
+- 优先使用本地 AI 模型（Ollama）
+- 使用最小必要的上下文收集级别
+- 定期清理不需要的历史数据
+- 注意 API 密钥的安全存储
+
+## 🛠️ 数据位置和管理
+
+### 完全重置
+如果需要完全清理所有数据：
 ```bash
-# 定期审计隐私设置
-ais audit --comprehensive
+# 删除所有配置和数据
+rm -rf ~/.config/ais/
+rm -rf ~/.local/share/ais/
 
-# 检查数据收集状态
-ais privacy status
-
-# 更新敏感信息过滤规则
-ais config update-sensitive-patterns
+# 重新初始化
+ais setup
 ```
 
-### 安全提醒
+### 备份重要配置
 ```bash
-# 启用隐私提醒
-ais config set privacy-reminders true
+# 备份配置文件
+cp ~/.config/ais/config.toml ~/ais-config-backup.toml
 
-# 设置数据清理提醒
-ais config set cleanup-reminders true
-
-# 设置审计提醒
-ais config set audit-reminders true
+# 备份数据库
+cp ~/.local/share/ais/database.db ~/ais-data-backup.db
 ```
 
 ---
@@ -365,9 +198,9 @@ ais config set audit-reminders true
 :::
 
 ::: info 透明度
-AIS 的所有数据收集和处理都是透明的，您可以随时查看存储的数据和隐私设置。
+AIS 的所有数据收集和处理都是透明的，您可以通过 `ais config` 和 `ais history` 查看相关信息。
 :::
 
 ::: warning 注意
-修改隐私设置后，建议运行 `ais audit` 命令验证配置是否正确。
+修改隐私设置后，建议测试功能是否正常工作，特别是 AI 问答功能。
 :::

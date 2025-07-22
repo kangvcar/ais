@@ -19,14 +19,11 @@ echo $PATH
 which ais
 whereis ais
 
-# 3. 重新安装
-pip install --upgrade ais-terminal
+# 3. 从源码安装
+cd /path/to/ais
+source .venv/bin/activate && python3 -m pip install -e .
 
-# 4. 如果使用 pipx
-pipx install ais-terminal
-pipx ensurepath
-
-# 5. 重新加载 shell 配置
+# 4. 重新加载 shell 配置
 source ~/.bashrc  # 或 ~/.zshrc
 ```
 
@@ -47,35 +44,34 @@ sudo apt update
 sudo apt install python3.9 python3.9-pip
 
 # 3. 使用特定 Python 版本安装
-python3.9 -m pip install ais-terminal
+python3.9 -m pip install -e .
 
 # 4. 创建虚拟环境
 python3.9 -m venv ais-env
 source ais-env/bin/activate
-pip install ais-terminal
+pip install -e .
 ```
 
-### 问题：权限被拒绝
+### 问题：依赖安装失败
 ```bash
 # 错误信息
-ERROR: Could not install packages due to an EnvironmentError: [Errno 13] Permission denied
+ERROR: Failed building wheel for some-package
 ```
 
 **解决方案**：
 ```bash
-# 1. 使用用户安装（推荐）
-pip install --user ais-terminal
+# 1. 更新 pip
+pip install --upgrade pip
 
-# 2. 使用 pipx（推荐）
-pipx install ais-terminal
+# 2. 安装构建依赖
+sudo apt-get install build-essential python3-dev
 
-# 3. 使用虚拟环境
-python -m venv venv
-source venv/bin/activate
-pip install ais-terminal
+# 3. 清理缓存重新安装
+pip cache purge
+pip install -e .
 
-# 4. 使用 sudo（不推荐）
-sudo pip install ais-terminal
+# 4. 安装HTML可视化依赖
+pip install -e .[html]
 ```
 
 ## 🤖 AI 提供商问题
@@ -95,17 +91,13 @@ Error: Invalid API key provided
 ais provider-add openai \
   --url https://api.openai.com/v1/chat/completions \
   --model gpt-3.5-turbo \
-  --api-key YOUR_ACTUAL_API_KEY
+  --key YOUR_ACTUAL_API_KEY
 
-# 3. 从环境变量读取
-export OPENAI_API_KEY="your-api-key"
-ais provider-add openai \
-  --url https://api.openai.com/v1/chat/completions \
-  --model gpt-3.5-turbo \
-  --api-key $OPENAI_API_KEY
+# 3. 验证提供商配置
+ais provider-list
 
-# 4. 测试连接
-ais provider-test openai
+# 4. 切换到正确的提供商
+ais provider-use openai
 ```
 
 ### 问题：Ollama 连接失败
@@ -132,33 +124,27 @@ ais provider-add ollama \
 
 # 5. 拉取模型
 ollama pull llama2
-
-# 6. 测试连接
-ais provider-test ollama
 ```
 
 ### 问题：AI 响应超时
 ```bash
 # 错误信息
-Error: Request timeout
+Request timeout
 ```
 
 **解决方案**：
 ```bash
-# 1. 增加超时时间
-ais config set request-timeout 60
-
-# 2. 检查网络连接
+# 1. 检查网络连接
 ping api.openai.com
 
-# 3. 检查代理设置
-ais config set proxy http://proxy.example.com:8080
-
-# 4. 切换到其他提供商
+# 2. 切换到其他提供商
 ais provider-use claude
 
-# 5. 使用本地模型
+# 3. 使用本地模型
 ais provider-use ollama
+
+# 4. 检查提供商状态
+ais provider-list
 ```
 
 ## 🐚 Shell 集成问题
@@ -176,60 +162,32 @@ ais test-integration
 # 2. 重新设置集成
 ais setup
 
-# 3. 检查 shell 配置文件
+# 3. 检查集成是否开启
+ais config --get advanced.auto_analysis
+
+# 4. 开启自动分析
+ais on
+
+# 5. 检查 shell 配置文件
 cat ~/.bashrc | grep ais
 cat ~/.zshrc | grep ais
-
-# 4. 手动添加集成
-echo 'eval "$(ais shell-integration bash)"' >> ~/.bashrc
-source ~/.bashrc
-
-# 5. 检查钩子函数
-type __ais_trap  # Bash
-type __ais_precmd  # Zsh
 ```
 
-### 问题：集成导致 Shell 变慢
+### 问题：重复分析同一个错误
 ```bash
-# Shell 启动或命令执行变慢
+# 同一个错误被重复分析
 ```
 
 **解决方案**：
 ```bash
-# 1. 检查异步处理
-ais config set async-analysis true
+# 1. 检查分析冷却时间
+ais config --get advanced.analysis_cooldown
 
-# 2. 减少上下文收集
-ais config set context-level minimal
+# 2. 调整冷却时间（秒）
+ais config --set advanced.analysis_cooldown=120
 
-# 3. 增加分析延迟
-ais config set analysis-delay 2
-
-# 4. 暂时禁用
-ais off
-
-# 5. 调试性能
-ais config set debug true
-```
-
-### 问题：在某些 Shell 中不工作
-```bash
-# 在 Fish 或其他 Shell 中不工作
-```
-
-**解决方案**：
-```bash
-# 1. 检查 Shell 类型
-echo $SHELL
-
-# 2. 手动配置 Fish
-echo 'eval (ais shell-integration fish)' >> ~/.config/fish/config.fish
-
-# 3. 重启 Fish
-exec fish
-
-# 4. 测试集成
-ais test-integration --shell fish
+# 3. 检查是否正常工作
+# 快速连续执行同一个错误命令，应该只分析第一次
 ```
 
 ## 💾 数据和配置问题
@@ -242,49 +200,22 @@ Error: Invalid configuration file
 
 **解决方案**：
 ```bash
-# 1. 检查配置文件
-ais config validate
+# 1. 查看配置文件位置
+echo ~/.config/ais/config.toml
 
-# 2. 查看配置文件位置
-ais config show config-file
+# 2. 检查配置文件语法
+cat ~/.config/ais/config.toml
 
-# 3. 备份并重置配置
-cp ~/.config/ais/config.yaml ~/.config/ais/config.yaml.bak
-ais config reset
-
-# 4. 修复配置文件
-ais config repair
-
-# 5. 重新配置
+# 3. 备份并重新初始化
+cp ~/.config/ais/config.toml ~/.config/ais/config.toml.bak
+rm ~/.config/ais/config.toml
 ais setup
+
+# 4. 重新配置提供商
+ais provider-add openai --url https://api.openai.com/v1/chat/completions --model gpt-3.5-turbo --key YOUR_KEY
 ```
 
-### 问题：数据库错误
-```bash
-# 错误信息
-Error: Database is locked
-```
-
-**解决方案**：
-```bash
-# 1. 检查数据库状态
-ais data diagnose
-
-# 2. 关闭其他 AIS 进程
-ps aux | grep ais
-kill -9 <PID>
-
-# 3. 修复数据库
-ais data repair
-
-# 4. 重建数据库
-ais data rebuild
-
-# 5. 恢复备份
-ais data restore backup.db
-```
-
-### 问题：历史记录丢失
+### 问题：历史记录为空
 ```bash
 # 历史记录为空或不完整
 ```
@@ -292,19 +223,37 @@ ais data restore backup.db
 **解决方案**：
 ```bash
 # 1. 检查历史记录
-ais history --limit 10
+ais history
 
-# 2. 检查数据库
-ais data stats
+# 2. 检查数据库文件
+ls -la ~/.local/share/ais/database.db
 
-# 3. 恢复历史记录
-ais data restore-history
-
-# 4. 检查权限
+# 3. 检查权限
 ls -la ~/.local/share/ais/
 
-# 5. 重新启用历史记录
-ais config set history-enabled true
+# 4. 执行一些命令产生错误，然后检查是否记录
+ls /nonexistent 2>&1
+ais history --limit 1
+```
+
+### 问题：上下文级别配置无效
+```bash
+# 设置的上下文级别不生效
+```
+
+**解决方案**：
+```bash
+# 1. 检查当前配置
+ais config
+
+# 2. 正确设置上下文级别
+ais config --set ask.context_level=standard
+
+# 3. 验证设置
+ais config --get ask.context_level
+
+# 4. 查看上下文帮助
+ais config --help-context
 ```
 
 ## 🌐 网络问题
@@ -312,7 +261,7 @@ ais config set history-enabled true
 ### 问题：网络连接超时
 ```bash
 # 错误信息
-Error: Connection timeout
+Connection timeout
 ```
 
 **解决方案**：
@@ -321,23 +270,17 @@ Error: Connection timeout
 ping 8.8.8.8
 curl -I https://api.openai.com
 
-# 2. 配置代理
-ais config set proxy http://proxy.example.com:8080
+# 2. 使用本地AI避免网络问题
+ais provider-use ollama
 
 # 3. 检查防火墙
 sudo ufw status
-
-# 4. 使用不同的 DNS
-ais config set dns 8.8.8.8
-
-# 5. 增加重试次数
-ais config set retry-attempts 5
 ```
 
 ### 问题：SSL 证书错误
 ```bash
 # 错误信息
-Error: SSL certificate verify failed
+SSL certificate verify failed
 ```
 
 **解决方案**：
@@ -345,13 +288,7 @@ Error: SSL certificate verify failed
 # 1. 更新证书
 sudo apt update && sudo apt install ca-certificates
 
-# 2. 临时跳过验证（不推荐）
-ais config set verify-ssl false
-
-# 3. 使用自定义证书
-ais config set ca-cert-path /path/to/cert.pem
-
-# 4. 检查系统时间
+# 2. 检查系统时间
 date
 sudo ntpdate -s time.nist.gov
 ```
@@ -361,7 +298,7 @@ sudo ntpdate -s time.nist.gov
 ### 问题：访问被拒绝
 ```bash
 # 错误信息
-Error: Permission denied
+Permission denied
 ```
 
 **解决方案**：
@@ -372,7 +309,7 @@ ls -la ~/.local/share/ais/
 
 # 2. 修复权限
 chmod 755 ~/.config/ais/
-chmod 644 ~/.config/ais/config.yaml
+chmod 644 ~/.config/ais/config.toml
 
 # 3. 重新创建目录
 rm -rf ~/.config/ais/
@@ -382,120 +319,81 @@ ais setup
 df -h
 ```
 
-### 问题：无法写入日志
+## 📊 HTML报告问题
+
+### 问题：HTML报告生成失败
 ```bash
 # 错误信息
-Error: Cannot write to log file
+ImportError: 需要安装plotly库
 ```
 
 **解决方案**：
 ```bash
-# 1. 检查日志目录权限
-ls -la ~/.local/share/ais/logs/
+# 1. 安装HTML依赖
+pip install plotly numpy
 
-# 2. 创建日志目录
-mkdir -p ~/.local/share/ais/logs/
-chmod 755 ~/.local/share/ais/logs/
+# 2. 或者安装完整HTML功能
+pip install -e .[html]
 
-# 3. 更改日志位置
-ais config set log-file /tmp/ais.log
+# 3. 验证安装
+python -c "import plotly; print('Plotly installed successfully')"
 
-# 4. 禁用日志
-ais config set logging false
+# 4. 测试HTML报告
+ais report --html
 ```
 
-## 🚀 性能问题
-
-### 问题：响应速度慢
+### 问题：HTML报告图表为空
 ```bash
-# AI 分析或问答响应很慢
+# HTML报告生成但图表为空
 ```
 
 **解决方案**：
 ```bash
-# 1. 使用更快的模型
-ais provider-add openai \
-  --url https://api.openai.com/v1/chat/completions \
-  --model gpt-3.5-turbo  # 而不是 gpt-4
+# 1. 确保有足够的历史数据
+ais history
 
-# 2. 减少上下文信息
-ais config set context-level minimal
+# 2. 产生一些错误数据用于测试
+ls /nonexistent 2>&1
+docker invalidcommand 2>&1
+git invalidcommand 2>&1
 
-# 3. 启用缓存
-ais config set enable-cache true
-
-# 4. 使用本地模型
-ais provider-use ollama
-
-# 5. 优化网络
-ais config set request-timeout 30
-```
-
-### 问题：内存使用过高
-```bash
-# AIS 进程占用大量内存
-```
-
-**解决方案**：
-```bash
-# 1. 检查内存使用
-ps aux | grep ais
-top -p $(pgrep ais)
-
-# 2. 清理缓存
-ais config clear-cache
-
-# 3. 限制历史记录
-ais config set max-history 100
-
-# 4. 减少并发数
-ais config set max-concurrent 1
-
-# 5. 重启 AIS
-ais restart
+# 3. 等待几分钟后重新生成报告
+ais report --html
 ```
 
 ## 🛠️ 调试技巧
 
-### 启用调试模式
+### 启用详细输出
 ```bash
-# 启用详细调试
-ais config set debug true
-ais config set log-level debug
+# 查看详细帮助
+ais help-all
 
-# 查看调试日志
-tail -f ~/.local/share/ais/debug.log
-
-# 调试特定命令
-ais ask "test" --debug
-ais analyze --debug
+# 查看特定命令详细帮助
+ais ask --help-detail
+ais learn --help-detail
 ```
 
-### 收集诊断信息
+### 测试功能
 ```bash
-# 生成诊断报告
-ais diagnose
+# 测试Shell集成
+ais test-integration
 
-# 检查系统兼容性
-ais test-integration --verbose
+# 测试AI问答
+ais ask "测试连接"
 
-# 收集系统信息
-ais system-info
+# 查看配置
+ais config
 
-# 验证配置
-ais config validate --verbose
+# 查看提供商状态
+ais provider-list
 ```
 
 ### 重置到默认状态
 ```bash
-# 完全重置
-ais reset --all
-
-# 保留数据的重置
-ais reset --config-only
-
-# 重新初始化
-ais setup --force
+# 删除配置文件重新开始
+rm -rf ~/.config/ais/
+rm -rf ~/.local/share/ais/
+ais setup
 ```
 
 ## 📞 获取帮助
@@ -510,8 +408,8 @@ ais config --help
 # 查看版本信息
 ais --version
 
-# 查看系统信息
-ais system-info
+# 查看所有命令详细帮助
+ais help-all
 ```
 
 ### 社区支持
@@ -519,19 +417,16 @@ ais system-info
 - **文档**: 查看完整文档
 - **讨论区**: 技术讨论和问答
 
-### 日志文件位置
+### 文件位置
 ```bash
 # 配置文件
-~/.config/ais/config.yaml
+~/.config/ais/config.toml
 
-# 数据文件
+# 数据库文件
 ~/.local/share/ais/database.db
 
 # 日志文件
-~/.local/share/ais/logs/ais.log
-
-# 调试日志
-~/.local/share/ais/debug.log
+~/.local/share/ais/logs/
 ```
 
 ---
@@ -545,11 +440,11 @@ ais system-info
 ---
 
 ::: tip 提示
-遇到问题时，首先尝试 `ais diagnose` 命令，它会自动检测常见问题。
+遇到问题时，首先尝试 `ais test-integration` 和 `ais help-all` 命令进行诊断。
 :::
 
 ::: info 调试
-启用调试模式可以帮助您更好地理解问题的根本原因。
+如果问题持续，可以删除配置文件重新初始化：`rm -rf ~/.config/ais/ && ais setup`
 :::
 
 ::: warning 注意
