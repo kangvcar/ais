@@ -206,12 +206,8 @@ mkdirr /tmp/test
 # 查看当前配置
 ais config
 
-# 设置API提供商（可选）
-ais config set provider=openai
-ais config set api_key="your-api-key"
-
-# 调整分析级别
-ais config set analysis_level=detailed
+# 设置上下文收集级别
+ais config --set context_level=detailed
 ```
 
 ### 核心功能体验
@@ -228,10 +224,10 @@ ais ask "如何查看系统内存使用情况？"
 ais ask "Docker容器如何挂载目录？"
 ais ask "Git合并冲突如何解决？"
 
-# 配置上下文感知级别
-ais config --set ask.context_level=minimal   # 基础信息
-ais config --set ask.context_level=standard  # 标准信息  
-ais config --set ask.context_level=detailed  # 完整信息
+# 配置上下文收集级别
+ais config --set context_level=minimal   # 基础信息
+ais config --set context_level=standard  # 标准信息  
+ais config --set context_level=detailed  # 完整信息
 ```
 
 #### 📖 主题学习
@@ -258,7 +254,7 @@ ais report --html -o my_report.html --open  # 生成并打开HTML报告
 
 # 历史记录管理
 ais history                    # 查看最近的命令记录
-ais history --failed-only     # 只显示失败的命令
+ais history --limit 20       # 显示20条命令记录
 ais history 3                 # 查看第3条记录的详细分析
 ```
 
@@ -287,9 +283,9 @@ ais ask "如何优化Python脚本性能？"
 ais ask "Nginx配置反向代理的步骤？"
 
 # ⚙️ 上下文级别配置
-ais config --set ask.context_level=minimal   # 基础：系统信息、Git、项目类型
-ais config --set ask.context_level=standard  # 标准：+文件列表、命令历史
-ais config --set ask.context_level=detailed  # 详细：+网络状态、权限、服务信息
+ais config --set context_level=minimal   # 基础：系统信息、Git、项目类型
+ais config --set context_level=standard  # 标准：+文件列表、命令历史
+ais config --set context_level=detailed  # 详细：+网络状态、权限、服务信息
 
 # 📋 查看详细帮助
 ais ask --help-detail

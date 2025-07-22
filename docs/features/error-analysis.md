@@ -211,47 +211,25 @@ ais on
 ais off
 
 # 查看当前状态
-ais config show auto-analysis
+ais config
 ```
 
 ### 上下文收集级别
 ```bash
 # 设置上下文收集级别
-ais config set context-level minimal    # 最小信息
-ais config set context-level standard   # 标准信息（默认）
-ais config set context-level detailed   # 详细信息
+ais config --set context_level=minimal    # 最小信息
+ais config --set context_level=standard   # 标准信息（默认）
+ais config --set context_level=detailed   # 详细信息
 ```
 
 ### 敏感信息过滤
 ```bash
-# 查看过滤设置
-ais config show privacy
+# 查看当前敏感目录配置
+ais config
 
-# 添加敏感目录
-ais config add-excluded-dir /home/user/secrets
-
-# 添加敏感文件模式
-ais config add-excluded-pattern "*.key"
-```
-
-## 🔧 高级功能
-
-### 批量分析
-```bash
-# 分析历史错误
-ais analyze --history --days 7
-
-# 分析特定类型错误
-ais analyze --type network --last 10
-```
-
-### 自定义分析规则
-```bash
-# 添加自定义错误模式
-ais config add-error-pattern "MyCustomError" "custom-solution"
-
-# 查看所有错误模式
-ais config list-error-patterns
+# 敏感目录已默认配置：
+# ~/.ssh, ~/.config/ais, ~/.aws
+# 这些目录的信息不会被收集
 ```
 
 ---

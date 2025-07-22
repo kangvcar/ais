@@ -42,7 +42,7 @@ pipx install "ais-terminal[html]"
 pip install plotly numpy
 
 # 验证安装
-ais report --html --help
+ais help-all
 ```
 
 ## 图表类型详解
@@ -296,7 +296,7 @@ ais history | wc -l
 
 # 如果超过1000条记录，考虑清理历史数据
 # 注意：这会删除数据，请谨慎操作
-# ais history --clear-old --days 60  # 只保留60天数据
+# 历史数据由数据库自动管理
 ```
 
 #### 内存使用优化

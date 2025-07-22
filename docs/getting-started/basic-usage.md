@@ -145,7 +145,7 @@ AIS 会记录所有的命令执行历史，您可以查看和分析这些记录�
 ais history
 
 # 显示更多历史记录
-ais history -n 20
+ais history --limit 20
 
 # 只显示失败的命令
 ais history --failed-only
@@ -183,7 +183,7 @@ ais config
 ais config --get auto_analysis
 
 # 查看所有 AI 服务提供商
-ais config --list-providers
+ais provider-list
 ```
 
 ### 修改配置

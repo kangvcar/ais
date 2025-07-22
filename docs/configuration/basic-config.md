@@ -62,20 +62,6 @@ ais config --set auto_analysis=true
 ais config --get auto_analysis
 ```
 
-## 🔄 自动分析设置
-
-### 全局开关
-```bash
-# 开启自动分析
-ais on
-
-# 关闭自动分析
-ais off
-
-# 查看状态
-ais status
-```
-
 
 ## 🧠 上下文收集
 

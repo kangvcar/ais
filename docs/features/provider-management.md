@@ -90,7 +90,7 @@ ais provider-add custom \
 ais provider-list
 
 # 查看提供商配置
-ais config --list-providers
+ais provider-list
 ```
 
 ### 切换提供商
@@ -121,7 +121,7 @@ ais config
 ais config --get default_provider
 
 # 查看所有提供商配置
-ais config --list-providers
+ais provider-list
 ```
 
 ### 配置设置

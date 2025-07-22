@@ -24,7 +24,7 @@ ais --version
 # ✓ 配置文件和数据库
 
 # 验证配置
-ais test-integration
+ais config
 ```
 
 ### 第 3 步：立即使用

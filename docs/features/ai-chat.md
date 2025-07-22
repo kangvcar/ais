@@ -53,9 +53,9 @@ ais ask "如何查看 Linux 系统的内存使用情况？"
 ### ⚙️ **上下文级别配置**
 ```bash
 # 配置ask问答的上下文收集级别
-ais config --set ask.context_level=minimal   # 基础：系统信息+网络+服务
-ais config --set ask.context_level=standard  # 标准：+项目类型+Git状态
-ais config --set ask.context_level=detailed  # 详细：+权限信息+完整环境
+ais config --set context_level=minimal   # 基础：系统信息+网络+服务
+ais config --set context_level=standard  # 标准：+项目类型+Git状态
+ais config --set context_level=detailed  # 详细：+权限信息+完整环境
 
 # 查看当前配置
 ais config
@@ -143,7 +143,7 @@ ais ask "如何优化这个应用？"
 ais config
 
 # 设置上下文收集级别
-ais config --set ask.context_level=standard
+ais config --set context_level=standard
 
 # 查看配置帮助
 ais config --help-context
