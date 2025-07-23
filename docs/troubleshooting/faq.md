@@ -400,51 +400,51 @@ Automatic merge failed; fix conflicts and then commit the result.
 - **第4周**：掌握基本Git工作流，能够独立处理合并冲突
 - **第8周**：成为实习生中的"技术小达人"，帮助其他同学解决问题
 
-### 案例 3：编程训练营学员的技能突破
+### 案例 3：企业运维工程师的故障排除效率提升
 
-**背景**：某在线编程训练营学员，非计算机专业背景，希望转行做前端开发
+**背景**：某电商公司运维工程师老王，5年工作经验，负责维护20+台服务器的稳定运行
 
-**学习痛点**：
-- JavaScript 异步编程概念模糊
-- 前端框架 React 组件开发困难
-- 网络请求和错误处理经常失败
+**工作挑战**：
+- 生产环境故障压力大，需要快速定位问题
+- 服务器种类多样，不同系统的错误信息记不全
+- 新技术栈学习成本高，Docker、K8s等容器化技术不熟悉
+- 夜间故障需要远程处理，缺乏现场支持
 
-**AIS 学习历程**：
+**AIS 实际应用场景**：
 ```bash
-# 场景：React 组件渲染错误
-$ npm start
-Error: Cannot read property 'map' of undefined
-    at UserList (UserList.js:15)
-    at renderWithHooks
+# 场景：凌晨3点收到MySQL服务异常告警
+$ systemctl status mysql
+● mysql.service - MySQL Community Server
+   Loaded: loaded (/lib/systemd/system/mysql.service; enabled; vendor preset: enabled)
+   Active: failed (Result: exit-code) since Wed 2025-01-15 03:15:22 CST; 2min ago
+  Process: 12345 ExitCode=1 (failure)
 
-# AIS 深度分析
-📊 React 错误诊断
-🔍 错误位置：UserList.js 第15行
-💡 问题分析：尝试对 undefined 值调用 map 方法
+# AIS 快速诊断
+📊 MySQL服务故障分析
+🔍 服务状态：failed (exit-code=1)
+⏰ 故障时间：03:15:22，持续2分钟
 
-🎯 常见原因：
-1. 异步数据还未加载完成就尝试渲染
-2. API 返回数据结构与预期不符
-3. 组件 props 未正确传递
+💡 可能原因分析：
+1. 磁盘空间不足导致MySQL无法启动
+2. 配置文件语法错误
+3. 端口占用冲突
+4. 数据库文件损坏
 
-🛠️ 解决方案：
-1. 添加条件渲染：
-   {users && users.map(user => <div key={user.id}>{user.name}</div>)}
+🛠️ 快速排查步骤：
+1. 检查磁盘空间：df -h
+2. 查看MySQL错误日志：tail -50 /var/log/mysql/error.log
+3. 检查端口占用：netstat -tlnp | grep 3306
+4. 验证配置文件：mysqld --help --verbose
 
-2. 设置默认值：
-   const users = props.users || [];
-
-3. 添加加载状态：
-   {loading ? <div>Loading...</div> : renderUserList()}
-
-📚 学习建议：深入理解 React 生命周期和异步数据处理
+⚡ 紧急恢复：如果是磁盘空间问题，立即清理日志文件
 ```
 
-**6个月学习成果**：
-- **从零基础到入门**：掌握 HTML、CSS、JavaScript 基础语法
-- **React 技能建立**：能够独立开发中等复杂度的单页应用
-- **调试能力提升**：从完全依赖老师到能够独立解决80%的问题
-- **成功转行**：获得前端开发实习 offer，月薪 8000+
+**使用AIS后的改变**：
+- **故障响应时间**：从平均30分钟缩短到8分钟
+- **解决问题成功率**：一次性解决率从60%提升到85%
+- **技术能力拓展**：通过错误学习，掌握了Docker和K8s故障排除
+- **工作压力减轻**：有了智能助手，夜班值守不再那么焦虑
+- **团队价值提升**：成为同事眼中的"故障排除专家"
 
 ## 🤔 深度问答
 
