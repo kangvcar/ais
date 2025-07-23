@@ -1,0 +1,165 @@
+/* Mermaid 图表优化样式 */
+
+/* 图表容器优化 */
+.vp-doc .mermaid {
+  text-align: center;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: #fafafa;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+}
+
+/* 深色模式适配 */
+.dark .vp-doc .mermaid {
+  background: #1a1a1a;
+  border-color: #374151;
+}
+
+/* 图表文字优化 */
+.mermaid .node text,
+.mermaid .actor text,
+.mermaid .label text {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+/* 节点样式优化 */
+.mermaid .node rect,
+.mermaid .node circle,
+.mermaid .node ellipse,
+.mermaid .node polygon {
+  stroke-width: 2px !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* 连接线优化 */
+.mermaid .edge-pattern-solid,
+.mermaid .edge-pattern-dashed,
+.mermaid .edge-pattern-dotted {
+  stroke-width: 2px !important;
+}
+
+/* 箭头样式优化 */
+.mermaid .arrowheadPath {
+  fill: #6b7280 !important;
+  stroke: #6b7280 !important;
+}
+
+/* 序列图优化 */
+.mermaid .actor {
+  stroke-width: 2px !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.mermaid .messageLine0,
+.mermaid .messageLine1 {
+  stroke-width: 2px !important;
+}
+
+/* 流程图子图优化 */
+.mermaid .cluster rect {
+  fill: #f8fafc !important;
+  stroke: #d1d5db !important;
+  stroke-width: 2px !important;
+  stroke-dasharray: 5,5 !important;
+  rx: 8px !important;
+  ry: 8px !important;
+}
+
+.dark .mermaid .cluster rect {
+  fill: #111827 !important;
+  stroke: #4b5563 !important;
+}
+
+/* 状态图优化 */
+.mermaid .state-start circle,
+.mermaid .state-end circle {
+  stroke-width: 3px !important;
+}
+
+/* 甘特图优化 */
+.mermaid .section {
+  font-weight: 600 !important;
+}
+
+.mermaid .task {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+/* Git 图优化 */
+.mermaid .commit-id {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+.mermaid .commit-msg {
+  font-size: 11px !important;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+  .vp-doc .mermaid {
+    padding: 1rem;
+    margin: 1.5rem 0;
+    overflow-x: scroll;
+  }
+  
+  .mermaid .node text,
+  .mermaid .actor text,
+  .mermaid .label text {
+    font-size: 12px !important;
+  }
+}
+
+/* 滚动条样式 */
+.vp-doc .mermaid::-webkit-scrollbar {
+  height: 6px;
+}
+
+.vp-doc .mermaid::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.vp-doc .mermaid::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.vp-doc .mermaid::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* 深色模式滚动条 */
+.dark .vp-doc .mermaid::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+.dark .vp-doc .mermaid::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+.dark .vp-doc .mermaid::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* 图表加载动画 */
+.mermaid[data-processed="false"] {
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.mermaid[data-processed="true"] {
+  opacity: 1;
+}
+
+/* 图表标题样式 */
+.mermaid .mermaid-title {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  margin-bottom: 1rem !important;
+}

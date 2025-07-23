@@ -1,5 +1,6 @@
 import DefaultTheme from 'vitepress/theme'
 import './custom.css'
+import './style.css'
 import { h, onMounted, nextTick } from 'vue'
 import type { Theme } from 'vitepress'
 import TerminalDemo from './TerminalDemo.vue'
