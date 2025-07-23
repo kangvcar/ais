@@ -320,44 +320,42 @@ graph TD
 
 ## 📈 成功案例与用户故事
 
-### 案例 1：计算机专业学生的编程学习助手
+### 案例 1：中职学生Linux课堂的学习兴趣提升
 
-**背景**：某大学计算机科学专业大二学生，正在学习数据结构和算法课程
+**背景**：某职业技术学校计算机应用专业，18岁学生小李，Linux系统管理课程
 
-**学习挑战**：
-- C++ 指针和内存管理经常出错
-- 算法实现时逻辑错误难以定位
-- 编译错误信息看不懂
+**学习现状**：
+- 对黑屏命令行界面感到恐惧和抗拒
+- 经常因为命令输错而产生挫败感
+- 觉得Linux "太难了"，学习兴趣低落
+- 课堂注意力不集中，成绩处于班级中下游
 
-**AIS 使用体验**：
+**AIS 介入后的转变**：
 ```bash
-# 场景：链表实现出错
-$ g++ linkedlist.cpp -o linkedlist
-linkedlist.cpp:25:5: error: 'Node' was not declared in this scope
-linkedlist.cpp:25:10: error: 'head' was not declared in this scope
+# 场景：第一次尝试创建目录
+$ mkdir /root/test
+mkdir: cannot create directory '/root/test': Permission denied
 
-# AIS 自动分析
-📊 编译错误分析
-🔍 问题定位：第25行使用了未声明的 'Node' 类型
-💡 可能原因：
-1. 忘记包含头文件或声明 Node 结构体
-2. 作用域问题，Node 定义在其他命名空间
-3. 拼写错误，应该是其他类型名
+# AIS 友好分析
+📊 权限错误分析
+🔍 问题原因：普通用户无法在 /root 目录下创建文件夹
+💡 这很常见，不要担心！Linux 系统为了安全会限制某些目录的访问
 
-🛠️ 建议解决方案：
-1. 检查是否定义了 Node 结构体：
-   struct Node {
-       int data;
-       Node* next;
-   };
-2. 确认 head 指针的声明：Node* head = nullptr;
+🛠️ 简单解决方案：
+1. 在自己的主目录创建：mkdir ~/test
+2. 或者使用管理员权限：sudo mkdir /root/test
+3. 推荐使用第一种方法，更安全！
+
+📚 知识点：Linux 目录权限保护机制
+~ 代表你的家目录，这里你有完全控制权
 ```
 
-**学习效果**：
-- **编程错误率**：3个月内从日均15个减少到3个
-- **调试时间**：平均每个问题从45分钟缩短到10分钟
-- **知识掌握**：建立了完整的C++错误处理知识体系
-- **自信心提升**：从害怕编程错误到主动尝试新功能
+**3个月学习变化**：
+- **心理层面**：从"Linux太难"到"我也能搞定Linux"
+- **操作技能**：掌握50+个常用命令，错误率从90%降到20%
+- **课堂表现**：从后排开小差到主动举手回答问题
+- **学习成绩**：从班级倒数第5名提升到前10名
+- **职业规划**：开始考虑往Linux运维方向发展
 
 ### 案例 2：软件工程实习生的快速成长
 
@@ -524,33 +522,6 @@ $ ais report --html --learning-analytics
 └── 错误预防：重复性错误减少 78%
 ```
 
-### 企业环境下如何部署和管理 AIS？
-
-#### **企业级部署方案**：
-
-1. **集中化配置管理**：
-```bash
-# 企业配置模板
-$ ais config --template=enterprise --deploy
-
-# 批量用户配置
-$ ais admin --setup-users --from-ldap
-$ ais admin --set-policy --privacy=high --data-retention=90
-```
-
-2. **团队知识库建设**：
-```bash
-# 构建企业知识库
-$ ais knowledge --import-from="./enterprise-runbooks/"
-$ ais knowledge --share-team-solutions
-$ ais knowledge --export-wiki --format=confluence
-```
-
-3. **安全和合规**：
-- 支持企业级身份认证（LDAP/SSO）
-- 数据本地化存储，支持审计日志
-- 细粒度权限控制和内容过滤
-- 符合 GDPR、SOX 等合规要求
 
 
 ## 🔚 结语
