@@ -35,6 +35,7 @@ def get_default_config() -> Dict[str, Any]:
             "async_analysis": True,
             "cache_analysis": True,
             "analysis_cooldown": 60,  # 重复分析避免间隔时间（秒）
+            "request_timeout": 120,  # HTTP请求超时时间（秒）
         },
         "ask": {
             "context_level": "minimal",  # minimal, standard, detailed
@@ -132,3 +133,24 @@ def use_provider(name: str) -> None:
     _validate_provider_exists(config, name)
     config["default_provider"] = name
     save_config(config)
+
+
+def init_config(force: bool = False) -> bool:
+    """初始化配置文件。
+    
+    Args:
+        force: 是否强制覆盖已存在的配置文件
+    
+    Returns:
+        bool: 是否成功创建/覆盖了配置文件
+    """
+    config_path = get_config_path()
+    
+    # 检查文件是否存在
+    if config_path.exists() and not force:
+        return False
+    
+    # 创建默认配置并保存
+    default_config = get_default_config()
+    save_config(default_config)
+    return True
