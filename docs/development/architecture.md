@@ -6,41 +6,80 @@
 
 AIS采用分层模块化架构，通过深度shell集成提供智能化的终端体验。
 
-### 架构图
+### 系统架构图
 
 ```mermaid
-graph TB
-    subgraph "用户交互层"
-        A[CLI Commands] --> B[Interactive Menu]
-        B --> C[Rich UI Panels]
+flowchart TD
+    subgraph "👤 用户交互层"
+        A[🖥️ CLI命令行界面]
+        B[🎛️ 交互式菜单]
+        C[🎨 Rich终端UI]
     end
     
-    subgraph "应用服务层"
-        D[Ask Service] --> E[Analyze Service]
-        E --> F[Report Service]
-        F --> G[Config Service]
+    subgraph "🎯 应用服务层"
+        D[❓ 智能问答服务]
+        E[🔍 错误分析服务]
+        F[📊 报告生成服务]
+        G[⚙️ 配置管理服务]
+        H[📚 学习内容服务]
     end
     
-    subgraph "核心业务层"
-        H[AI Manager] --> I[Context Collector]
-        I --> J[Error Analyzer]
-        J --> K[Database Manager]
+    subgraph "🧠 核心业务层"
+        I[🤖 AI管理中心]
+        J[🌍 上下文收集器]
+        K[🎯 错误分析引擎]
+        L[💾 数据库管理器]
+        M[🔄 流式UI控制器]
     end
     
-    subgraph "基础设施层"
-        L[Shell Integration] --> M[File System]
-        M --> N[Network Client]
-        N --> O[SQLite Storage]
+    subgraph "🏗️ 基础设施层"
+        N[📡 Shell钩子集成]
+        O[📁 文件系统操作]
+        P[🌐 HTTP网络客户端]
+        Q[🗄️ SQLite本地存储]
+        R[🛡️ 隐私保护过滤器]
     end
     
+    %% 用户交互层连接
     A --> D
-    D --> H
-    H --> L
+    A --> E
+    A --> F
+    A --> G
+    A --> H
     B --> E
-    E --> I
     C --> F
-    F --> J
-    G --> K
+    
+    %% 应用服务层连接
+    D --> I
+    E --> I
+    F --> K
+    G --> L
+    H --> I
+    
+    %% 核心业务层连接
+    I --> J
+    I --> P
+    J --> R
+    K --> L
+    M --> C
+    
+    %% 基础设施层连接
+    N --> E
+    J --> O
+    P --> I
+    L --> Q
+    R --> J
+    
+    %% 样式定义
+    classDef userLayer fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef serviceLayer fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef coreLayer fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+    classDef infraLayer fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    
+    class A,B,C userLayer
+    class D,E,F,G,H serviceLayer
+    class I,J,K,L,M coreLayer
+    class N,O,P,Q,R infraLayer
 ```
 
 ### 核心特性
