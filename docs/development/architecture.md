@@ -9,79 +9,95 @@ AIS采用分层模块化架构，通过深度shell集成提供智能化的终端
 ### 系统架构图
 
 ```mermaid
-flowchart TB
-    %% 用户交互层
-    subgraph "👤 用户交互层"
-        direction LR
-        A[🖥️ CLI命令行界面<br/>ais ask/analyze/learn]
-        B[🎛️ 交互式菜单<br/>智能建议选择]
-        C[🎨 Rich终端UI<br/>彩色输出面板]
-    end
+flowchart TD
+    %% 用户交互层 - 水平排列
+    A1[🖥️ CLI命令行界面<br/>ais ask/analyze/learn]
+    A2[🎛️ 交互式菜单<br/>智能建议选择]
+    A3[🎨 Rich终端UI<br/>彩色输出面板]
     
-    %% 应用服务层
-    subgraph "🎯 应用服务层"
-        direction LR
-        D[❓ 智能问答服务<br/>上下文感知问答]
-        E[🔍 错误分析服务<br/>自动错误诊断]
-        F[📊 报告生成服务<br/>学习进度报告]
-        G[⚙️ 配置管理服务<br/>多AI提供商配置]
-        H[📚 学习内容服务<br/>结构化知识生成]
-    end
+    %% 分隔线
+    A1 --- LAYER1["👤 用户交互层"]
+    A2 --- LAYER1
+    A3 --- LAYER1
     
-    %% 核心业务层
-    subgraph "🧠 核心业务层"
-        direction LR
-        I[🤖 AI管理中心<br/>多提供商统一接口]
-        J[🌍 上下文收集器<br/>三级环境信息收集]
-        K[🎯 错误分析引擎<br/>错误分类与技能评估]
-        L[💾 数据库管理器<br/>命令历史与学习记录]
-        M[🔄 流式UI控制器<br/>实时进度显示]
-    end
+    %% 应用服务层 - 水平排列  
+    B1[❓ 智能问答服务<br/>上下文感知问答]
+    B2[🔍 错误分析服务<br/>自动错误诊断]
+    B3[📊 报告生成服务<br/>学习进度报告]
+    B4[⚙️ 配置管理服务<br/>多AI提供商配置]
+    B5[📚 学习内容服务<br/>结构化知识生成]
     
-    %% 基础设施层
-    subgraph "🏗️ 基础设施层"
-        direction LR
-        N[📡 Shell钩子集成<br/>Bash/Zsh自动捕获]
-        O[📁 文件系统操作<br/>配置与数据文件管理]
-        P[🌐 HTTP网络客户端<br/>AI API调用]
-        Q[🗄️ SQLite本地存储<br/>历史数据持久化]
-        R[🛡️ 隐私保护过滤器<br/>敏感信息过滤]
-    end
+    LAYER1 --- LAYER2["🎯 应用服务层"]
+    B1 --- LAYER2
+    B2 --- LAYER2
+    B3 --- LAYER2
+    B4 --- LAYER2
+    B5 --- LAYER2
+    
+    %% 核心业务层 - 水平排列
+    C1[🤖 AI管理中心<br/>多提供商统一接口]
+    C2[🌍 上下文收集器<br/>三级环境信息收集]
+    C3[🎯 错误分析引擎<br/>错误分类与技能评估]
+    C4[💾 数据库管理器<br/>命令历史与学习记录]
+    C5[🔄 流式UI控制器<br/>实时进度显示]
+    
+    LAYER2 --- LAYER3["🧠 核心业务层"]
+    C1 --- LAYER3
+    C2 --- LAYER3
+    C3 --- LAYER3
+    C4 --- LAYER3
+    C5 --- LAYER3
+    
+    %% 基础设施层 - 水平排列
+    D1[📡 Shell钩子集成<br/>Bash/Zsh自动捕获]
+    D2[📁 文件系统操作<br/>配置与数据文件管理]
+    D3[🌐 HTTP网络客户端<br/>AI API调用]
+    D4[🗄️ SQLite本地存储<br/>历史数据持久化]
+    D5[🛡️ 隐私保护过滤器<br/>敏感信息过滤]
+    
+    LAYER3 --- LAYER4["🏗️ 基础设施层"]
+    D1 --- LAYER4
+    D2 --- LAYER4
+    D3 --- LAYER4
+    D4 --- LAYER4
+    D5 --- LAYER4
     
     %% 主要数据流连接
-    A --> D
-    A --> E
-    A --> F
-    A --> G
-    A --> H
+    A1 --> B1
+    A1 --> B2
+    A1 --> B3
+    A1 --> B4
+    A1 --> B5
     
-    D --> I
-    E --> I
-    F --> K
-    G --> L
-    H --> I
+    B1 --> C1
+    B2 --> C1
+    B3 --> C3
+    B4 --> C4
+    B5 --> C1
     
-    I --> J
-    I --> P
-    J --> R
-    K --> L
-    M --> C
+    C1 --> C2
+    C1 --> D3
+    C2 --> D5
+    C3 --> C4
+    C5 --> A3
     
-    N --> E
-    J --> O
-    L --> Q
-    R --> J
+    D1 --> B2
+    C2 --> D2
+    C4 --> D4
+    D5 --> C2
     
     %% 样式定义
-    classDef userLayer fill:#e3f2fd,stroke:#1976d2,stroke-width:3px,color:#000
-    classDef serviceLayer fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px,color:#000
-    classDef coreLayer fill:#e8f5e8,stroke:#388e3c,stroke-width:3px,color:#000
-    classDef infraLayer fill:#fff3e0,stroke:#f57c00,stroke-width:3px,color:#000
+    classDef userLayer fill:#e3f2fd,stroke:#1976d2,stroke-width:3px,color:#000,font-size:14px
+    classDef serviceLayer fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px,color:#000,font-size:14px
+    classDef coreLayer fill:#e8f5e8,stroke:#388e3c,stroke-width:3px,color:#000,font-size:14px
+    classDef infraLayer fill:#fff3e0,stroke:#f57c00,stroke-width:3px,color:#000,font-size:14px
+    classDef layerLabel fill:#f9f9f9,stroke:#666,stroke-width:2px,color:#333,font-weight:bold
     
-    class A,B,C userLayer
-    class D,E,F,G,H serviceLayer
-    class I,J,K,L,M coreLayer
-    class N,O,P,Q,R infraLayer
+    class A1,A2,A3 userLayer
+    class B1,B2,B3,B4,B5 serviceLayer
+    class C1,C2,C3,C4,C5 coreLayer
+    class D1,D2,D3,D4,D5 infraLayer
+    class LAYER1,LAYER2,LAYER3,LAYER4 layerLabel
 ```
 
 ### 核心特性
