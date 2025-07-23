@@ -137,19 +137,19 @@ def use_provider(name: str) -> None:
 
 def init_config(force: bool = False) -> bool:
     """初始化配置文件。
-    
+
     Args:
         force: 是否强制覆盖已存在的配置文件
-    
+
     Returns:
         bool: 是否成功创建/覆盖了配置文件
     """
     config_path = get_config_path()
-    
+
     # 检查文件是否存在
     if config_path.exists() and not force:
         return False
-    
+
     # 创建默认配置并保存
     default_config = get_default_config()
     save_config(default_config)

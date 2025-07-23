@@ -509,25 +509,25 @@ def config(set_key, get_key, list_providers, help_context, init):
         if init:
             # 初始化配置文件
             from ..core.config import init_config, get_config_path
-            
+
             config_path = get_config_path()
             success = init_config(force=True)
-            
+
             if success:
                 panels.success(
-                    f"✓ 配置文件已初始化: {config_path}\n\n" +
-                    "包含以下默认设置:\n" +
-                    "• 默认AI提供商: default_free (gpt-4o-mini)\n" +
-                    "• 自动错误分析: 开启\n" +
-                    "• 上下文收集: 详细级别\n" +
-                    "• HTTP请求超时: 120秒\n\n" +
-                    "使用 'ais config' 查看完整配置",
-                    "🔧 配置初始化完成"
+                    f"✓ 配置文件已初始化: {config_path}\n\n"
+                    + "包含以下默认设置:\n"
+                    + "• 默认AI提供商: default_free (gpt-4o-mini)\n"
+                    + "• 自动错误分析: 开启\n"
+                    + "• 上下文收集: 详细级别\n"
+                    + "• HTTP请求超时: 120秒\n\n"
+                    + "使用 'ais config' 查看完整配置",
+                    "🔧 配置初始化完成",
                 )
             else:
                 panels.error("配置初始化失败", "✗ 初始化错误")
             return
-            
+
         config = get_config()
 
         if set_key:

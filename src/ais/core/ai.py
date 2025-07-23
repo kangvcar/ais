@@ -328,7 +328,7 @@ def _make_api_request(
 
     # 从配置文件读取超时时间，默认120秒
     timeout = config.get("advanced", {}).get("request_timeout", 120.0)
-    
+
     try:
         with httpx.Client(timeout=timeout) as client:
             response = client.post(base_url, json=payload, headers=headers)
