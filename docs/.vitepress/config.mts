@@ -33,6 +33,10 @@ export default defineConfig(withMermaid({
         text: '配置指南', 
         link: '/configuration/',
         activeMatch: '^/configuration/'
+      },
+      { 
+        text: '团队介绍', 
+        link: '/team'
       }
     ],
 
