@@ -7,6 +7,8 @@
 
 ## [Unreleased]
 
+## [2.5.5] - 2025-07-23
+
 ### Fixed
 - 🐳 **Docker构建问题修复**：修复Ubuntu 22.04镜像中包安装失败的问题
   - 修复虚拟包问题：`awk` → `gawk`（GNU awk实现），`ping` → `iputils-ping`（ping命令具体实现）
@@ -15,7 +17,6 @@
   - 修复Python包安装：使用具体版本号`python3.11`、`python3.11-dev`、`python3.11-venv`
   - 移除不存在的包：删除`yq`（Ubuntu 22.04仓库中不存在）和重复的包条目
   - 解决"Package has no installation candidate"和"Unable to locate package"错误
-
 ### Enhanced
 - 📊 **文档可视化全面优化**：为AIS文档网站添加清晰美观的Mermaid图表，大幅提升用户理解度
   - 为6个核心页面添加专业级Mermaid流程图：快速开始、错误分析、安装指南、FAQ对比、Shell集成、学习报告
@@ -33,7 +34,6 @@
 - 🎯 **文档内容精简优化**：删除复杂的选择流程图，让用户快速找到核心内容
   - 删除安装指南中的复杂安装方式选择流程图和对比表格，突出推荐的一键安装方式
   - 删除快速开始页面上方的详细流程图，让用户直接看到具体操作步骤，真正实现快速上手
-
 ### Added
 - 🔧 **可配置HTTP请求超时**：支持从配置文件读取HTTP请求超时时间，提升本地大模型兼容性
   - 新增`advanced.request_timeout`配置项，默认值120秒
@@ -52,7 +52,6 @@
   - 响应式设计：移动端优化、滚动条美化、加载动画增强
   - 专业视觉效果：圆角边框、阴影效果、悬停交互、渐变背景
   - 完整的TypeScript支持和错误处理机制
-
 ### Enhanced
 - 🤖 **本地AI模型集成优化**：完善对Ollama等本地AI服务的支持
   - 验证Ollama OpenAI兼容API与AIS现有接口的100%兼容性
