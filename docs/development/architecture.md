@@ -9,72 +9,74 @@ AIS采用分层模块化架构，通过深度shell集成提供智能化的终端
 ### 系统架构图
 
 ```mermaid
-flowchart TD
+flowchart TB
+    %% 用户交互层
     subgraph "👤 用户交互层"
-        A[🖥️ CLI命令行界面]
-        B[🎛️ 交互式菜单]
-        C[🎨 Rich终端UI]
+        direction LR
+        A[🖥️ CLI命令行界面<br/>ais ask/analyze/learn]
+        B[🎛️ 交互式菜单<br/>智能建议选择]
+        C[🎨 Rich终端UI<br/>彩色输出面板]
     end
     
+    %% 应用服务层
     subgraph "🎯 应用服务层"
-        D[❓ 智能问答服务]
-        E[🔍 错误分析服务]
-        F[📊 报告生成服务]
-        G[⚙️ 配置管理服务]
-        H[📚 学习内容服务]
+        direction LR
+        D[❓ 智能问答服务<br/>上下文感知问答]
+        E[🔍 错误分析服务<br/>自动错误诊断]
+        F[📊 报告生成服务<br/>学习进度报告]
+        G[⚙️ 配置管理服务<br/>多AI提供商配置]
+        H[📚 学习内容服务<br/>结构化知识生成]
     end
     
+    %% 核心业务层
     subgraph "🧠 核心业务层"
-        I[🤖 AI管理中心]
-        J[🌍 上下文收集器]
-        K[🎯 错误分析引擎]
-        L[💾 数据库管理器]
-        M[🔄 流式UI控制器]
+        direction LR
+        I[🤖 AI管理中心<br/>多提供商统一接口]
+        J[🌍 上下文收集器<br/>三级环境信息收集]
+        K[🎯 错误分析引擎<br/>错误分类与技能评估]
+        L[💾 数据库管理器<br/>命令历史与学习记录]
+        M[🔄 流式UI控制器<br/>实时进度显示]
     end
     
+    %% 基础设施层
     subgraph "🏗️ 基础设施层"
-        N[📡 Shell钩子集成]
-        O[📁 文件系统操作]
-        P[🌐 HTTP网络客户端]
-        Q[🗄️ SQLite本地存储]
-        R[🛡️ 隐私保护过滤器]
+        direction LR
+        N[📡 Shell钩子集成<br/>Bash/Zsh自动捕获]
+        O[📁 文件系统操作<br/>配置与数据文件管理]
+        P[🌐 HTTP网络客户端<br/>AI API调用]
+        Q[🗄️ SQLite本地存储<br/>历史数据持久化]
+        R[🛡️ 隐私保护过滤器<br/>敏感信息过滤]
     end
     
-    %% 用户交互层连接
+    %% 主要数据流连接
     A --> D
     A --> E
     A --> F
     A --> G
     A --> H
-    B --> E
-    C --> F
     
-    %% 应用服务层连接
     D --> I
     E --> I
     F --> K
     G --> L
     H --> I
     
-    %% 核心业务层连接
     I --> J
     I --> P
     J --> R
     K --> L
     M --> C
     
-    %% 基础设施层连接
     N --> E
     J --> O
-    P --> I
     L --> Q
     R --> J
     
     %% 样式定义
-    classDef userLayer fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    classDef serviceLayer fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    classDef coreLayer fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
-    classDef infraLayer fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef userLayer fill:#e3f2fd,stroke:#1976d2,stroke-width:3px,color:#000
+    classDef serviceLayer fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px,color:#000
+    classDef coreLayer fill:#e8f5e8,stroke:#388e3c,stroke-width:3px,color:#000
+    classDef infraLayer fill:#fff3e0,stroke:#f57c00,stroke-width:3px,color:#000
     
     class A,B,C userLayer
     class D,E,F,G,H serviceLayer
