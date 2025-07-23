@@ -311,49 +311,303 @@ flowchart TD
 
 ### 为什么支持多种 AI 提供商？
 
-#### **技术多样性**：
-- **OpenAI GPT**：综合能力强，API 稳定，适合日常使用
-- **Anthropic Claude**：推理能力突出，安全性好，适合复杂分析
-- **本地模型 (Ollama)**：完全离线，隐私保护，适合敏感环境
-- **自定义模型**：企业内部模型，满足特殊需求
+```mermaid
+flowchart TD
+    Start([选择AI提供商]) --> Priority{主要考虑因素}
+    
+    Priority -->|隐私保护优先| Privacy[🔒 隐私敏感]
+    Priority -->|成本控制优先| Cost[💰 预算有限]
+    Priority -->|性能要求优先| Performance[🚀 高性能需求]
+    Priority -->|稳定性优先| Stability[🛡️ 企业级稳定]
+    
+    Privacy --> PrivacyChoice{环境要求}
+    PrivacyChoice -->|完全离线| Ollama[🏠 Ollama本地模型]
+    PrivacyChoice -->|内网部署| Custom[🏢 企业自定义模型]
+    
+    Cost --> CostChoice{使用频率}
+    CostChoice -->|偶尔使用| Free[🆓 内置免费服务]
+    CostChoice -->|频繁使用| Ollama
+    
+    Performance --> PerfChoice{任务类型}
+    PerfChoice -->|日常问答| OpenAI[🤖 OpenAI GPT]
+    PerfChoice -->|复杂分析| Claude[🧠 Anthropic Claude]
+    
+    Stability --> StabChoice{部署方式}
+    StabChoice -->|云端服务| OpenAI
+    StabChoice -->|本地部署| Ollama
+    StabChoice -->|混合部署| Multiple[🔄 多提供商备份]
+    
+    Ollama --> Config[⚙️ 配置完成]
+    Custom --> Config
+    Free --> Config
+    OpenAI --> Config
+    Claude --> Config
+    Multiple --> Config
+    
+    Config --> Switch[🔄 支持随时切换]
+    
+    classDef decision fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef provider fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef config fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    
+    class Priority,PrivacyChoice,CostChoice,PerfChoice,StabChoice decision
+    class Privacy,Cost,Performance,Stability decision
+    class Ollama,Custom,Free,OpenAI,Claude,Multiple provider
+    class Config,Switch config
+```
 
-#### **风险分散**：
-- 避免单一供应商依赖
-- 服务中断时的备用方案
-- 成本控制和优化选择
+#### **多提供商策略优势**：
 
-#### **用户选择权**：
-不同用户对隐私、成本、性能的需求不同，多供应商支持让用户根据实际情况灵活选择。
+1. **技术多样性**：
+   - **OpenAI GPT**：综合能力强，API 稳定，适合日常使用
+   - **Anthropic Claude**：推理能力突出，安全性好，适合复杂分析
+   - **本地模型 (Ollama)**：完全离线，隐私保护，适合敏感环境
+   - **自定义模型**：企业内部模型，满足特殊需求
+
+2. **风险分散**：
+   - 避免单一供应商依赖
+   - 服务中断时的备用方案
+   - 成本控制和优化选择
+
+3. **灵活切换**：
+   ```bash
+   # 根据需要随时切换AI提供商
+   ais provider-use openai    # 使用OpenAI
+   ais provider-use claude    # 切换到Claude
+   ais provider-use ollama    # 切换到本地模型
+   ```
 
 ## 🆚 与竞品对比分析
 
 ### AIS vs. 传统错误查询方式
 
-#### **Google + Stack Overflow 模式**
+```mermaid
+flowchart LR
+    subgraph Traditional ["🔍 传统方式：低效繁琐"]
+        direction TB
+        T1["❌ 遇到错误 😰"] 
+        T2["📋 复制错误信息 ⏱️"]
+        T3["🔍 打开搜索引擎 🤔"]
+        T4["📑 浏览大量结果 😵"]
+        T5["📖 阅读回答 🤷‍♂️"]
+        T6["💻 反复尝试 😫"]
+        T7["✅ 问题解决 😅"]
+        T8["❌ 知识未记录 💔"]
+        
+        T1 --> T2
+        T2 --> T3
+        T3 --> T4
+        T4 --> T5
+        T5 --> T6
+        T6 --> T7
+        T7 --> T8
+        T6 --> T4
+        
+        T_Time["⏱️ 耗时10-30分钟<br/>🎯 成功率60%<br/>📚 学习效果差"]
+        
+        style T_Time fill:#ffcdd2,stroke:#d32f2f,stroke-width:3px
+    end
+    
+    subgraph AIS_Way ["🧠 AIS方式：智能高效"]
+        direction TB
+        A1["❌ 遇到错误 😌"] 
+        A2["📡 自动捕获 ⚡"]
+        A3["🌍 上下文分析 🎯"]
+        A4["🤖 AI智能分析 💡"]
+        A5["📱 友好展示 ✨"]
+        A6["💾 记录学习 📈"]
+        A7["🎓 成长跟踪 🚀"]
+        
+        A1 --> A2
+        A2 --> A3
+        A3 --> A4
+        A4 --> A5
+        A5 --> A6
+        A6 --> A7
+        
+        A_Time["⚡ 耗时30秒-2分钟<br/>🎯 成功率90%+<br/>📚 学习效果优秀"]
+        
+        style A_Time fill:#c8e6c9,stroke:#388e3c,stroke-width:3px
+    end
+    
+    VS_Node["VS"]
+    Traditional -.-> VS_Node
+    VS_Node -.-> AIS_Way
+    
+    style VS_Node fill:#fff3e0,stroke:none,font-size:24px
+    
+    classDef traditional fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000,font-size:16px
+    classDef ais fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px,color:#000,font-size:16px
+    classDef highlight fill:#fff3e0,stroke:#f57c00,stroke-width:3px,color:#000
+    
+    class T1,T2,T3,T4,T5,T6,T7,T8 traditional
+    class A1,A2,A3,A4,A5,A6,A7 ais
 ```
-问题发生 → 复制错误信息 → 搜索引擎查询 → 筛选结果 
-→ 阅读多个答案 → 尝试解决方案 → 可能仍需多次尝试
-```
-**缺点**：时间成本高、缺乏上下文、通用化答案
 
-#### **AIS 模式**
+### 📊 一目了然的优势对比
+
+| 🔥 对比维度 | 😰 传统方式 | 🚀 AIS方式 | 🎯 提升幅度 |
+|------------|------------|------------|------------|
+| **⏱️ 响应时间** | 10-30分钟 | 30秒-2分钟 | **🚀 提升15倍** |
+| **🎯 解决成功率** | ~60% | >90% | **📈 提升50%** |
+| **🧠 操作复杂度** | 需要7-10个手动步骤 | 完全自动化 | **⚡ 零操作** |
+| **🔄 重复问题处理** | 每次都要重新搜索 | 智能识别秒解 | **🎯 瞬间识别** |
+| **📚 学习积累** | 知识分散难记忆 | 系统化成长跟踪 | **📈 指数增长** |
+| **🌍 上下文理解** | 通用答案不精准 | 环境感知个性化 | **💯 量身定制** |
+
+### 🎉 AIS核心优势亮点
+
+```mermaid
+graph LR
+    AIS["🧠 AIS"] --> Auto["⚡ 全自动零干扰"]
+    AIS --> Smart["🎯 超智能个性化"]
+    AIS --> Fast["🚀 超快速秒响应"]
+    AIS --> Learn["📈 能学习越用越强"]
+    
+    Auto --> AutoDesc["无需复制 无需搜索 无需筛选"]
+    Smart --> SmartDesc["环境感知 技能适配 风险评估"]
+    Fast --> FastDesc["瞬间捕获 并行收集 AI秒析"]
+    Learn --> LearnDesc["知识积累 技能跟踪 个性推荐"]
+    
+    classDef ais fill:#e8f5e8,stroke:#2e7d32,stroke-width:3px,color:#000
+    classDef feature fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef desc fill:#fff3e0,stroke:#f57c00,stroke-width:1px,color:#000
+    
+    class AIS ais
+    class Auto,Smart,Fast,Learn feature
+    class AutoDesc,SmartDesc,FastDesc,LearnDesc desc
 ```
-问题发生 → 自动捕获 → 上下文分析 → 个性化解决方案 
-→ 直接应用 → 知识记录和学习
-```
-**优势**：自动化、个性化、学习闭环
+
+#### **效率对比分析**
+| 对比维度 | 传统方式 | AIS方式 |
+|---------|---------|---------|
+| **时间成本** | 10-30分钟 | 30秒-2分钟 |
+| **准确性** | 需要自行判断 | 基于上下文精准分析 |
+| **学习效果** | 碎片化知识 | 系统化学习记录 |
+| **重复问题** | 每次都要重新搜索 | 智能识别并快速解决 |
 
 ### AIS vs. GitHub Copilot / CodeWhisperer
 
-| 功能对比 | GitHub Copilot | AIS |
-|---------|---------------|-----|
-| **核心场景** | 代码编写辅助 | 错误诊断和学习 |
-| **触发方式** | 主动编写代码 | 自动错误捕获 |
-| **上下文范围** | 当前文件和项目 | 完整系统环境 |
-| **学习机制** | 代码建议优化 | 系统化技能追踪 |
-| **使用阶段** | 开发阶段 | 调试和运维阶段 |
+```mermaid
+flowchart LR
+    subgraph Copilot_Area ["🤖 GitHub Copilot：代码编写助手"]
+        direction TB
+        C1["✍️ 编写代码时触发"]
+        C2["📝 基于上下文建议"]
+        C3["🔄 实时代码补全"]
+        C4["📋 代码片段生成"]
+        C5["💡 算法实现建议"]
+        C6["✅ 提高编码效率"]
+        
+        C1 --> C2
+        C2 --> C3
+        C3 --> C4
+        C4 --> C5
+        C5 --> C6
+        
+        C_Focus["🎯 专注：代码生成"]
+        
+        style C_Focus fill:#e3f2fd,stroke:#1565c0,stroke-width:3px,font-size:16px
+    end
+    
+    subgraph AIS_Area ["🧠 AIS：错误诊断学习专家"]
+        direction TB
+        A1["❌ 运行错误时触发"]
+        A2["🌍 环境上下文分析"]
+        A3["🎯 智能错误诊断"]
+        A4["💡 个性化解决方案"]
+        A5["📈 技能学习跟踪"]
+        A6["🚀 持续能力提升"]
+        
+        A1 --> A2
+        A2 --> A3
+        A3 --> A4
+        A4 --> A5
+        A5 --> A6
+        
+        A_Focus["🎯 专注：错误解决"]
+        
+        style A_Focus fill:#e8f5e8,stroke:#2e7d32,stroke-width:3px,font-size:16px
+    end
+    
+    VS_Node2["VS"]
+    Copilot_Area -.-> VS_Node2
+    VS_Node2 -.-> AIS_Area
+    
+    style VS_Node2 fill:#fff3e0,stroke:none,font-size:24px
+    
+    classDef copilot fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,font-size:16px
+    classDef ais fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px,font-size:16px
+    
+    class C1,C2,C3,C4,C5,C6 copilot
+    class A1,A2,A3,A4,A5,A6 ais
+```
 
-**互补关系**：Copilot 帮助写代码，AIS 帮助调试代码和系统问题。
+### 🔄 完美互补关系
+
+```mermaid
+flowchart TD
+    Dev["👨‍💻 开发者"]
+    
+    subgraph Phase1 ["📝 Phase 1: 代码编写"]
+        Copilot_Help["🤖 Copilot助手"]
+        Write_Code["✍️ 高效编写代码"]
+        Code_Suggest["💡 智能代码建议"]
+        
+        Copilot_Help --> Write_Code
+        Write_Code --> Code_Suggest
+        Code_Suggest --> Write_Code
+    end
+    
+    subgraph Phase2 ["🐛 Phase 2: 运行调试"]
+        Run_Code["▶️ 运行代码"]
+        Meet_Error["❌ 遇到错误"]
+        AIS_Help["🧠 AIS分析"]
+        Get_Solution["✅ 获得解决方案"]
+        Learn_Growth["📈 技能成长"]
+        
+        Run_Code --> Meet_Error
+        Meet_Error --> AIS_Help
+        AIS_Help --> Get_Solution
+        Get_Solution --> Learn_Growth
+    end
+    
+    Dev --> Phase1
+    Phase1 --> Phase2
+    Learn_Growth --> Phase1
+    
+    classDef phase1 fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,font-size:14px
+    classDef phase2 fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px,font-size:14px
+    classDef flow fill:#fff3e0,stroke:#f57c00,stroke-width:2px,font-size:14px
+    
+    class Copilot_Help,Write_Code,Code_Suggest phase1
+    class Run_Code,Meet_Error,AIS_Help,Get_Solution,Learn_Growth phase2
+    class Dev flow
+```
+
+#### **核心差异对比**
+| 🔥 对比维度 | 🤖 GitHub Copilot | 🧠 AIS | 🎯 互补价值 |
+|------------|-------------------|---------|------------|
+| **⚡ 工作阶段** | 代码编写时 | 代码出错时 | **覆盖完整开发周期** |
+| **🎯 核心功能** | 代码生成建议 | 错误诊断解决 | **写代码+调代码** |
+| **🌍 上下文范围** | 当前项目代码 | 完整系统环境 | **代码+运行环境** |
+| **📚 学习方式** | 代码模式学习 | 错误解决学习 | **技能全面提升** |
+| **🔄 触发方式** | 主动编写触发 | 自动错误捕获 | **主动+被动结合** |
+
+### 💡 **最佳实践建议**
+
+1. **🤖 Copilot 优势场景**：
+   - 函数实现、算法编写
+   - 代码补全、模板生成
+   - 新语言语法学习
+
+2. **🧠 AIS 优势场景**：
+   - 运行时错误诊断
+   - 环境配置问题
+   - 系统级故障排除
+
+3. **🔄 协同使用**：
+   - Copilot 帮你写出代码 → AIS 帮你解决运行问题 → 学习积累 → 更好地使用 Copilot
 
 ### AIS vs. 企业级监控工具
 

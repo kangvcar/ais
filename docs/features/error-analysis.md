@@ -59,9 +59,72 @@ ais analyze --command "npm install"
 ais analyze --exit-code 127 --command "python app.py"
 ```
 
-## 🔍 分析过程
+## 🔍 智能分析流程
 
-### 1. 错误识别
+```mermaid
+flowchart TD
+    Error[❌ 命令执行失败] --> Capture[📡 Shell钩子捕获]
+    Capture --> Identify[🔍 错误识别与分类]
+    
+    Identify --> Permission[🔐 权限错误]
+    Identify --> Dependency[📦 依赖错误]
+    Identify --> Network[🌐 网络错误]
+    Identify --> NotFound[❓ 命令未找到]
+    Identify --> Syntax[⚠️ 语法错误]
+    
+    Permission --> Context[🌍 上下文收集]
+    Dependency --> Context
+    Network --> Context
+    NotFound --> Context
+    Syntax --> Context
+    
+    Context --> SystemInfo[💻 系统信息]
+    Context --> NetworkStatus[🌐 网络状态]
+    Context --> PermCheck[🔑 权限检查]
+    Context --> ProjectType[📁 项目类型检测]
+    Context --> EnvVars[🔧 环境变量]
+    
+    SystemInfo --> Filter[🛡️ 敏感信息过滤]
+    NetworkStatus --> Filter
+    PermCheck --> Filter
+    ProjectType --> Filter
+    EnvVars --> Filter
+    
+    Filter --> AIAnalysis[🤖 AI智能分析]
+    AIAnalysis --> PatternMatch[🎯 错误模式匹配]
+    AIAnalysis --> ContextAnalysis[🔗 上下文关联分析]
+    AIAnalysis --> SolutionGen[💡 解决方案生成]
+    AIAnalysis --> RiskAssess[⚠️ 风险评估]
+    
+    PatternMatch --> Solution[📋 结构化解决方案]
+    ContextAnalysis --> Solution
+    SolutionGen --> Solution
+    RiskAssess --> Solution
+    
+    Solution --> Display[📱 友好展示]
+    Solution --> Learning[📚 学习建议]
+    Solution --> Storage[💾 历史记录存储]
+    
+    Display --> UserAction[👤 用户执行解决方案]
+    Learning --> UserAction
+    Storage --> SkillTrack[📈 技能提升跟踪]
+    
+    classDef errorType fill:#ffebee,stroke:#c62828,stroke-width:2px
+    classDef process fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef context fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef ai fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef output fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    
+    class Error,Permission,Dependency,Network,NotFound,Syntax errorType
+    class Capture,Identify,Filter,Display,UserAction process
+    class Context,SystemInfo,NetworkStatus,PermCheck,ProjectType,EnvVars context
+    class AIAnalysis,PatternMatch,ContextAnalysis,SolutionGen,RiskAssess ai
+    class Solution,Learning,Storage,SkillTrack output
+```
+
+### 分析过程详解
+
+#### 1. 错误识别与分类
 AIS 自动识别不同类型的错误：
 
 ```bash
@@ -82,7 +145,7 @@ bash: docker: command not found
 # 🔍 检测到命令未找到错误
 ```
 
-### 2. 上下文收集
+#### 2. 上下文收集
 收集相关的环境信息：
 
 ```bash
@@ -94,7 +157,7 @@ bash: docker: command not found
   ✓ 环境变量
 ```
 
-### 3. AI 分析
+#### 3. AI 智能分析
 基于上下文信息，使用 AI 生成解决方案：
 
 ```bash

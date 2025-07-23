@@ -14,6 +14,94 @@ AIS 的学习报告功能为您提供详细的学习成长分析，包括文本�
 
 ## 🚀 生成学习报告
 
+### 📊 报告生成工作流程
+
+```mermaid
+flowchart TD
+    Start([用户触发报告生成]) --> Command{选择报告类型}
+    
+    Command -->|文本报告| TextCmd[ais report]
+    Command -->|HTML报告| HTMLCmd[ais report --html]
+    Command -->|自定义输出| CustomCmd[ais report --html -o filename.html]
+    
+    TextCmd --> DataCheck{检查数据}
+    HTMLCmd --> DataCheck
+    CustomCmd --> DataCheck
+    
+    DataCheck -->|数据充足| DataCollect[📊 数据收集阶段]
+    DataCheck -->|数据不足| NoData[⚠️ 提示数据不足]
+    NoData --> Suggest[💡 建议继续使用AIS积累数据]
+    
+    DataCollect --> HistoryData[📚 历史错误数据]
+    DataCollect --> SkillData[🎯 技能评估数据]
+    DataCollect --> TimeData[⏰ 时间分布数据]
+    DataCollect --> CommandData[💻 命令使用数据]
+    
+    HistoryData --> AIAnalysis[🤖 AI智能分析]
+    SkillData --> AIAnalysis
+    TimeData --> AIAnalysis
+    CommandData --> AIAnalysis
+    
+    AIAnalysis --> Insights[🧠 生成AI洞察]
+    Insights --> PersonalizedAdvice[💡 个性化建议]
+    PersonalizedAdvice --> LearningPath[📚 学习路径推荐]
+    
+    LearningPath --> ReportType{报告类型分支}
+    
+    ReportType -->|文本报告| TextFormat[📄 文本格式化]
+    ReportType -->|HTML报告| HTMLCheck{检查HTML依赖}
+    
+    HTMLCheck -->|依赖完整| HTMLGenerate[📈 生成可视化图表]
+    HTMLCheck -->|缺少依赖| HTMLError[❌ 提示安装依赖]
+    HTMLError --> InstallPrompt[💻 pip install plotly numpy]
+    
+    HTMLGenerate --> ChartType[生成6种图表类型]
+    
+    ChartType --> ErrorTrend[📈 错误趋势图]
+    ChartType --> SkillRadar[🎯 技能雷达图]
+    ChartType --> TimeHeatmap[⏰ 时间热力图]
+    ChartType --> CommandFreq[📊 命令频次图]
+    ChartType --> ErrorDist[🔍 错误分布图]
+    ChartType --> ProgressTrend[📈 学习进度图]
+    
+    ErrorTrend --> HTMLTemplate[🎨 应用HTML模板]
+    SkillRadar --> HTMLTemplate
+    TimeHeatmap --> HTMLTemplate
+    CommandFreq --> HTMLTemplate
+    ErrorDist --> HTMLTemplate
+    ProgressTrend --> HTMLTemplate
+    
+    TextFormat --> OutputText[📄 输出文本报告]
+    HTMLTemplate --> OutputHTML[📈 输出HTML报告]
+    
+    OutputText --> Display[📱 控制台显示]
+    OutputHTML --> SaveFile[💾 保存HTML文件]
+    
+    SaveFile --> OpenOption{是否自动打开?}
+    OpenOption -->|--open参数| OpenBrowser[🌐 浏览器打开]
+    OpenOption -->|无参数| ShowPath[📁 显示文件路径]
+    
+    Display --> Complete[✅ 报告生成完成]
+    OpenBrowser --> Complete
+    ShowPath --> Complete
+    
+    Complete --> NextAction[📚 基于报告制定学习计划]
+    
+    classDef command fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef process fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef decision fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef data fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef output fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef chart fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    
+    class Start,Command,TextCmd,HTMLCmd,CustomCmd command
+    class DataCollect,AIAnalysis,Insights,PersonalizedAdvice,LearningPath,TextFormat,HTMLGenerate,HTMLTemplate process
+    class DataCheck,ReportType,HTMLCheck,OpenOption decision
+    class HistoryData,SkillData,TimeData,CommandData data
+    class OutputText,OutputHTML,Display,SaveFile,OpenBrowser,ShowPath,Complete output
+    class ErrorTrend,SkillRadar,TimeHeatmap,CommandFreq,ErrorDist,ProgressTrend chart
+```
+
 ### 📄 文本格式报告（默认）
 ```bash
 # 生成文本格式学习报告（默认）

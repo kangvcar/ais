@@ -2,6 +2,101 @@
 
 Shell 集成是 AIS 的核心功能，通过钩子机制自动捕获命令执行错误并触发智能分析。
 
+## 🔄 Shell 集成工作流程
+
+```mermaid
+sequenceDiagram
+    participant User as 👤 用户
+    participant Shell as 🐚 Shell终端
+    participant Hook as 🪝 AIS钩子
+    participant AIS as 🧠 AIS核心
+    participant Collector as 🌍 上下文收集器
+    participant Filter as 🛡️ 隐私过滤器
+    participant AI as 🤖 AI服务
+    participant UI as 📱 用户界面
+    
+    Note over User,Shell: 正常命令执行
+    User->>Shell: 输入命令
+    Shell->>Shell: 执行命令
+    
+    alt 命令执行成功
+        Shell-->>User: ✅ 显示结果
+    else 命令执行失败
+        Shell->>Hook: ❌ 触发错误钩子 (exit_code ≠ 0)
+        Note over Hook: ERR trap / preexec/precmd hooks
+        
+        Hook->>AIS: 🚨 传递错误信息
+        Note over Hook,AIS: exit_code, command, timestamp
+        
+        AIS->>AIS: 📊 检查是否启用自动分析
+        
+        alt 自动分析已启用
+            AIS->>Collector: 🔍 收集环境上下文
+            
+            par 并行收集上下文信息
+                Collector->>Collector: 💻 系统信息 (OS, 版本)
+                Collector->>Collector: 📁 工作目录状态
+                Collector->>Collector: 🔑 权限检查
+                Collector->>Collector: 🌐 网络状态
+                Collector->>Collector: 📦 项目类型检测
+                Collector->>Collector: 🔄 Git状态
+            end
+            
+            Collector->>Filter: 📤 传递收集的上下文
+            Filter->>Filter: 🛡️ 过滤敏感信息
+            Note over Filter: 过滤密码、API密钥、SSH密钥等
+            
+            Filter->>AI: 📨 发送分析请求
+            Note over Filter,AI: context + error_info + user_profile
+            
+            AI->>AI: 🤖 智能分析处理
+            Note over AI: 错误分类、原因分析、解决方案生成
+            
+            AI->>AIS: 📋 返回分析结果
+            Note over AI,AIS: solutions, explanations, learning_points
+            
+            AIS->>UI: 📱 格式化输出
+            UI->>User: 💡 显示分析结果和解决方案
+            
+            AIS->>AIS: 💾 存储学习记录
+            Note over AIS: 更新技能档案、错误统计
+        else 自动分析已禁用
+            AIS-->>User: 🔇 静默处理 (不显示分析)
+        end
+        
+        Shell-->>User: ❌ 显示原始错误信息
+    end
+    
+    Note over User: 用户可以随时手动触发分析
+    User->>AIS: ais analyze
+    AIS->>Collector: 🔍 手动分析流程
+    Note over Collector,UI: 同上述自动分析流程
+```
+
+### 🚀 集成流程详解
+
+#### 1. **钩子机制** 🪝
+不同 Shell 使用不同的钩子机制捕获命令执行状态：
+
+- **Bash**: `trap ERR` 捕获失败命令
+- **Zsh**: `preexec` + `precmd` 组合捕获
+- **Fish**: `fish_postexec` 事件处理
+
+#### 2. **异步处理** ⚡
+所有分析过程都在后台异步执行，确保不影响用户的正常操作：
+
+```bash
+# 后台异步执行，不阻塞 Shell
+ais analyze --exit-code $exit_code --command "$command" &
+```
+
+#### 3. **智能触发** 🎯
+只有在特定条件下才触发分析，避免不必要的资源消耗：
+
+- 命令退出码非零
+- 不是 AIS 内部命令
+- 自动分析功能已启用
+
 ## 🐚 支持的 Shell
 
 ### 完全支持
