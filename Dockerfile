@@ -66,53 +66,39 @@ RUN apt-get update && apt-get install -y \
     tree \
     htop \
     less \
-    grep \
-    sed \
-    awk \
+    # 虚拟包的具体实现
+    gawk \
+    iputils-ping \
     # 网络工具
-    ping \
     telnet \
-    netcat \
+    netcat-openbsd \
     traceroute \
     nmap \
-    # 系统工具
-    ps \
-    top \
+    # 系统工具（procps包提供ps/top等命令）
+    procps \
     lsof \
     strace \
     tcpdump \
     # 文本处理
     jq \
-    yq \
     xmlstarlet \
-    # 压缩工具
+    # 压缩工具（系统内置，无需安装）
     zip \
     unzip \
-    tar \
-    gzip \
     # 开发工具
     make \
     gcc \
     g++ \
-    # 版本控制
-    git \
-    # 文件工具
-    find \
-    xargs \
+    # 文件工具（findutils包提供find/xargs等）
+    findutils \
     rsync \
-    # Docker工具（如果需要Docker-in-Docker）
-    # docker.io \
-    # docker-compose \
-    # Node.js生态系统（常用于前端项目）
+    # Node.js生态系统
     nodejs \
     npm \
     # 数据库客户端
     sqlite3 \
     mysql-client \
     postgresql-client \
-    # 云工具（可选，根据需要启用）
-    # awscli \
-    # kubectl \
     && ln -sf /usr/bin/python3.11 /usr/bin/python \
     && ln -sf /usr/bin/python3.11 /usr/bin/python3 \
     && rm -rf /var/lib/apt/lists/*

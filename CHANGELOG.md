@@ -7,6 +7,14 @@
 
 ## [Unreleased]
 
+### Fixed
+- 🐳 **Docker构建问题修复**：修复Ubuntu 22.04镜像中包安装失败的问题
+  - 修复虚拟包问题：`awk` → `gawk`（GNU awk实现），`ping` → `iputils-ping`（ping命令具体实现）
+  - 修复网络工具包名：`netcat` → `netcat-openbsd`（netcat的OpenBSD版本）
+  - 添加系统工具包：`procps`（提供ps、top等命令），`findutils`（提供find、xargs等工具）
+  - 移除不存在的包：删除`yq`（Ubuntu 22.04仓库中不存在）和重复的包条目
+  - 解决"Package has no installation candidate"和"Unable to locate package"错误
+
 ### Enhanced
 - 📊 **文档可视化全面优化**：为AIS文档网站添加清晰美观的Mermaid图表，大幅提升用户理解度
   - 为6个核心页面添加专业级Mermaid流程图：快速开始、错误分析、安装指南、FAQ对比、Shell集成、学习报告
