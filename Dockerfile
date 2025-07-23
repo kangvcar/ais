@@ -18,15 +18,15 @@ WORKDIR /build
 
 # 安装Python和构建依赖
 RUN apt-get update && apt-get install -y \
-    python${PYTHON_VERSION} \
-    python${PYTHON_VERSION}-dev \
-    python${PYTHON_VERSION}-venv \
+    python3.11 \
+    python3.11-dev \
+    python3.11-venv \
     python3-pip \
     git \
     curl \
     build-essential \
-    && ln -sf /usr/bin/python${PYTHON_VERSION} /usr/bin/python \
-    && ln -sf /usr/bin/python${PYTHON_VERSION} /usr/bin/python3 \
+    && ln -sf /usr/bin/python3.11 /usr/bin/python \
+    && ln -sf /usr/bin/python3.11 /usr/bin/python3 \
     && rm -rf /var/lib/apt/lists/*
 
 # 复制项目文件

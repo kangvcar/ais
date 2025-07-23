@@ -12,6 +12,7 @@
   - 修复虚拟包问题：`awk` → `gawk`（GNU awk实现），`ping` → `iputils-ping`（ping命令具体实现）
   - 修复网络工具包名：`netcat` → `netcat-openbsd`（netcat的OpenBSD版本）
   - 添加系统工具包：`procps`（提供ps、top等命令），`findutils`（提供find、xargs等工具）
+  - 修复Python包安装：使用具体版本号`python3.11`、`python3.11-dev`、`python3.11-venv`
   - 移除不存在的包：删除`yq`（Ubuntu 22.04仓库中不存在）和重复的包条目
   - 解决"Package has no installation candidate"和"Unable to locate package"错误
 
