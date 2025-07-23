@@ -53,7 +53,7 @@ const coreMembers = [
   <VPTeamPageTitle>
     <template #title>智学工坊</template>
     <template #lead>
-      借助AI的智慧，让学习更高效<br/><br/>智学工坊是一个由中职学校新一代信息技术相关专业师生组成的团队。<br/>团队愿景是用技术改变学习方式，让学习者更好地掌握知识，提升技能，实现个人成长。
+      借助AI的智慧，让学习更高效<br/><br/>智学工坊是由中职学校新一代信息技术相关专业师生组成的团队。<br/>团队愿景是用技术改变学习方式，让学习者更好地掌握知识，提升技能，实现个人成长。
     </template>
     
   </VPTeamPageTitle>
