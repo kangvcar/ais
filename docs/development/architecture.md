@@ -10,73 +10,83 @@ AIS采用分层模块化架构，通过深度shell集成提供智能化的终端
 
 ```mermaid
 graph TD
-    subgraph User["👤 用户交互层"]
-        A1["🖥️ CLI命令行界面"]
-        A2["🎛️ 交互式菜单"]
-        A3["🎨 Rich终端UI"]
-    end
+    %% 用户交互层
+    A1["🖥️ CLI命令行界面"] 
+    A2["🎛️ 交互式菜单"] 
+    A3["🎨 Rich终端UI"]
     
-    subgraph Service["🎯 应用服务层"]
-        B1["❓ 智能问答服务"]
-        B2["🔍 错误分析服务"]
-        B3["📊 报告生成服务"]
-        B4["⚙️ 配置管理服务"]
-        B5["📚 学习内容服务"]
-    end
+    %% 层级分隔
+    A1 -.-> USER_LAYER["👤 用户交互层"]
+    A2 -.-> USER_LAYER
+    A3 -.-> USER_LAYER
     
-    subgraph Core["🧠 核心业务层"]
-        C1["🤖 AI管理中心"]
-        C2["🌍 上下文收集器"]
-        C3["🎯 错误分析引擎"]
-        C4["💾 数据库管理器"]
-        C5["🔄 流式UI控制器"]
-    end
+    %% 应用服务层
+    B1["❓ 智能问答服务"]
+    B2["🔍 错误分析服务"] 
+    B3["📊 报告生成服务"]
+    B4["⚙️ 配置管理服务"]
+    B5["📚 学习内容服务"]
     
-    subgraph Infra["🏗️ 基础设施层"]
-        D1["📡 Shell钩子集成"]
-        D2["📁 文件系统操作"]
-        D3["🌐 HTTP网络客户端"]
-        D4["🗄️ SQLite本地存储"]
-        D5["🛡️ 隐私保护过滤器"]
-    end
+    USER_LAYER -.-> SERVICE_LAYER["🎯 应用服务层"]
+    B1 -.-> SERVICE_LAYER
+    B2 -.-> SERVICE_LAYER
+    B3 -.-> SERVICE_LAYER
+    B4 -.-> SERVICE_LAYER
+    B5 -.-> SERVICE_LAYER
     
-    %% 主要数据流
-    A1 --> B1
+    %% 核心业务层
+    C1["🤖 AI管理中心"]
+    C2["🌍 上下文收集器"]
+    C3["🎯 错误分析引擎"] 
+    C4["💾 数据库管理器"]
+    C5["🔄 流式UI控制器"]
+    
+    SERVICE_LAYER -.-> CORE_LAYER["🧠 核心业务层"]
+    C1 -.-> CORE_LAYER
+    C2 -.-> CORE_LAYER
+    C3 -.-> CORE_LAYER
+    C4 -.-> CORE_LAYER
+    C5 -.-> CORE_LAYER
+    
+    %% 基础设施层
+    D1["📡 Shell钩子集成"]
+    D2["📁 文件系统操作"]
+    D3["🌐 HTTP网络客户端"]
+    D4["🗄️ SQLite本地存储"] 
+    D5["🛡️ 隐私保护过滤器"]
+    
+    CORE_LAYER -.-> INFRA_LAYER["🏗️ 基础设施层"]
+    D1 -.-> INFRA_LAYER
+    D2 -.-> INFRA_LAYER
+    D3 -.-> INFRA_LAYER
+    D4 -.-> INFRA_LAYER
+    D5 -.-> INFRA_LAYER
+    
+    %% 主要数据流 - 简化版本
     A1 --> B2
-    A1 --> B3
-    A1 --> B4
-    A1 --> B5
-    
-    B1 --> C1
+    A1 --> B1
     B2 --> C1
-    B3 --> C3
-    B4 --> C4
-    B5 --> C1
-    
+    B1 --> C1
     C1 --> C2
     C1 --> D3
     C2 --> D5
-    C3 --> C4
+    C4 --> D4
+    D1 --> B2
     C5 --> A3
     
-    D1 --> B2
-    C2 --> D2
-    C4 --> D4
-    D5 --> C2
-    
-    %% 样式
+    %% 样式定义
     classDef userStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    classDef serviceStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef serviceStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px  
     classDef coreStyle fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
     classDef infraStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef layerStyle fill:#f9f9f9,stroke:#666,stroke-width:1px,stroke-dasharray: 5 5
     
     class A1,A2,A3 userStyle
     class B1,B2,B3,B4,B5 serviceStyle
     class C1,C2,C3,C4,C5 coreStyle
     class D1,D2,D3,D4,D5 infraStyle
+    class USER_LAYER,SERVICE_LAYER,CORE_LAYER,INFRA_LAYER layerStyle
 ```
-
-> **💡 关于缩放支持**：Mermaid图表在VitePress中支持点击放大查看，用户可以点击图表进入全屏模式以获得更好的查看体验。
 
 ### 核心特性
 
