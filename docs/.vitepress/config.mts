@@ -30,6 +30,10 @@ export default defineConfig(withMermaid({
         activeMatch: '^/features/'
       },
       { 
+        text: '功能展示', 
+        link: '/showcase'
+      },
+      { 
         text: '配置指南', 
         link: '/configuration/',
         activeMatch: '^/configuration/'
