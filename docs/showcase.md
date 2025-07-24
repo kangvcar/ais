@@ -86,7 +86,7 @@ AIS 可以学习您的项目结构、编码习惯和常用模式，提供更加�
 |------|------|
 | [功能特性](/features/) | 详细了解 AIS 的所有功能 |
 | [配置指南](/configuration/) | 学习如何配置和优化 AIS |
-| [故障排除](/troubleshooting/) | 常见问题和解决方案 |
+| [故障排除](/troubleshooting/common-issues) | 常见问题和解决方案 |
 | [开发者指南](/development/) | 为 AIS 贡献代码 |
 
 ---
