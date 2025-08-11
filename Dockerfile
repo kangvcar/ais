@@ -106,7 +106,7 @@ RUN apt-get update && apt-get install -y \
 # 从构建阶段复制构建好的包
 COPY --from=builder /build/dist/*.whl /tmp/
 
-# 安装AIS
+# 安装AIS (现在默认包含所有功能)
 RUN pip install --no-cache-dir /tmp/*.whl && \
     rm -rf /tmp/*.whl
 

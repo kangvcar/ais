@@ -44,6 +44,8 @@ dependencies = [
     "httpx[socks]>=0.24.0",
     "toml>=0.10.2",
     "sqlmodel>=0.0.14",
+    "plotly>=5.0.0",
+    "numpy>=1.20.0",
 ]
 
 [project.scripts]
@@ -71,10 +73,8 @@ docker = [
     "docker>=6.0.0",
     "docker-compose>=1.29.0",
 ]
-html = [
-    "plotly>=5.0.0",
-    "numpy>=1.20.0",
-]
+# html依赖已移至主依赖列表，保留空定义以兼容旧版本安装命令
+html = []
 all = [
     "ais-terminal[dev,docker,html]",
 ]

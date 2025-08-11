@@ -321,7 +321,7 @@ ais config --set ask.context_level=standard
 
 ## ⚠️ 注意事项
 
-- HTML报告需要安装额外依赖（plotly、numpy）
+- HTML报告功能现在默认包含，无需额外安装依赖
 - 技能评估基于错误分析，实际能力可能有差异
 - 建议结合实际项目经验综合评估技能水平
 - 数据完全本地存储，无云端上传风险

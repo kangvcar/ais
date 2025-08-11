@@ -38,16 +38,13 @@ curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh
 # 安装 pipx（如果尚未安装）
 pip install pipx
 
-# 基础安装
+# 安装AIS（现在默认包含所有功能）
 pipx install ais-terminal
-
-# 或完整安装（包含HTML可视化报告功能）
-pipx install "ais-terminal[html]"
 
 # 验证安装
 ais --version
 
-# 验证HTML功能（如果安装了html扩展）
+# 验证HTML可视化报告功能
 ais report --html --help
 ```
 

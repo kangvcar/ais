@@ -327,16 +327,15 @@ df -h
 ImportError: 需要安装plotly库
 ```
 
-**解决方案**：
+**新版本中不应该出现此错误**（plotly已为默认依赖）
+
+**如果仍然遇到此错误**：
 ```bash
-# 1. 安装HTML依赖
-pip install plotly numpy
+# 1. 重新安装最新版本
+pip install --upgrade ais-terminal
 
-# 2. 或者安装完整HTML功能
-pip install -e .[html]
-
-# 3. 验证安装
-python -c "import plotly; print('Plotly installed successfully')"
+# 2. 验证安装
+python -c "import plotly, numpy; print('所有依赖安装成功')"
 
 # 4. 测试HTML报告
 ais report --html

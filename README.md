@@ -119,8 +119,7 @@ curl -sSL https://gitee.com/kangvcar/ais/raw/main/scripts/install.sh | bash -s -
 pipx install ais-terminal
 ais setup
 
-# 安装HTML报告可视化功能（可选）
-pipx install "ais-terminal[html]"  # 包含plotly图表库
+# 现在默认包含HTML报告可视化功能
 ```
 
 **优势**: 最高安全性，独立虚拟环境，无需sudo权限

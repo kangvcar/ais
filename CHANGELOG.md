@@ -8,6 +8,13 @@
 ## [Unreleased]
 
 ### Changed
+- 🔄 **HTML报告依赖优化**：HTML可视化报告功能改为默认包含
+  - 将`plotly>=5.0.0`和`numpy>=1.20.0`从可选依赖移至主依赖列表
+  - 现在安装`ais-terminal`即默认包含所有功能，无需额外安装`[html]`扩展
+  - 更新Docker构建配置，移除`[html]`后缀依赖
+  - 简化安装流程：`pip install ais-terminal`即可使用HTML报告功能
+  - 更新相关文档，移除可选依赖的复杂性说明
+  - 符合"默认包含所有核心功能"的软件设计最佳实践
 - 🔄 **API配置更新**：将默认免费API配置从Deepbricks切换到OpenRouter
   - 更新API端点：从 `https://api.deepbricks.ai/v1/chat/completions` 切换到 `https://openrouter.ai/api/v1/chat/completions`
   - 更新默认模型：从 `gpt-4o-mini` 切换到 `openai/gpt-oss-20b:free`
