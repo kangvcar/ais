@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(source:*)",
+      "Bash(pip install black autopep8 flake8)",
+      "Bash(black:*)",
+      "Bash(autopep8:*)",
+      "Bash(flake8:*)"
     ],
     "deny": []
   }
