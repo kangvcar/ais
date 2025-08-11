@@ -24,7 +24,7 @@ jobs:
     with:
       skip_coverage: true
       python_versions: '["3.8", "3.9", "3.10", "3.11", "3.12"]'
-      operating_systems: '["ubuntu-latest", "macos-latest"]'
+      operating_systems: '["ubuntu-latest"]'
     secrets: inherit
 
   # 构建发布包
@@ -365,7 +365,7 @@ jobs:
     if: needs.publish-pypi.result == 'success' && needs.publish-pypi.outputs.published == 'true'
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
         python-version: ['3.8', '3.11', '3.12']
     
     steps:

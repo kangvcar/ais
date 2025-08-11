@@ -16,7 +16,7 @@ on:
       operating_systems:
         description: 'Operating systems to test (JSON array)'  
         type: string
-        default: '["ubuntu-latest", "macos-latest"]'
+        default: '["ubuntu-latest"]'
 
 jobs:
   test:

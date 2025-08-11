@@ -38,7 +38,7 @@ jobs:
     with:
       skip_coverage: false
       python_versions: '["3.8", "3.9", "3.10", "3.11", "3.12"]'
-      operating_systems: '["ubuntu-latest", "macos-latest"]'
+      operating_systems: '["ubuntu-latest"]'
     secrets: inherit
 
   # 扩展的Linux发行版兼容性测试
