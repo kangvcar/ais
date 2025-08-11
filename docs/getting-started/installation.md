@@ -180,7 +180,7 @@ AIS 内置了免费的AI服务，开箱即用。也支持配置自定义AI服务
 ais config
 
 # 内置服务已配置：
-# - 提供商：default_free
+# - 提供商：free
 # - 模型：gpt-4o-mini
 # - 免费API密钥：已内置
 ```

@@ -163,7 +163,7 @@ def _make_api_request(messages, config, temperature=0.7, max_tokens=1000):
     # 可配置超时机制
     # 结构化错误处理
     
-    provider_name = config.get("default_provider", "default_free")
+    provider_name = config.get("default_provider", "free")
     provider = config.get("providers", {}).get(provider_name)
     timeout = config.get("advanced", {}).get("request_timeout", 120.0)
 ```
@@ -220,14 +220,14 @@ def init_config(force: bool = False) -> bool:
 **配置架构**:
 ```toml
 # ~/.config/ais/config.toml
-default_provider = "default_free"
+default_provider = "free"
 auto_analysis = true
 context_level = "detailed"
 sensitive_dirs = ["~/.ssh", "~/.config/ais", "~/.aws"]
 
-[providers.default_free]
-base_url = "https://api.deepbricks.ai/v1/chat/completions"
-model_name = "gpt-4o-mini"
+[providers.free]
+base_url = "https://openrouter.ai/api/v1/chat/completions"
+model_name = "openai/gpt-oss-20b:free"
 api_key = "sk-..."
 
 [advanced]

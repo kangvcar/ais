@@ -72,9 +72,9 @@ alwaysApply: true
 
 3.  **零配置启动**: 程序内置默认API配置，确保开箱即用。
 
-      * **默认端点**: `https://api.deepbricks.ai/v1/chat/completions`
-      * **默认模型**: `gpt-4o-mini`
-      * **默认密钥**: `sk-97RxyS9R2dsqFTUxcUZOpZwhnbjQCSOaFboooKDeTv5nHJgg`
+      * **默认端点**: `https://openrouter.ai/api/v1/chat/completions`
+      * **默认模型**: `openai/gpt-oss-20b:free`
+      * **默认密钥**: `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`
 
 #### **五、 功能模块详述**
 
@@ -196,7 +196,7 @@ alwaysApply: true
       * **完整结构示例**:
         ```toml
         # 默认使用的AI服务提供商的名称
-        default_provider = "default_free"
+        default_provider = "free"
 
         # 自动错误分析功能的开关
         auto_analysis = true
@@ -214,10 +214,10 @@ alwaysApply: true
         max_history_display = 10
 
         # 预置的免费服务
-        [providers.default_free]
-        base_url = "https://api.deepbricks.ai/v1/chat/completions"
-        model_name = "gpt-4o-mini"
-        api_key = "sk-97RxyS9R2dsqFTUxcUZOpZwhnbjQCSOaFboooKDeTv5nHJgg"
+        [providers.free]
+        base_url = "https://openrouter.ai/api/v1/chat/completions"
+        model_name = "openai/gpt-oss-20b:free"
+        api_key = "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"
 
         # 用户自定义的Ollama服务
         [providers.my_ollama]

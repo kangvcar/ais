@@ -39,11 +39,11 @@ class TestDefaultConfig:
         config = get_default_config()
 
         assert isinstance(config, dict)
-        assert config["default_provider"] == "default_free"
+        assert config["default_provider"] == "free"
         assert config["auto_analysis"] is True
         assert config["context_level"] == "standard"
         assert "providers" in config
-        assert "default_free" in config["providers"]
+        assert "free" in config["providers"]
 
 
 class TestConfigOperations:

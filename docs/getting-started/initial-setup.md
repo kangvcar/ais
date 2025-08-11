@@ -23,7 +23,7 @@ AIS 需要连接到 AI 服务才能提供智能分析。系统默认配置了一
 ais config
 
 # 如果需要，设置默认提供商
-ais config --set default_provider=default_free
+ais config --set default_provider=free
 ```
 
 ### 添加自定义 AI 服务提供商
@@ -205,7 +205,7 @@ AIS 的配置文件位于：
 # ~/.config/ais/config.toml
 
 # 默认 AI 服务提供商
-default_provider = "default_free"
+default_provider = "free"
 
 # 自动错误分析
 auto_analysis = true
@@ -222,9 +222,9 @@ sensitive_dirs = [
 ]
 
 # AI 服务提供商配置
-[providers.default_free]
-base_url = "https://api.deepbricks.ai/v1/chat/completions"
-model_name = "gpt-4o-mini"
+[providers.free]
+base_url = "https://openrouter.ai/api/v1/chat/completions"
+model_name = "openai/gpt-oss-20b:free"
 api_key = "your_api_key_here"
 
 [providers.openai]

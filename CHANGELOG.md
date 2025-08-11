@@ -7,6 +7,15 @@
 
 ## [Unreleased]
 
+### Changed
+- 🔄 **API配置更新**：将默认免费API配置从Deepbricks切换到OpenRouter
+  - 更新API端点：从 `https://api.deepbricks.ai/v1/chat/completions` 切换到 `https://openrouter.ai/api/v1/chat/completions`
+  - 更新默认模型：从 `gpt-4o-mini` 切换到 `openai/gpt-oss-20b:free`
+  - 重命名提供商标识：从 `default_free` 重命名为 `free`
+  - 更新对应的API密钥为OpenRouter的免费访问密钥
+  - 影响范围：核心配置文件、CLI默认配置、安装脚本、所有相关文档和测试文件
+  - 为用户提供更稳定和可靠的免费AI服务访问体验
+
 ## [2.6.0] - 2025-07-24
 
 ### Added

@@ -19,15 +19,15 @@ ais config
 ### 配置文件结构
 ```toml
 # 默认配置文件内容
-default_provider = "default_free"
+default_provider = "free"
 auto_analysis = true
 context_level = "detailed"
 sensitive_dirs = ["~/.ssh", "~/.config/ais", "~/.aws"]
 
-[providers.default_free]
-base_url = "https://api.deepbricks.ai/v1/chat/completions"
-model_name = "gpt-4o-mini"
-api_key = "sk-97RxyS9R2dsqFTUxcUZOpZwhnbjQCSOaFboooKDeTv5nHJgg"
+[providers.free]
+base_url = "https://openrouter.ai/api/v1/chat/completions"
+model_name = "openai/gpt-oss-20b:free"
+api_key = "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"
 
 [ui]
 enable_colors = true
@@ -131,7 +131,7 @@ ais provider-use openai
 ais provider-use ollama
 
 # 切换回默认免费服务
-ais provider-use default_free
+ais provider-use free
 ```
 
 ## 💾 数据存储

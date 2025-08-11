@@ -1029,13 +1029,13 @@ setup_ais_config() {
     cat > "$config_file" << 'EOF'
 [general]
 auto_analysis = true
-default_provider = "default_free"
+default_provider = "free"
 
-[providers.default_free]
-base_url = "https://api.deepbricks.ai/v1/chat/completions"
-model_name = "gpt-4o-mini"
+[providers.free]
+base_url = "https://openrouter.ai/api/v1/chat/completions"
+model_name = "openai/gpt-oss-20b:free"
 # 默认测试密钥，建议使用 'ais provider-add --help-detail' 配置专属密钥
-api_key = "sk-97RxyS9R2dsqFTUxcUZOpZwhnbjQCSOaFboooKDeTv5nHJgg"
+api_key = "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"
 EOF
     
     show_status "AIS配置文件已创建" true

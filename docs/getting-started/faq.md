@@ -85,10 +85,10 @@ source "/path/to/ais/shell/integration.sh"
 
 ```bash
 # 测试网络连接
-ping api.deepbricks.ai
+ping openrouter.ai
 
 # 测试 API 连接
-curl -s https://api.deepbricks.ai/v1/chat/completions
+curl -s https://openrouter.ai/api/v1/chat/completions
 ```
 
 **检查配置：**

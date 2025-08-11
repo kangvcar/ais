@@ -302,7 +302,7 @@ def _make_api_request(
     max_tokens: int = 1000,
 ) -> Optional[str]:
     """统一的AI API请求函数。"""
-    provider_name = config.get("default_provider", "default_free")
+    provider_name = config.get("default_provider", "free")
     provider = config.get("providers", {}).get(provider_name)
 
     if not provider:

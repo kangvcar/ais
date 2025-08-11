@@ -15,7 +15,7 @@ def get_config_path() -> Path:
 def get_default_config() -> Dict[str, Any]:
     """Get the default configuration."""
     return {
-        "default_provider": "default_free",
+        "default_provider": "free",
         "auto_analysis": True,
         "context_level": "detailed",
         "sensitive_dirs": ["~/.ssh", "~/.config/ais", "~/.aws"],
@@ -24,10 +24,10 @@ def get_default_config() -> Dict[str, Any]:
             "max_history_display": 10,
         },
         "providers": {
-            "default_free": {
-                "base_url": "https://api.deepbricks.ai/v1/chat/completions",
-                "model_name": "gpt-4o-mini",
-                "api_key": ("sk-97RxyS9R2dsqFTUxcUZOpZwhnbjQCSOaFboooKDeTv5nHJgg"),
+            "free": {
+                "base_url": "https://openrouter.ai/api/v1/chat/completions",
+                "model_name": "openai/gpt-oss-20b:free",
+                "api_key": ("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"),
             }
         },
         "advanced": {

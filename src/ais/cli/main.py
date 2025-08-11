@@ -251,15 +251,15 @@ def _auto_setup_shell_integration():
         config_file_path = config_dir / "config.toml"
         if not config_file_path.exists():
             default_config = """# AIS 配置文件
-default_provider = "default_free"
+default_provider = "free"
 auto_analysis = true
 context_level = "detailed"
 sensitive_dirs = ["~/.ssh", "~/.config/ais", "~/.aws"]
 
-[providers.default_free]
-base_url = "https://api.deepbricks.ai/v1/chat/completions"
-model_name = "gpt-4o-mini"
-api_key = "sk-97RxyS9R2dsqFTUxcUZOpZwhnbjQCSOaFboooKDeTv5nHJgg"
+[providers.free]
+base_url = "https://openrouter.ai/api/v1/chat/completions"
+model_name = "openai/gpt-oss-20b:free"
+api_key = "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"
 """
             config_file_path.write_text(default_config)
 
@@ -517,7 +517,7 @@ def config(set_key, get_key, list_providers, help_context, init):
                 panels.success(
                     f"✓ 配置文件已初始化: {config_path}\n\n"
                     + "包含以下默认设置:\n"
-                    + "• 默认AI提供商: default_free (gpt-4o-mini)\n"
+                    + "• 默认AI提供商: free (gpt-4o-mini)\n"
                     + "• 自动错误分析: 开启\n"
                     + "• 上下文收集: 详细级别\n"
                     + "• HTTP请求超时: 120秒\n\n"
@@ -616,7 +616,7 @@ def config(set_key, get_key, list_providers, help_context, init):
             config_content = f"""默认提供商: {
                 config.get(
                     'default_provider',
-                    'default_free')}
+                    'free')}
 自动分析: {auto_status}
 错误分析上下文级别: {context_level}
 Ask命令上下文级别: {ask_context_level}
@@ -772,7 +772,7 @@ def list_provider(help_detail):
 
 [bold]示例输出:[/bold]
   可用的 AI 服务商:
-  ✓ default_free: gpt-4o-mini (https://api.deepbricks.ai/v1/chat/completions) 🔑
+  ✓ free: openai/gpt-oss-20b:free (https://openrouter.ai/api/v1/chat/completions) 🔑
     ollama: llama3 (http://localhost:11434/v1/chat/completions)
     openai: gpt-4 (https://api.openai.com/v1/chat/completions) 🔑
 
