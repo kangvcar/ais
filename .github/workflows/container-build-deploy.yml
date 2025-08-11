@@ -120,9 +120,8 @@ jobs:
           type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
           # 手动触发时使用自定义标签
           type=raw,value={{inputs.tag}},enable=${{ github.event_name == 'workflow_dispatch' }}
-          # workflow_run触发时，如果获取到版本信息，生成版本标签
+          # workflow_run触发时，如果获取到版本信息，生成版本标签（统一使用不带v前缀的格式）
           type=raw,value=${{ steps.get_version.outputs.version }},enable=${{ github.event_name == 'workflow_run' && steps.get_version.outputs.has_version == 'true' }}
-          type=raw,value=v${{ steps.get_version.outputs.version }},enable=${{ github.event_name == 'workflow_run' && steps.get_version.outputs.has_version == 'true' }}
         labels: |
           org.opencontainers.image.title=AIS - 上下文感知的错误分析学习助手
           org.opencontainers.image.description=上下文感知的错误分析学习助手，让每次报错都是成长
