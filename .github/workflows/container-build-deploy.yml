@@ -3,16 +3,6 @@
 name: Container Build & Deploy
 
 on:
-  # 主分支推送时构建最新镜像（仅当相关文件变更时）
-  push:
-    branches: [ main ]
-    paths:
-      - 'src/**'
-      - 'Dockerfile'
-      - 'pyproject.toml'
-      - 'setup.py'
-      - '.github/workflows/container-build-deploy.yml'
-  
   # 接收来自Release工作流的触发（包含release发布）
   workflow_run:
     workflows: ["Package Release"]
@@ -87,8 +77,6 @@ jobs:
           type=semver,pattern={{major}}
           # 为主分支设置latest标签
           type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-          # 为push事件添加带SHA的开发标签
-          type=raw,value=main-{{sha}},enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           # 手动触发时使用自定义标签
           type=raw,value={{inputs.tag}},enable=${{ github.event_name == 'workflow_dispatch' }}
         labels: |
@@ -219,7 +207,7 @@ jobs:
     name: Update Docker Hub Description
     runs-on: ubuntu-latest
     needs: [build-and-push, test-image]
-    if: github.event_name == 'release' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    if: github.event_name == 'release' || github.event_name == 'workflow_run'
     
     steps:
     - name: Checkout repository
@@ -277,7 +265,7 @@ jobs:
     name: Cleanup Old Images
     runs-on: ubuntu-latest
     needs: [build-and-push, test-image]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: false  # 禁用清理功能，因为不再有push触发
     
     steps:
     - name: Delete old development tags
