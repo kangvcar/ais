@@ -292,28 +292,6 @@ jobs:
         tag_name: ${{ needs.build-packages.outputs.version }}
         name: "v${{ needs.build-packages.outputs.version }}"
         body: |
-          ## 📦 安装方法
-          
-          ### 推荐：一键安装脚本
-          
-          ```bash
-          # 一键安装（推荐）
-          bash <(curl -fsSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/install.sh)
-          
-          # 国内用户使用镜像
-          bash <(curl -fsSL https://gitee.com/kangvcar/ais/raw/main/scripts/install.sh)
-          ```
-          
-          ### 其他安装方式
-          
-          ```bash
-          # 使用pip安装
-          pip install ais-terminal==${{ needs.build-packages.outputs.version }}
-          
-          # 使用Docker运行
-          docker run -it --rm kangvcar/ais:${{ needs.build-packages.outputs.version }}
-          ```
-          
           ## 📋 更新内容
           
           ${{ steps.release_notes.outputs.release_notes }}
