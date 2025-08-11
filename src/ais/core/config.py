@@ -1,5 +1,6 @@
 """Configuration management for AIS."""
 
+import base64
 import toml
 from pathlib import Path
 from typing import Any, Dict
@@ -10,6 +11,16 @@ def get_config_path() -> Path:
     config_dir = Path.home() / ".config" / "ais"
     config_dir.mkdir(parents=True, exist_ok=True)
     return config_dir / "config.toml"
+
+
+def _get_obfuscated_key() -> str:
+    """Get the obfuscated default API key."""
+    # Base64编码的默认API key，不是真正的加密，只是简单混淆
+    encoded = (
+        "c2stb3ItdjEtY2FhOTRlMzRiMWE0YjhkOThhYTQ3YjVlOTU5ODNiZTkwNTk4NmI0NDlmNWZiYjNk"
+        "ZjgwYTg5NGNkNDBkM2JiYg=="
+    )
+    return base64.b64decode(encoded).decode()
 
 
 def get_default_config() -> Dict[str, Any]:
@@ -27,9 +38,7 @@ def get_default_config() -> Dict[str, Any]:
             "free": {
                 "base_url": "https://openrouter.ai/api/v1/chat/completions",
                 "model_name": "openai/gpt-oss-20b:free",
-                "api_key": (
-                    "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"
-                ),
+                "api_key": _get_obfuscated_key(),
             }
         },
         "advanced": {

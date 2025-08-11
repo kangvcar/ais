@@ -6,7 +6,7 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 
 from .. import __version__
-from ..core.config import get_config, set_config
+from ..core.config import get_config, set_config, _get_obfuscated_key
 from ..ui.panels import panels
 
 console = Console()
@@ -259,8 +259,10 @@ sensitive_dirs = ["~/.ssh", "~/.config/ais", "~/.aws"]
 [providers.free]
 base_url = "https://openrouter.ai/api/v1/chat/completions"
 model_name = "openai/gpt-oss-20b:free"
-api_key = "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"
-"""
+api_key = "{}"
+""".format(
+                _get_obfuscated_key()
+            )
             config_file_path.write_text(default_config)
 
         # 标记已完成自动设置

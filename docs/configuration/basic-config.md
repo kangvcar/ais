@@ -27,7 +27,7 @@ sensitive_dirs = ["~/.ssh", "~/.config/ais", "~/.aws"]
 [providers.free]
 base_url = "https://openrouter.ai/api/v1/chat/completions"
 model_name = "openai/gpt-oss-20b:free"
-api_key = "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"
+api_key = "your-openrouter-api-key-here"
 
 [ui]
 enable_colors = true
