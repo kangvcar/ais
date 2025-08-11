@@ -15,6 +15,10 @@
   - 更新`docker-compose.yml`中的镜像名称配置
   - 更新`scripts/docker-install.sh`中的镜像构建和运行命令
   - 提供更简洁一致的容器命名体验
+- 🔧 **发布工作流优化**：简化GitHub Release中的安装说明
+  - 移除`.github/workflows/package-release.yml`中重复的安装方法文档
+  - 保持Release内容简洁，专注于更新内容展示
+  - 避免在多个地方维护相同的安装文档
 
 ## [3.1.0] - 2025-08-11
 
