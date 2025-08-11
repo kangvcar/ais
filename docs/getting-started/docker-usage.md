@@ -12,17 +12,17 @@ git clone https://github.com/kangvcar/ais.git
 cd ais
 
 # 构建 Docker 镜像
-docker build -t ais-terminal:latest .
+docker build -t ais:latest .
 ```
 
 ### 基础使用
 
 ```bash
 # 直接运行 AIS 命令
-docker run --rm -it ais-terminal:latest ais ask "如何使用 Docker？"
+docker run --rm -it ais:latest ais ask "如何使用 Docker？"
 
 # 进入交互式容器环境
-docker run --rm -it ais-terminal:latest bash
+docker run --rm -it ais:latest bash
 
 # 在容器内使用 AIS
 # ais config init  # 初始化配置
@@ -44,7 +44,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ais-terminal:latest
+    image: ais:latest
     container_name: ais-assistant
     restart: unless-stopped
     environment:
@@ -110,7 +110,7 @@ AIS Docker 镜像基于 Ubuntu 22.04，包含以下丰富的工具集：
 
 ```bash
 # 进入容器
-docker run --rm -it ais-terminal:latest bash
+docker run --rm -it ais:latest bash
 
 # 使用 AIS 学习系统命令
 ais ask "如何查看系统进程？"
@@ -128,7 +128,7 @@ htop  # 交互式进程查看器
 docker run --rm -it \
   -v $(pwd):/workspace \
   -v ais-config:/home/ais/.config/ais \
-  ais-terminal:latest bash
+  ais:latest bash
 
 # 在容器内分析项目
 cd /workspace
@@ -145,7 +145,7 @@ grep -r "TODO" . --include="*.py"  # 查找待办事项
 
 ```bash
 # 容器内网络诊断
-docker run --rm -it ais-terminal:latest bash
+docker run --rm -it ais:latest bash
 
 # 使用 AIS 学习网络命令
 ais ask "如何诊断网络连接问题？"
@@ -161,7 +161,7 @@ lsof -i :80    # 查看端口占用
 
 ```bash
 # 创建测试数据并分析
-docker run --rm -it ais-terminal:latest bash
+docker run --rm -it ais:latest bash
 
 # 生成测试数据
 echo -e "name,age,city\\nAlice,25,Beijing\\nBob,30,Shanghai\\nCharlie,35,Guangzhou" > /tmp/data.csv
@@ -181,7 +181,7 @@ awk -F',' 'NR>1 {sum+=$2} END {print "平均年龄:", sum/(NR-1)}' /tmp/data.csv
 # 在容器内学习 Git
 docker run --rm -it \
   -v ais-config:/home/ais/.config/ais \
-  ais-terminal:latest bash
+  ais:latest bash
 
 # 创建测试仓库
 mkdir /tmp/git-practice && cd /tmp/git-practice
@@ -210,7 +210,7 @@ version: '3.8'
 services:
   ais-dev:
     build: .
-    image: ais-terminal:latest
+    image: ais:latest
     container_name: ais-development
     volumes:
       - ais-config:/home/ais/.config/ais
@@ -273,7 +273,7 @@ docker run -d \
   -v ais-config:/home/ais/.config/ais \
   -v /host/projects:/home/ais/projects:ro \
   -e AIS_CONTAINER=1 \
-  ais-terminal:latest \
+  ais:latest \
   tail -f /dev/null
 
 # 执行 AIS 命令
@@ -289,7 +289,7 @@ docker exec -it ais-assistant bash
 # 初始化配置
 docker run --rm -it \
   -v ais-config:/home/ais/.config/ais \
-  ais-terminal:latest \
+  ais:latest \
   ais config init
 
 # 设置 AI 服务提供商
@@ -307,7 +307,7 @@ docker run --rm -it \
   -e AIS_CONTAINER=1 \
   -e AIS_AUTO_ANALYSIS=true \
   -e AIS_CONTEXT_LEVEL=detailed \
-  ais-terminal:latest bash
+  ais:latest bash
 ```
 
 ## 故障排除
@@ -317,7 +317,7 @@ docker run --rm -it \
 **1. 容器无法启动**
 ```bash
 # 检查镜像是否构建成功
-docker images | grep ais-terminal
+docker images | grep ais
 
 # 查看容器日志
 docker logs ais-assistant
@@ -329,7 +329,7 @@ docker port ais-assistant
 **2. 权限问题**
 ```bash
 # 以 root 用户运行（仅调试用）
-docker run --rm -it --user root ais-terminal:latest bash
+docker run --rm -it --user root ais:latest bash
 
 # 检查文件权限
 docker exec -it ais-assistant ls -la /home/ais/.config
@@ -357,14 +357,14 @@ docker exec -it ais-assistant cat /etc/resolv.conf
 docker run --rm -it \
   --memory="512m" \
   --cpus="1.0" \
-  ais-terminal:latest bash
+  ais:latest bash
 
 # 安全配置示例
 docker run --rm -it \
   --read-only \
   --tmpfs /tmp \
   --security-opt no-new-privileges \
-  ais-terminal:latest bash
+  ais:latest bash
 ```
 
 通过 Docker 使用 AIS，您可以在隔离的环境中安全地学习和实践各种命令行技能，同时享受完整的工具链和 AI 辅助学习体验。

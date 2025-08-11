@@ -81,7 +81,7 @@ build_image() {
     fi
     
     # 构建镜像
-    $DOCKER_CMD build -t ais-terminal:latest .
+    $DOCKER_CMD build -t ais:latest .
     print_success "镜像构建完成"
 }
 
@@ -95,7 +95,7 @@ run_container() {
             $DOCKER_CMD run -it --rm \
                 --name ais-interactive \
                 -v "$PWD:/workspace:ro" \
-                ais-terminal:latest bash
+                ais:latest bash
             ;;
         "daemon")
             print_info "🚀 启动AIS守护进程容器..."
@@ -104,7 +104,7 @@ run_container() {
                 --restart unless-stopped \
                 -v "$PWD:/workspace:ro" \
                 -v ais-config:/home/ais/.config/ais \
-                ais-terminal:latest tail -f /dev/null
+                ais:latest tail -f /dev/null
             print_success "AIS守护进程已启动"
             print_info "💡 使用容器: $DOCKER_CMD exec -it ais-daemon bash"
             ;;
@@ -113,7 +113,7 @@ run_container() {
             shift  # 移除mode参数
             $DOCKER_CMD run --rm \
                 -v "$PWD:/workspace:ro" \
-                ais-terminal:latest ais "$@"
+                ais:latest ais "$@"
             ;;
     esac
 }
@@ -145,7 +145,7 @@ main() {
     check_docker
     
     # 检查是否已存在镜像
-    if ! $DOCKER_CMD images ais-terminal:latest --format "table {{.Repository}}" | grep -q ais-terminal; then
+    if ! $DOCKER_CMD images ais:latest --format "table {{.Repository}}" | grep -q ais; then
         build_image
     else
         print_success "发现已存在的AIS镜像"

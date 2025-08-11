@@ -7,7 +7,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ais-terminal:latest
+    image: ais:latest
     container_name: ais-assistant
     restart: unless-stopped
     environment:
@@ -27,7 +27,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: builder
-    image: ais-terminal:dev
+    image: ais:dev
     container_name: ais-dev
     restart: unless-stopped
     environment:
@@ -46,7 +46,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ais-terminal:web
+    image: ais:web
     container_name: ais-web
     restart: unless-stopped
     ports:

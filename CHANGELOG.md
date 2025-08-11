@@ -7,6 +7,15 @@
 
 ## [Unreleased]
 
+### Changed
+- 🐳 **Docker容器名称更新**：将DockerHub上的容器名称从`ais-terminal`更新为`ais`
+  - 更新所有文档中的Docker镜像引用，统一使用`ais:latest`而非`ais-terminal:latest`
+  - 修改`docs/getting-started/docker-usage.md`中所有容器引用
+  - 更新`README.md`中的Docker使用示例
+  - 更新`docker-compose.yml`中的镜像名称配置
+  - 更新`scripts/docker-install.sh`中的镜像构建和运行命令
+  - 提供更简洁一致的容器命名体验
+
 ## [3.1.0] - 2025-08-11
 
 ### Changed

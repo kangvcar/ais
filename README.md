@@ -149,7 +149,7 @@ curl -sSL https://gitee.com/kangvcar/ais/raw/main/scripts/install.sh | bash -s -
 curl -sSL https://raw.githubusercontent.com/kangvcar/ais/main/scripts/docker-install.sh | bash
 
 # 或直接运行
-docker run -it --rm ais-terminal:latest
+docker run -it --rm ais:latest
 ```
 
 **优势**: 环境一致性，快速部署，易于扩展，完全隔离
