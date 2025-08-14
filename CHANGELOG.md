@@ -25,6 +25,11 @@
   - 修复VitePress基础路径配置导致CSS和静态资源无法正确加载的问题
   - 在Docker构建时设置`VITEPRESS_BASE=/`确保资源路径正确
   - 现在Docker容器中的文档网站样式和功能完全正常
+- ⚡ **优化文档容器部署工作流**：
+  - 修改触发条件为依赖VitePress文档部署成功后再构建Docker镜像
+  - 简化Docker标签策略，减少不必要的标签生成
+  - 现在只生成`latest`和`YYYYMMDD`两个标签，避免标签冗余
+  - 确保只有在VitePress部署成功时才构建Docker镜像
 
 ## [3.2.1] - 2025-08-14
 

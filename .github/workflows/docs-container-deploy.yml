@@ -3,15 +3,16 @@
 name: Docs Container Deploy
 
 on:
-  # 当docs目录或相关文件发生变更时触发
+  # 当VitePress文档部署成功后触发
+  workflow_run:
+    workflows: ["Deploy VitePress Documentation"]
+    types: [completed]
+    branches: [main]
+  
+  # 当Docker配置文件变更时也直接触发
   push:
     branches: [main]
     paths:
-      - 'docs/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'netlify.toml'
-      - 'vercel.json'
       - 'docs.Dockerfile'
       - '.github/workflows/docs-container-deploy.yml'
   
@@ -43,6 +44,8 @@ jobs:
   build-and-push-docs:
     name: Build & Push Docs Container
     runs-on: ubuntu-latest
+    # 只有在VitePress部署成功或直接推送时运行
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     permissions:
       contents: read
       security-events: write
@@ -80,10 +83,8 @@ jobs:
           type=raw,value=latest,enable={{is_default_branch}}
           # 手动触发时使用自定义标签
           type=raw,value={{inputs.tag}},enable=${{ github.event_name == 'workflow_dispatch' }}
-          # 基于提交SHA生成标签
-          type=sha,prefix={{branch}}-
-          # 基于日期生成标签
-          type=raw,value={{date 'YYYYMMDD'}}-{{sha}}
+          # 基于日期生成标签（仅保留一个用于版本追踪）
+          type=raw,value={{date 'YYYYMMDD'}},enable={{is_default_branch}}
         labels: |
           org.opencontainers.image.title=AIS Documentation
           org.opencontainers.image.description=AIS项目文档网站 - 上下文感知的错误分析学习助手
