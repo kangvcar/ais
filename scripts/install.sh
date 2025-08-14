@@ -1026,7 +1026,10 @@ setup_ais_config() {
     fi
     
     # 创建或更新配置文件
-    cat > "$config_file" << 'EOF'
+    # 先解码base64密钥
+    local decoded_key=$(echo 'c2stb3ItdjEtY2FhOTRlMzRiMWE0YjhkOThhYTQ3YjVlOTU5ODNiZTkwNTk4NmI0NDlmNWZiYjNkZjgwYTg5NGNkNDBkM2JiYg==' | base64 -d)
+    
+    cat > "$config_file" << EOF
 [general]
 auto_analysis = true
 default_provider = "free"
@@ -1035,7 +1038,7 @@ default_provider = "free"
 base_url = "https://openrouter.ai/api/v1/chat/completions"
 model_name = "openai/gpt-oss-20b:free"
 # 默认测试密钥（已混淆），建议使用 'ais provider-add --help-detail' 配置专属密钥
-api_key = "$(echo 'c2stb3ItdjEtY2FhOTRlMzRiMWE0YjhkOThhYTQ3YjVlOTU5ODNiZTkwNTk4NmI0NDlmNWZiYjNkZjgwYTg5NGNkNDBkM2JiYg==' | base64 -d)"
+api_key = "$decoded_key"
 EOF
     
     show_status "AIS配置文件已创建" true
