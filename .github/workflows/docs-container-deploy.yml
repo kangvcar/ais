@@ -92,6 +92,12 @@ jobs:
           org.opencontainers.image.source=https://github.com/kangvcar/ais
           org.opencontainers.image.documentation=https://github.com/kangvcar/ais/tree/main/docs
 
+    - name: Prepare build context for docs
+      run: |
+        # 临时使用docs专用的dockerignore文件
+        cp .dockerignore .dockerignore.original
+        cp .dockerignore.docs .dockerignore
+
     - name: Build and push docs Docker image
       id: build
       uses: docker/build-push-action@v5
@@ -109,6 +115,13 @@ jobs:
           BUILD_DATE=${{ github.event.head_commit.timestamp || github.run_id }}
           VCS_REF=${{ github.sha }}
           VERSION=${{ github.ref_name }}
+
+    - name: Restore original dockerignore
+      if: always()
+      run: |
+        # 恢复原始的dockerignore文件
+        cp .dockerignore.original .dockerignore
+        rm -f .dockerignore.original
 
     - name: Generate SBOM for docs image
       uses: anchore/sbom-action@v0

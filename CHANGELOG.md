@@ -16,6 +16,12 @@
   - 提供`kangvcar/ais-docs`镜像，用户可以通过`docker run -p 8080:80 kangvcar/ais-docs`本地运行文档网站
   - 配置了nginx优化，包括gzip压缩、静态资源缓存和安全头设置
 
+### Fixed
+- 🐳 **修复文档Docker构建工作流中的dockerignore冲突问题**：
+  - 修复GitHub Actions中Docker构建时找不到docs目录的问题
+  - 工作流现在会临时使用专门的`.dockerignore.docs`文件进行构建
+  - 确保文档目录在Docker构建过程中可用，同时保持原有的主项目dockerignore配置
+
 ## [3.2.1] - 2025-08-14
 
 ### Fixed
