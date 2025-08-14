@@ -21,6 +21,10 @@
   - 修复GitHub Actions中Docker构建时找不到docs目录的问题
   - 工作流现在会临时使用专门的`.dockerignore.docs`文件进行构建
   - 确保文档目录在Docker构建过程中可用，同时保持原有的主项目dockerignore配置
+- 🎨 **修复Docker容器中文档网站样式表缺失问题**：
+  - 修复VitePress基础路径配置导致CSS和静态资源无法正确加载的问题
+  - 在Docker构建时设置`VITEPRESS_BASE=/`确保资源路径正确
+  - 现在Docker容器中的文档网站样式和功能完全正常
 
 ## [3.2.1] - 2025-08-14
 

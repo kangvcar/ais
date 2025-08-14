@@ -14,7 +14,8 @@ COPY docs/ ./docs/
 COPY netlify.toml ./netlify.toml
 COPY vercel.json ./vercel.json
 
-# 构建文档
+# 构建文档（设置为根路径）
+ENV VITEPRESS_BASE=/
 RUN npm run docs:build
 
 # Stage 2: 生产阶段
