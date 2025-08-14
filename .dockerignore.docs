@@ -1,0 +1,95 @@
+# Git相关
+.git
+.gitignore
+.gitattributes
+
+# Python相关
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+venv
+.venv
+ENV
+env.bak
+venv.bak
+.pytest_cache
+.coverage
+htmlcov
+.tox
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis
+
+# IDE和编辑器
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS相关
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 构建产物（保留docs构建目录）
+dist
+build
+*.egg-info
+.eggs
+
+# 测试文件
+tests/
+
+# 不需要的文档和说明（保留docs目录和必要的配置文件）
+DEPLOYMENT.md
+CLAUDE.md
+!README.md
+!CHANGELOG.md
+
+# CI/CD (保留这个工作流)
+.github
+!.github/workflows/docs-container-deploy.yml
+.travis.yml
+.gitlab-ci.yml
+
+# 临时文件
+*.tmp
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# 开发工具配置
+.pre-commit-config.yaml
+.flake8
+.mypy.ini
+pytest.ini
+tox.ini
+setup.cfg
+
+# 示例和样本文件
+examples/
+samples/
+demo/
+
+# Python源代码（只需要文档）
+src/
+
+# 其他Docker相关
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# 锁文件和不必要的依赖
+uv.lock
+wrangler.toml

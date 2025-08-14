@@ -1,0 +1,298 @@
+# 文档网站容器构建和部署工作流
+# 构建VitePress文档网站并发布到DockerHub
+name: Docs Container Deploy
+
+on:
+  # 当docs目录或相关文件发生变更时触发
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'netlify.toml'
+      - 'vercel.json'
+      - 'docs.Dockerfile'
+      - '.github/workflows/docs-container-deploy.yml'
+  
+  # 允许手动触发构建
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Docker tag for docs image'
+        required: false
+        default: 'latest'
+        type: string
+      platforms:
+        description: 'Target platforms'
+        required: false
+        default: 'linux/amd64,linux/arm64'
+        type: string
+
+# 限制并发执行
+concurrency:
+  group: docs-container-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: kangvcar/ais-docs
+
+jobs:
+  # 构建和推送文档Docker镜像
+  build-and-push-docs:
+    name: Build & Push Docs Container
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+      image-tags: ${{ steps.meta.outputs.tags }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        platforms: linux/amd64,linux/arm64
+        driver-opts: image=moby/buildkit:buildx-stable-1
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Extract metadata for docs image
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          # 为主分支设置latest标签
+          type=raw,value=latest,enable={{is_default_branch}}
+          # 手动触发时使用自定义标签
+          type=raw,value={{inputs.tag}},enable=${{ github.event_name == 'workflow_dispatch' }}
+          # 基于提交SHA生成标签
+          type=sha,prefix={{branch}}-
+          # 基于日期生成标签
+          type=raw,value={{date 'YYYYMMDD'}}-{{sha}}
+        labels: |
+          org.opencontainers.image.title=AIS Documentation
+          org.opencontainers.image.description=AIS项目文档网站 - 上下文感知的错误分析学习助手
+          org.opencontainers.image.vendor=AIS Team
+          org.opencontainers.image.url=https://github.com/kangvcar/ais
+          org.opencontainers.image.source=https://github.com/kangvcar/ais
+          org.opencontainers.image.documentation=https://github.com/kangvcar/ais/tree/main/docs
+
+    - name: Build and push docs Docker image
+      id: build
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./docs.Dockerfile
+        platforms: ${{ github.event.inputs.platforms || 'linux/amd64,linux/arm64' }}
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha,scope=docs
+        cache-to: type=gha,mode=max,scope=docs
+        # 构建参数
+        build-args: |
+          BUILD_DATE=${{ github.event.head_commit.timestamp || github.run_id }}
+          VCS_REF=${{ github.sha }}
+          VERSION=${{ github.ref_name }}
+
+    - name: Generate SBOM for docs image
+      uses: anchore/sbom-action@v0
+      with:
+        image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+        format: spdx-json
+        output-file: docs-sbom.spdx.json
+
+    - name: Security scan docs image with Trivy
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+        format: 'sarif'
+        output: 'docs-trivy-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'docs-trivy-results.sarif'
+
+    - name: Upload docs SBOM as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: docs-sbom-${{ github.sha }}
+        path: docs-sbom.spdx.json
+        retention-days: 30
+
+  # 测试文档网站镜像
+  test-docs-image:
+    name: Test Docs Container
+    runs-on: ubuntu-latest
+    needs: build-and-push-docs
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+    
+    steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        platforms: ${{ matrix.platform }}
+
+    - name: Set up QEMU for cross-platform testing
+      if: matrix.platform == 'linux/arm64'
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: arm64
+
+    - name: Test docs Docker image functionality
+      run: |
+        # 提取第一个标签进行测试
+        IMAGE_TAGS="${{ needs.build-and-push-docs.outputs.image-tags }}"
+        IMAGE_DIGEST="${{ needs.build-and-push-docs.outputs.image-digest }}"
+        
+        IMAGE_TAG=$(echo "$IMAGE_TAGS" | tr '\n' ' ' | tr ',' ' ' | awk '{print $1}' | xargs)
+        
+        if [ -z "$IMAGE_TAG" ]; then
+          if [ -n "$IMAGE_DIGEST" ]; then
+            IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@$IMAGE_DIGEST"
+          else
+            echo "Error: No image tag or digest found"
+            exit 1
+          fi
+        fi
+        
+        echo "Testing image: $IMAGE_TAG"
+        
+        # 启动容器并测试
+        CONTAINER_ID=$(docker run -d --platform ${{ matrix.platform }} -p 8080:80 $IMAGE_TAG)
+        
+        # 等待容器启动
+        sleep 10
+        
+        # 健康检查
+        echo "=== 健康检查 ==="
+        docker exec $CONTAINER_ID curl -f http://localhost/health
+        
+        # 测试主页
+        echo "=== 测试主页 ==="
+        docker exec $CONTAINER_ID curl -f http://localhost/
+        
+        # 测试静态资源
+        echo "=== 测试静态资源 ==="
+        docker exec $CONTAINER_ID ls -la /usr/share/nginx/html/
+        
+        # 验证nginx配置
+        echo "=== 验证nginx配置 ==="
+        docker exec $CONTAINER_ID nginx -t
+        
+        # 清理
+        docker stop $CONTAINER_ID
+        docker rm $CONTAINER_ID
+
+  # 更新Docker Hub描述
+  update-dockerhub-docs-description:
+    name: Update DockerHub Docs Description
+    runs-on: ubuntu-latest
+    needs: [build-and-push-docs, test-docs-image]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Create Docker Hub README for docs
+      run: |
+        cat > DOCS_README.md << 'EOF'
+        # AIS 文档网站
+
+        AIS (AI Shell) 项目的官方文档网站容器镜像。
+
+        ## 关于 AIS
+
+        AIS 是一个上下文感知的错误分析学习助手，让每次报错都是成长。
+
+        ## 使用方法
+
+        ```bash
+        # 启动文档网站
+        docker run -d -p 8080:80 kangvcar/ais-docs:latest
+        ```
+
+        然后访问 http://localhost:8080 查看文档。
+
+        ## 特性
+
+        - ✨ 基于 VitePress 构建的现代化文档网站
+        - 🚀 支持多架构 (AMD64/ARM64)
+        - 🔒 内置安全头和HTTPS支持
+        - 📱 响应式设计，移动端友好
+        - 🎨 支持 Mermaid 图表
+        - 🔍 内置搜索功能
+
+        ## 项目链接
+
+        - 🏠 [项目主页](https://github.com/kangvcar/ais)
+        - 📚 [在线文档](https://ais-docs.vercel.app)
+        - 🐳 [Docker Hub](https://hub.docker.com/r/kangvcar/ais)
+
+        ## 许可证
+
+        MIT License
+        EOF
+
+    - name: Update Docker Hub Description for docs
+      uses: peter-evans/dockerhub-description@v4
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        repository: ${{ env.IMAGE_NAME }}
+        short-description: "AIS项目文档网站 - 上下文感知的错误分析学习助手"
+        readme-filepath: ./DOCS_README.md
+
+  # 部署成功通知
+  notify-docs-success:
+    name: Notify Docs Deployment Success
+    runs-on: ubuntu-latest
+    needs: [build-and-push-docs, test-docs-image]
+    if: always() && needs.build-and-push-docs.result == 'success' && needs.test-docs-image.result == 'success'
+    
+    steps:
+    - name: Notify success
+      run: |
+        echo "📚 AIS文档网站构建成功！"
+        echo "📋 镜像标签:"
+        echo "${{ needs.build-and-push-docs.outputs.image-tags }}"
+        echo "🔐 镜像摘要: ${{ needs.build-and-push-docs.outputs.image-digest }}"
+        echo "🌐 Docker Hub: https://hub.docker.com/r/${{ env.IMAGE_NAME }}"
+        echo ""
+        echo "🎉 使用方法:"
+        echo "docker run -d -p 8080:80 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+        echo "然后访问 http://localhost:8080 查看文档"
+
+  # 部署失败通知
+  notify-docs-failure:
+    name: Notify Docs Deployment Failure
+    runs-on: ubuntu-latest
+    needs: [build-and-push-docs, test-docs-image]
+    if: always() && (needs.build-and-push-docs.result == 'failure' || needs.test-docs-image.result == 'failure')
+    
+    steps:
+    - name: Notify failure
+      run: |
+        echo "❌ AIS文档网站Docker构建失败"
+        echo "请检查构建日志"
+        exit 1

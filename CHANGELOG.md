@@ -7,6 +7,15 @@
 
 ## [Unreleased]
 
+### Added
+- 📚 **文档网站Docker容器化支持**：为AIS文档网站添加了完整的Docker容器化解决方案
+  - 新增`docs.Dockerfile`：基于Node.js和Nginx的多阶段构建，用于构建和部署VitePress文档网站
+  - 新增`.github/workflows/docs-container-deploy.yml`：自动化构建并发布文档网站到DockerHub的工作流
+  - 支持多架构构建（AMD64/ARM64），确保跨平台兼容性
+  - 集成安全扫描、SBOM生成和健康检查功能
+  - 提供`kangvcar/ais-docs`镜像，用户可以通过`docker run -p 8080:80 kangvcar/ais-docs`本地运行文档网站
+  - 配置了nginx优化，包括gzip压缩、静态资源缓存和安全头设置
+
 ## [3.2.1] - 2025-08-14
 
 ### Fixed
