@@ -4,7 +4,7 @@
 
 ![ais](https://socialify.git.ci/kangvcar/ais/image?custom_description=AI%E9%A9%B1%E5%8A%A8%E7%9A%84%E6%99%BA%E8%83%BD%E7%BB%88%E7%AB%AF%E5%8A%A9%E6%89%8B%EF%BC%8C%E8%87%AA%E5%8A%A8%E5%88%86%E6%9E%90%E5%91%BD%E4%BB%A4%E9%94%99%E8%AF%AF%E3%80%81%E6%8F%90%E4%BE%9B%E6%99%BA%E8%83%BD%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E3%80%82%0A%E8%AE%A9%E6%AF%8F%E6%AC%A1%E6%8A%A5%E9%94%99%E9%83%BD%E6%98%AF%E6%88%90%E9%95%BF%EF%BC%8C%E8%AE%A9%E6%AF%8F%E4%B8%AA%E9%94%99%E8%AF%AF%E9%83%BD%E6%98%AF%E5%AD%A6%E4%B9%A0&custom_language=Shell&description=1&font=Bitter&forks=1&issues=1&language=1&logo=https%3A%2F%2Fraw.githubusercontent.com%2Fkangvcar%2Fais%2Frefs%2Fheads%2Fmain%2Fdocs%2Fpublic%2Flogo-robot.svg&name=1&owner=1&pattern=Plus&stargazers=1&theme=Auto)
 
-[📖 安装指南](#installation) · [🚀 快速开始](#quickstart) · [🤝 贡献](#contributing)
+[📖 安装指南](#installation) · [🌏 官网文档](https://kangvcar.github.io/ais) · [🎞️ 功能演示(国内访问)](https://www.bilibili.com/video/BV1wDvwzDEEz) · [✨ 交互体验](https://app.arcade.software/share/hZWhYIC7dsD7Ed1GPv0G)
 
 <a href="https://www.producthunt.com/products/ais?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-ais" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1009557&theme=light&t=1756203101298" alt="AIS - Smart&#0032;terminal&#0032;AI&#0032;assistant&#0032;for&#0032;instant&#0032;error&#0032;analysis | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 
