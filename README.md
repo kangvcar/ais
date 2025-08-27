@@ -1,3 +1,6 @@
+**语言 / Language:** [中文](./README.md) | [English](./README.en.md)
+
+
 # AIS - 上下文感知的错误分析学习助手
 
 <div align="center">
@@ -189,7 +192,7 @@ ais --version
 ais ask "你好，AIS！"
 
 # 测试自动错误分析（故意输错命令）
-mkdirr /tmp/test
+mkdir /tmp/test
 ```
 
 ---
