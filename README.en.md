@@ -198,7 +198,7 @@ ais --version
 ais ask "Hello, AIS!"
 
 # Test automatic error analysis (enter a command with an intentional typo)
-mkdir /tmp/test
+mkdirr /tmp/test
 ```
 
 ---
