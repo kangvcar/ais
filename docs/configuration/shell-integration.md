@@ -108,6 +108,9 @@ ais analyze --exit-code $exit_code --command "$command" &
 - **Dash** - 基本错误捕获
 - **Ksh** - 基本错误捕获
 
+### 特殊终端支持
+- **Warp Terminal** - 完全兼容，自动适配其特殊的历史管理机制
+
 ## 🚀 自动设置
 
 ### 一键设置
@@ -172,6 +175,13 @@ add-zsh-hook preexec __ais_preexec
 add-zsh-hook precmd __ais_precmd
 ```
 
+::: tip Warp Terminal 用户注意
+AIS 会自动检测 Warp Terminal 环境并使用兼容的命令历史获取方式。如果遇到问题，请确保：
+1. Shell 集成脚本是最新版本
+2. 使用 `ais setup` 重新配置
+3. 重启终端或运行 `source ~/.zshrc`
+:::
+
 ### Fish 配置
 ```bash
 # AIS 已自动配置 shell 集成，无需手动添加
@@ -223,6 +233,10 @@ ais test-integration
 type __ais_trap      # Bash
 type __ais_precmd    # Zsh
 functions __ais_postexec  # Fish
+
+# Warp Terminal 特定检查
+echo $WARP_SESSION_ID    # 检查是否在 Warp 环境
+fc -l -1                  # 测试历史命令获取
 ```
 
 ## 🛠️ 高级配置
