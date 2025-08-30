@@ -15,16 +15,22 @@
 
 ### Enhanced
 - 📝 **文档国际化支持**：为项目添加完整的英文文档支持
-  - 新增英文版README文件(README.en.md)，为国际用户提供完整的项目介绍
+  - 新增英文版README文件，为国际用户提供完整的项目介绍
   - 在中文README中添加语言切换链接，方便用户选择阅读语言
   - 通过PR #1实现多语言文档系统，提升项目国际化水平
   - 修复示例命令中的故意错误(`mkdirr` → `mkdir`)，确保错误分析演示功能正常工作
 
 ### Changed
+- 📝 **README文件国际化重组**：按最佳实践优化多语言README文件结构
+  - 将README.md改为英文版本作为默认文档（面向全球用户）
+  - 将中文README重命名为README-zh.md（符合W3C语言代码规范）
+  - 删除原README.en.md文件，采用更简洁的命名方案
+  - 更新所有文件中的语言切换链接，确保导航正确性
+  - 提升项目国际化水平，符合GitHub开源项目最佳实践
 - ⚙️ **移除Python 3.8支持**：统一将最低Python版本要求提升至3.9+
   - 更新所有CI工作流配置，移除Python 3.8的测试和构建支持
   - 更新pyproject.toml配置文件，将requires-python改为">=3.9"
-  - 更新所有文档中的Python版本要求：README.md、README.en.md及docs/目录
+  - 更新所有文档中的Python版本要求：README文件及docs/目录
   - 更新项目配置文件，包括Black、MyPy等工具的目标版本设置
   - 专注于Python 3.9+版本的维护，简化CI流程并提升构建效率
 

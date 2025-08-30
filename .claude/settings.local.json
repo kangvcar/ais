@@ -8,7 +8,8 @@
       "Bash(black:*)",
       "Bash(autopep8:*)",
       "Bash(flake8:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "WebSearch"
     ],
     "deny": []
   }
