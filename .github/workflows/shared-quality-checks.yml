@@ -12,7 +12,7 @@ on:
       python_versions:
         description: 'Python versions to test (JSON array)'
         type: string
-        default: '["3.8", "3.9", "3.10", "3.11", "3.12"]'
+        default: '["3.9", "3.10", "3.11", "3.12"]'
       operating_systems:
         description: 'Operating systems to test (JSON array)'  
         type: string
