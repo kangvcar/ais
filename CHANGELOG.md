@@ -21,10 +21,12 @@
   - 修复示例命令中的故意错误(`mkdirr` → `mkdir`)，确保错误分析演示功能正常工作
 
 ### Changed
-- ⚙️ **CI工作流Python版本优化**：更新持续集成配置以提升构建效率
-  - 将默认Python版本从3.9更新到3.11，使用更现代的Python版本
-  - 从CI工作流中移除Python 3.8支持，专注于主流版本维护
-  - 优化构建矩阵配置，提升CI执行效率和稳定性
+- ⚙️ **移除Python 3.8支持**：统一将最低Python版本要求提升至3.9+
+  - 更新所有CI工作流配置，移除Python 3.8的测试和构建支持
+  - 更新pyproject.toml配置文件，将requires-python改为">=3.9"
+  - 更新所有文档中的Python版本要求：README.md、README.en.md及docs/目录
+  - 更新项目配置文件，包括Black、MyPy等工具的目标版本设置
+  - 专注于Python 3.9+版本的维护，简化CI流程并提升构建效率
 
 ### Added
 - 📚 **文档网站Docker容器化支持**：为AIS文档网站添加了完整的Docker容器化解决方案

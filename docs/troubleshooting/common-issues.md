@@ -30,7 +30,7 @@ source ~/.bashrc  # 或 ~/.zshrc
 ### 问题：Python 版本不兼容
 ```bash
 # 错误信息
-ERROR: Package 'ais-terminal' requires Python '>=3.8'
+ERROR: Package 'ais-terminal' requires Python '>=3.9'
 ```
 
 **解决方案**：

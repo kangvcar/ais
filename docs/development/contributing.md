@@ -22,7 +22,7 @@
 ## 🚀 开发环境设置
 
 ### 环境要求
-- Python 3.8+
+- Python 3.9+
 - Git
 - 支持的操作系统：Linux、macOS
 

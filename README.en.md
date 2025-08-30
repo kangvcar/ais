@@ -55,7 +55,7 @@ Through a deep shell-integration architecture, AIS achieves multi-dimensional co
 
 ### System Requirements
 
-* **Python**: 3.8+ (3.11+ recommended)
+* **Python**: 3.9+ (3.11+ recommended)
 * **Operating Systems**: Linux, macOS
 * **Network**: Required to download dependencies and access AI services
 * **Disk Space**: At least 100 MB free space
@@ -686,7 +686,7 @@ Thanks to all the developers who contributed to this project!
 
 ### Tech Stack
 
-* **Python 3.8+** – Core language
+* **Python 3.9+** – Core language
 * **Click** – CLI framework
 * **Rich** – Terminal UI and formatting
 * **SQLModel** – Database ORM

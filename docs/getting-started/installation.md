@@ -102,7 +102,7 @@ docker run -it kangvcar/ais:latest
 - **Windows**: Windows 10+ (通过 WSL)
 
 ### 依赖要求
-- **Python**: 3.8 或更高版本（一键安装脚本会自动处理旧版本）
+- **Python**: 3.9 或更高版本（一键安装脚本会自动处理旧版本）
 - **Shell**: Bash 4.0+, Zsh 5.0+
 
 ### 支持的Linux发行版
