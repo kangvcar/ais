@@ -7,6 +7,25 @@
 
 ## [Unreleased]
 
+### Fixed
+- 🔧 **修复Warp Terminal Shell集成兼容性问题**：解决在Warp Terminal中shell集成脚本执行异常的问题
+  - 修复shell集成脚本在Warp Terminal环境下可能出现的函数定义冲突
+  - 确保在所有现代终端环境下的稳定运行，包括Warp Terminal、iTerm2、标准Terminal等
+  - 通过PR #2合并了对Warp Terminal的完整支持
+
+### Enhanced
+- 📝 **文档国际化支持**：为项目添加完整的英文文档支持
+  - 新增英文版README文件(README.en.md)，为国际用户提供完整的项目介绍
+  - 在中文README中添加语言切换链接，方便用户选择阅读语言
+  - 通过PR #1实现多语言文档系统，提升项目国际化水平
+  - 修复示例命令中的故意错误(`mkdirr` → `mkdir`)，确保错误分析演示功能正常工作
+
+### Changed
+- ⚙️ **CI工作流Python版本优化**：更新持续集成配置以提升构建效率
+  - 将默认Python版本从3.9更新到3.11，使用更现代的Python版本
+  - 从CI工作流中移除Python 3.8支持，专注于主流版本维护
+  - 优化构建矩阵配置，提升CI执行效率和稳定性
+
 ### Added
 - 📚 **文档网站Docker容器化支持**：为AIS文档网站添加了完整的Docker容器化解决方案
   - 新增`docs.Dockerfile`：基于Node.js和Nginx的多阶段构建，用于构建和部署VitePress文档网站
