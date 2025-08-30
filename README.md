@@ -663,7 +663,7 @@ ais help-all
 
 ### 技术栈
 
-- **Python 3.8+** - 核心语言
+- **Python 3.9+** - 核心语言
 - **Click** - 命令行界面框架
 - **Rich** - 终端美化和格式化
 - **SQLModel** - 数据库ORM
@@ -671,6 +671,12 @@ ais help-all
 - **Plotly** - 交互式图表可视化（HTML报告）
 - **NumPy** - 数值计算支持（可视化依赖）
 - **pytest** - 测试框架
+
+### 终端兼容性
+
+- 支持所有主流 Shell：Bash, Zsh, Fish
+- **特别优化了 Warp Terminal** - 自动适配其特殊的历史管理机制
+- 兼容 tmux, screen 等终端复用器
 
 ---
 

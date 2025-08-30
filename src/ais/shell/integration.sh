@@ -151,7 +151,19 @@ _ais_precmd() {
         # 检查功能是否开启
         if _ais_check_auto_analysis; then
             local last_command
-            last_command=$(history 1 | sed 's/^[ ]*[0-9]*[ ]*//' 2>/dev/null)
+            
+            # 获取最后执行的命令
+            if [ -n "$ZSH_VERSION" ]; then
+                # Zsh: 使用 fc -l -1 获取最后一条历史记录
+                # fc -l -1 输出格式: "1234  command"
+                last_command=$(fc -l -1 2>/dev/null | sed 's/^[[:space:]]*[0-9]*[[:space:]]*//')
+            elif [ -n "$BASH_VERSION" ]; then
+                # Bash: 使用 history
+                last_command=$(history 1 | sed 's/^[ ]*[0-9]*[ ]*//' 2>/dev/null)
+            fi
+            
+            # 去除首尾空白
+            last_command=$(echo "$last_command" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
 
             # 过滤内部命令和特殊情况
             if [[ "$last_command" != *"_ais_"* ]] && \

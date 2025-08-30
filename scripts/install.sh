@@ -933,7 +933,7 @@ create_integration_script() {
         fi
     fi
     
-    # 如果找不到原始脚本，创建简化版本
+# 如果找不到原始脚本，创建简化版本
     mkdir -p "$(dirname "$script_path")"
     cat > "$script_path" << 'EOF'
 #!/bin/bash
@@ -943,7 +943,18 @@ command -v ais >/dev/null 2>&1 && {
         local exit_code=$?
         [ $exit_code -ne 0 ] && [ $exit_code -ne 130 ] && \
         grep -q "auto_analysis = true" "$HOME/.config/ais/config.toml" 2>/dev/null && {
-            local cmd=$(history 1 | sed 's/^[ ]*[0-9]*[ ]*//' 2>/dev/null)
+            local cmd
+            # 获取最后执行的命令
+            if [ -n "$ZSH_VERSION" ]; then
+                # Zsh: 使用 fc -l -1 获取最后一条历史记录
+                cmd=$(fc -l -1 2>/dev/null | sed 's/^[[:space:]]*[0-9]*[[:space:]]*//')
+            elif [ -n "$BASH_VERSION" ]; then
+                # Bash: 使用 history
+                cmd=$(history 1 | sed 's/^[ ]*[0-9]*[ ]*//' 2>/dev/null)
+            fi
+            # 去除首尾空白
+            cmd=$(echo "$cmd" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+            
             [[ "$cmd" != *"_ais_"* ]] && [[ "$cmd" != *"history"* ]] && \
             echo && ais analyze --exit-code "$exit_code" --command "$cmd"
         }

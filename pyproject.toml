@@ -7,7 +7,7 @@ name = "ais-terminal"
 version = "2.5.2"
 description = "上下文感知的错误分析学习助手 - 让每次报错都是成长"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
     {name = "AIS Team", email = "ais@example.com"},
@@ -26,7 +26,6 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -106,14 +105,14 @@ exclude = [
 
 [tool.black]
 line-length = 100
-target-version = ['py38']
+target-version = ['py39']
 
 [tool.flake8]
 max-line-length = 100
 extend-ignore = ["E203", "W503"]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
