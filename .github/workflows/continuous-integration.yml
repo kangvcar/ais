@@ -37,7 +37,7 @@ jobs:
     uses: ./.github/workflows/shared-quality-checks.yml
     with:
       skip_coverage: false
-      python_versions: '["3.8", "3.9", "3.10", "3.11", "3.12"]'
+      python_versions: '["3.9", "3.10", "3.11", "3.12"]'
       operating_systems: '["ubuntu-latest"]'
     secrets: inherit
 
