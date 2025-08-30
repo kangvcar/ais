@@ -7,19 +7,19 @@
 
 ## [Unreleased]
 
+## [3.3.1] - 2025-08-30
+
 ### Fixed
 - 🔧 **修复Warp Terminal Shell集成兼容性问题**：解决在Warp Terminal中shell集成脚本执行异常的问题
   - 修复shell集成脚本在Warp Terminal环境下可能出现的函数定义冲突
   - 确保在所有现代终端环境下的稳定运行，包括Warp Terminal、iTerm2、标准Terminal等
   - 通过PR #2合并了对Warp Terminal的完整支持
-
 ### Enhanced
 - 📝 **文档国际化支持**：为项目添加完整的英文文档支持
   - 新增英文版README文件，为国际用户提供完整的项目介绍
   - 在中文README中添加语言切换链接，方便用户选择阅读语言
   - 通过PR #1实现多语言文档系统，提升项目国际化水平
   - 修复示例命令中的故意错误(`mkdirr` → `mkdir`)，确保错误分析演示功能正常工作
-
 ### Changed
 - 📝 **README文件国际化重组**：按最佳实践优化多语言README文件结构
   - 将README.md改为英文版本作为默认文档（面向全球用户）
@@ -33,7 +33,6 @@
   - 更新所有文档中的Python版本要求：README文件及docs/目录
   - 更新项目配置文件，包括Black、MyPy等工具的目标版本设置
   - 专注于Python 3.9+版本的维护，简化CI流程并提升构建效率
-
 ### Added
 - 📚 **文档网站Docker容器化支持**：为AIS文档网站添加了完整的Docker容器化解决方案
   - 新增`docs.Dockerfile`：基于Node.js和Nginx的多阶段构建，用于构建和部署VitePress文档网站
@@ -42,7 +41,6 @@
   - 集成安全扫描、SBOM生成和健康检查功能
   - 提供`kangvcar/ais-docs`镜像，用户可以通过`docker run -p 8080:80 kangvcar/ais-docs`本地运行文档网站
   - 配置了nginx优化，包括gzip压缩、静态资源缓存和安全头设置
-
 ### Fixed
 - 🐳 **修复文档Docker构建工作流中的dockerignore冲突问题**：
   - 修复GitHub Actions中Docker构建时找不到docs目录的问题
