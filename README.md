@@ -192,7 +192,7 @@ ais --version
 ais ask "你好，AIS！"
 
 # 测试自动错误分析（故意输错命令）
-mkdir /tmp/test
+mkdirr /tmp/test
 ```
 
 ---
