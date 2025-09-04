@@ -9,8 +9,6 @@
 
 [📖 Installation Guide](#installation) · [🌏 Official Docs](https://kangvcar.github.io/ais) · [🎞️ Feature Demo (Mainland China)](https://www.bilibili.com/video/BV1wDvwzDEEz) · [✨ Interactive Demo](https://app.arcade.software/share/hZWhYIC7dsD7Ed1GPv0G)
 
-<a href="https://www.producthunt.com/products/ais?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-ais" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1009557&theme=light&t=1756203101298" alt="AIS - Smart terminal AI assistant for instant error analysis | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
-
 [![AIS Demo](https://github.com/user-attachments/assets/f3b4fdd2-c76c-4e48-818d-1e0e4236820d)](https://www.youtube.com/watch?v=T8Q-y2BdFlw "This AI Terminal Assistant Just Changed How I Debug Code Forever | AIS Demo")
 
 </div>
